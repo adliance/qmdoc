@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "QmDoc": {
+      "commandName": "Project",
+      "commandLineArgs": "--source \"../../../../../test/test.md\" --include-html"
+    }
+  }
+}

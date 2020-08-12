@@ -1,0 +1,51 @@
+name: 0.2.$(Rev:r)
+
+
+resources:
+- repo: self
+
+
+trigger:
+- master
+
+
+queue:
+  name: Default
+
+  
+steps:
+- checkout: self
+  clean: true
+
+- task: DotNetCoreCLI@2
+  displayName: Restore
+  inputs:
+    command: restore
+    projects: './src/QmDoc/QmDoc.csproj'
+
+- task: DotNetCoreCLI@2
+  displayName: Build
+  inputs:
+    projects: './src/QmDoc/QmDoc.csproj'
+    arguments: '--configuration Release'
+
+- task: DotNetCoreCLI@2
+  displayName: DotNet Pack
+  inputs:
+    command: pack
+    packagesToPack: './src/QmDoc/QmDoc.csproj'
+    versioningScheme: byBuildNumber
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Artifact
+  inputs:
+    PathtoPublish: '$(build.artifactstagingdirectory)'
+
+- task: NuGetCommand@2
+  displayName: NuGet Push
+  inputs:
+    command: push
+    nuGetFeedType: external
+    publishFeedCredentials: 'Public NuGet'
+
+

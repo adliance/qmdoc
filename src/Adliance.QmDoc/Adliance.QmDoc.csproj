@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <LangVersion>Latest</LangVersion>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>qmdoc</ToolCommandName>
+    <AssemblyName>Adliance.QmDoc</AssemblyName>
+    <RootNamespace>Adliance.QmDoc</RootNamespace>
+    <PackageId>Adliance.QmDoc</PackageId>
+    <Version>0.0.0</Version>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
+    <FileVersion>0.0.0.0</FileVersion>
+    <Authors>Hannes Sachsenhofer</Authors>
+    <Company>Adliance GmbH</Company>
+    <Product>Adliance.QmDoc</Product>
+    <Description>Tool to convert documentation and markdown files to pretty-looking PDF.</Description>
+    <Copyright>Adliance GmbH</Copyright>
+    <PackageProjectUrl>https://www.adliance.net</PackageProjectUrl>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Adliance.AspNetCore.Buddy" Version="3.2.6" />
+    <PackageReference Include="CommandLineParser" Version="2.8.0" />
+    <PackageReference Include="LibGit2Sharp" Version="0.26.2" />
+    <PackageReference Include="Markdig" Version="0.20.0" />
+    <PackageReference Include="SharpScss" Version="2.0.0" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Include="Themes/Default/*.*" />
+  </ItemGroup>
+</Project>
