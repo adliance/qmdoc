@@ -43,3 +43,10 @@ For example
     
 to switch the the `Adliance` theme. Themes are automatically downloaded from the [GitHub repository](https://github.com/adliance/qmdoc/tree/master/themes) and cached locally in the `USERPROFILE\.qmdoc\themes` directory. Please note that it may take a few minutes until changes of the theme on GitHub are picked up by your local installation of QmDoc.
 
+You can also set the theme for a single conversion by using the `--theme` parameter. For example
+
+    qmdoc --theme ScientificDX
+
+will convert all Markdown files in the current directory to PDF by using the "ScientificDX" theme.
+
+Each theme must consist of 5 different files (`index.html`, `footer.html`, `header.html`, `styles.scss`, `options.json`) that specify the behaviour and look and feel of the resulting PDF files. If no theme is specified, a simple default theme will be used.
