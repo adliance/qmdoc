@@ -1,0 +1,43 @@
+﻿<!DOCTYPE html>
+
+<html lang="de" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8"/>
+    {{css}}
+    <style>
+        body {
+            font-size: 12px;
+        }
+
+        .left {
+            text-align: left;
+        }
+
+        .right {
+            float: right;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+<div class="right">
+    Seite <span id="page"></span> | <span id="topage"></span>
+</div>
+
+<div class="left">
+    {{TITLE}}
+</div>
+
+<script>
+    var vars = {};
+    var x = window.location.search.substring(1).split('&');
+    for (var i in x) {
+        var z = x[i].split('=', 2);
+        vars[z[0]] = unescape(z[1]);
+    }
+    document.getElementById('page').innerHTML = vars["page"];
+    document.getElementById('topage').innerHTML = vars["topage"];
+</script>
+</body>
+</html>

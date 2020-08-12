@@ -1,0 +1,306 @@
+﻿@font-face {
+  font-family: "Proxima Nova Soft";
+  src: url("https://www.igevia.com/fonts/proxima-nova-soft-medium.woff") format("woff");
+  font-style: normal;
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: "Proxima Nova Soft";
+  src: url("https://www.igevia.com/fonts/proxima-nova-soft-semibold.woff") format("woff");
+  font-style: normal;
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: "Proxima Nova Soft";
+  src: url("https://www.igevia.com/fonts/proxima-nova-soft-bold.woff") format("woff");
+  font-style: normal;
+  font-weight: 700;
+}
+
+$sdx-colors: (
+        "white": #fafafa,
+        "dark-blue": rgb(0, 43, 89),
+        "medium-blue": rgb(52, 128, 161),
+        "light-blue": rgb(133, 188, 214),
+        "green": rgb(48, 141, 118),
+        "medium-orange": rgb(212, 153, 0),
+        "dark-orange": rgb(207, 73, 67),
+);
+$font-size: 16px;
+$margin-base: .5em;
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Proxima Nova Rg', 'Proxima Nova Soft', sans-serif;
+  font-weight: 400;
+  padding: 0 20mm 0 20mm;
+  width: 100%;
+  font-size: $font-size;
+  color: map_get($sdx-colors, "dark-blue");
+  line-height: 1.5em;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+code, pre {
+  font-size: 85%;
+  font-family: Ubuntu Mono, monospace;
+}
+
+pre {
+  background-color: #fafafa;
+  padding: 1rem;
+  line-height: 0.9rem;
+}
+
+div.line {
+  width: 100px;
+  height: 2px;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+b, strong {
+  font-weight: 700;
+}
+
+a {
+  color: map_get($sdx-colors, "dark-blue");
+  text-decoration: none;
+}
+
+div.document-title {
+  text-align: center;
+  font-size: 2.5em;
+  padding-top: 2.5em;
+  margin-bottom: 2.5em;
+  color: map_get($sdx-colors, "medium-blue");
+  font-weight: 700;
+  line-height: 1.5em;
+
+  + div.document-author {
+    margin-top: 2em * 2 * -1;
+
+    a {
+      font-weight: 400;
+    }
+  }
+}
+
+div.document-author {
+  text-align: center;
+  font-size: 1em;
+  margin-bottom: 2.5em * 2.5;
+  font-weight: 700;
+  color: map_get($sdx-colors, "medium-blue");
+
+  span, a {
+    color: map_get($sdx-colors, "medium-blue");
+
+    &.name, &.company {
+      font-weight: 700;
+    }
+  }
+}
+
+h1, h2, h3, h4, h5 {
+  color: map_get($sdx-colors, "green");
+  font-weight: 700;
+  page-break-after: avoid;
+
+  + p, + table, + ol, + ul {
+    page-break-before: avoid;
+  }
+}
+
+h1 {
+  margin-bottom: $margin-base * 3;
+  font-size: $font-size * 2;
+  line-height: $font-size * 2.2;
+}
+
+h2 {
+  margin-bottom: $margin-base * 2;
+  font-size: $font-size * 1.5;
+}
+
+h3 {
+  font-size: $font-size * 1.25;
+}
+
+h4, h5, h6 {
+  font-size: $font-size;
+}
+
+h3, h4, h5, h6 {
+  margin-bottom: $margin-base;
+}
+
+table, p, li {
+  page-break-inside: avoid;
+}
+
+table, p, ul, ol, pre {
+  margin-bottom: $margin-base;
+
+  + h1 {
+    margin-top: $margin-base * 6;
+  }
+
+  + h2 {
+    margin-top: $margin-base * 4;
+  }
+
+  + h3 {
+    margin-top: $margin-base * 3;
+  }
+
+  + h4 {
+    margin-top: $margin-base * 2;
+  }
+
+  + h5, + h6 {
+    margin-top: $margin-base;
+  }
+
+  + p, + ul, + ol, + table, pre {
+    margin-top: $margin-base * 2;
+  }
+}
+
+ul {
+  list-style: none;
+
+  li {
+    text-indent: $margin-base * -2;
+  }
+
+  li::before {
+    content: "•";
+    padding-right: 9px;
+    color: map_get($sdx-colors, "medium-blue");
+  }
+}
+
+ol, ul {
+  li {
+    margin-top: $margin-base;
+
+    i.fad {
+      display: inline-block;
+      height: 1.3rem;
+      width: 1.3rem;
+      vertical-align: bottom;
+      margin-right: 5px;
+      margin-bottom: 3px;
+    }
+  }
+
+  padding-left: $margin-base * 4;
+}
+
+table {
+  width: 100%;
+  border-spacing: 0;
+  border-collapse: separate;
+
+  thead tr th {
+    font-size: $font-size * 0.8;
+    text-align: left;
+    padding: $margin-base;
+    border-bottom: 2px solid map_get($sdx-colors, "medium-blue");;
+    vertical-align: bottom;
+    color: map_get($sdx-colors, "dark-blue");
+  }
+
+  tbody {
+    tr:nth-of-type(even) {
+      background-color: #f5f5f5;
+    }
+
+    tr td {
+      padding: $margin-base;
+      border-bottom: 1px solid map_get($sdx-colors, "medium-blue");;
+      vertical-align: top;
+    }
+  }
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  margin: 1rem auto;
+}
+
+.block-alert, .block-question, .block-danger {
+  padding: 1rem 1rem 1rem 4rem;
+  border-radius: 5px;
+
+  i.fad {
+    float: left;
+    margin-left: -3rem;
+    background-size: cover;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: block;
+  }
+}
+
+.block-alert {
+  border: 1px solid map_get($sdx-colors, "medium-orange");
+  background-color: lighten(map_get($sdx-colors, "medium-orange"), 40%);
+}
+
+.block-question {
+  border: 1px solid map_get($sdx-colors, "light-blue");
+  background-color: lighten(map_get($sdx-colors, "light-blue"), 40%);
+}
+
+.block-danger {
+  border: 1px solid map_get($sdx-colors, "dark-orange");
+  background-color: lighten(map_get($sdx-colors, "dark-orange"), 40%);
+}
+
+i.fad.fa-question-circle {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 8C119 8 8 119.08 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 422a46 46 0 1 1 46-46 46.05 46.05 0 0 1-46 46zm40-131.33V300a12 12 0 0 1-12 12h-56a12 12 0 0 1-12-12v-4c0-41.06 31.13-57.47 54.65-70.66 20.17-11.31 32.54-19 32.54-34 0-19.82-25.27-33-45.7-33-27.19 0-39.44 13.14-57.3 35.79a12 12 0 0 1-16.67 2.13L148.82 170a12 12 0 0 1-2.71-16.26C173.4 113 208.16 90 262.66 90c56.34 0 116.53 44 116.53 102 0 77-83.19 78.21-83.19 106.67z" fill="rgb(16, 168, 229)" fill-opacity=".4"/><path fill="rgb(16, 168, 229)" d="M256 338a46 46 0 1 0 46 46 46 46 0 0 0-46-46zm6.66-248c-54.5 0-89.26 23-116.55 63.76a12 12 0 0 0 2.71 16.24l34.7 26.31a12 12 0 0 0 16.67-2.13c17.86-22.65 30.11-35.79 57.3-35.79 20.43 0 45.7 13.14 45.7 33 0 15-12.37 22.66-32.54 34C247.13 238.53 216 254.94 216 296v4a12 12 0 0 0 12 12h56a12 12 0 0 0 12-12v-1.33c0-28.46 83.19-29.67 83.19-106.67 0-58-60.19-102-116.53-102z"/></svg>');
+}
+
+i.fad.fa-info-circle {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 8C119 8 8 119.08 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 110a42 42 0 1 1-42 42 42 42 0 0 1 42-42zm56 254a12 12 0 0 1-12 12h-88a12 12 0 0 1-12-12v-24a12 12 0 0 1 12-12h12v-64h-12a12 12 0 0 1-12-12v-24a12 12 0 0 1 12-12h64a12 12 0 0 1 12 12v100h12a12 12 0 0 1 12 12z" fill="rgb(244, 125, 9)" fill-opacity=".4" /><path fill="rgb(244, 125, 9)" d="M256 202a42 42 0 1 0-42-42 42 42 0 0 0 42 42zm44 134h-12V236a12 12 0 0 0-12-12h-64a12 12 0 0 0-12 12v24a12 12 0 0 0 12 12h12v64h-12a12 12 0 0 0-12 12v24a12 12 0 0 0 12 12h88a12 12 0 0 0 12-12v-24a12 12 0 0 0-12-12z"/></svg>');
+}
+
+i.fad.fa-exclamation-circle {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 8C119 8 8 119.08 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 376a32 32 0 1 1 32-32 32 32 0 0 1-32 32zm38.24-238.41l-12.8 128A16 16 0 0 1 265.52 288h-19a16 16 0 0 1-15.92-14.41l-12.8-128A16 16 0 0 1 233.68 128h44.64a16 16 0 0 1 15.92 17.59z" fill="rgb(237, 70, 34)" fill-opacity="0.4"/><path fill="rgb(237, 70, 34)" d="M278.32 128h-44.64a16 16 0 0 0-15.92 17.59l12.8 128A16 16 0 0 0 246.48 288h19a16 16 0 0 0 15.92-14.41l12.8-128A16 16 0 0 0 278.32 128zM256 320a32 32 0 1 0 32 32 32 32 0 0 0-32-32z"/></svg>');
+}
+
+.footnotes {
+  page-break-inside: avoid;
+  padding-top: 4rem;
+  font-size: 85%;
+
+  hr {
+    border: 0;
+    border-top: 1px solid map_get($sdx-colors, "medium-blue");
+  }
+}
+
+.footnote-ref {
+  sup {
+    color: map_get($sdx-colors, "medium-blue");
+  }
+}
+
+sup {
+  vertical-align: baseline;
+  position: relative;
+  top: -0.4em;
+  font-size: 75%;
+}

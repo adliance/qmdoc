@@ -22,7 +22,12 @@ namespace Adliance.QmDoc.Themes
             var content = await Download(theme, fileName);
             if (content != null)
             {
-                await File.WriteAllTextAsync(Path.Combine(AppOptionsProvider.DataDirectory, "themes", theme, fileName), content);
+                var directory = Path.Combine(AppOptionsProvider.DataDirectory, "themes", theme);
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+                await File.WriteAllTextAsync(Path.Combine(directory, fileName), content);
             }
         }
 

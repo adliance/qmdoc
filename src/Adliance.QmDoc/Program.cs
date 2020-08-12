@@ -112,7 +112,6 @@ namespace Adliance.QmDoc
             {
                 await ThemeFetcher.Fetch(theme);
                 options.ThemeRefreshedUtc = DateTime.UtcNow;
-                return;
             }
 
             options.Theme = theme;

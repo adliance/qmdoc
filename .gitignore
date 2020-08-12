@@ -4,3 +4,5 @@
 bin
 obj
 .idea
+test/*.html
+test/*.pdf

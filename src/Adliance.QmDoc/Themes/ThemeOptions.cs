@@ -1,10 +1,11 @@
 ﻿using System.Text.Json.Serialization;
+// ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
 namespace Adliance.QmDoc.Themes
 {
     public class ThemeOptions
     {
-        [JsonPropertyName("pdf")] public PdfSettings Pdf { get; } = new PdfSettings();
+        [JsonPropertyName("pdf")] public PdfSettings Pdf { get; set; } = new PdfSettings();
 
         public class PdfSettings
         {

@@ -9,7 +9,7 @@ namespace Adliance.QmDoc.Configuration
         public static string DataDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".qmdoc");
         private static string AppOptionsFilePath => Path.Combine(DataDirectory, "options.json");
 
-        public static void EnsureDataDirectoryExists()
+        private static void EnsureDataDirectoryExists()
         {
             if (!Directory.Exists(DataDirectory))
             {
@@ -29,7 +29,11 @@ namespace Adliance.QmDoc.Configuration
 
         public static void StoreOptions(AppOptions options)
         {
-            File.WriteAllText(AppOptionsFilePath, JsonSerializer.Serialize(options));
+            EnsureDataDirectoryExists();
+            File.WriteAllText(AppOptionsFilePath, JsonSerializer.Serialize(options, new JsonSerializerOptions
+            {
+                WriteIndented = true
+            }));
         }
     }
 }
