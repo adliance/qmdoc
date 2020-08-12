@@ -69,6 +69,7 @@ namespace Adliance.QmDoc
         {
             var options = AppOptionsProvider.LoadOptions();
             await UpdateTheme(options, parameters.Theme);
+            Console.WriteLine($"Changed theme to \"{parameters.Theme}\". All conversions will use this theme from now on.");
         }
 
         private static async Task Run(RunParameters parameters)
@@ -148,8 +149,15 @@ namespace Adliance.QmDoc
 
             var title = string.IsNullOrEmpty(parameters.Title) ? Path.GetFileNameWithoutExtension(sourceFilePath) : parameters.Title;
 
-            Console.WriteLine($"Working on '{sourceFilePath}' ...");
-
+            if (string.IsNullOrWhiteSpace(theme))
+            {
+                Console.WriteLine($"Working on \"{sourceFilePath}\" (no theme) ...");
+            }
+            else
+            {
+                Console.WriteLine($"Working on \"{sourceFilePath}\" (theme \"{theme}\") ...");    
+            }
+            
             var errors = new List<ProcessorError>();
             string html;
             try

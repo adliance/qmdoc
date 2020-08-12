@@ -1,17 +1,13 @@
-name: 0.2.$(Rev:r)
-
+name: 1.0.$(Rev:r)
 
 resources:
 - repo: self
 
-
 trigger:
 - master
 
-
 queue:
   name: Default
-
   
 steps:
 - checkout: self
@@ -21,19 +17,19 @@ steps:
   displayName: Restore
   inputs:
     command: restore
-    projects: './src/QmDoc/QmDoc.csproj'
+    projects: './src/Adliance.QmDoc/Adliance.QmDoc.csproj'
 
 - task: DotNetCoreCLI@2
   displayName: Build
   inputs:
-    projects: './src/QmDoc/QmDoc.csproj'
+    projects: './src/Adliance.QmDoc/Adliance.QmDoc.csproj'
     arguments: '--configuration Release'
 
 - task: DotNetCoreCLI@2
   displayName: DotNet Pack
   inputs:
     command: pack
-    packagesToPack: './src/QmDoc/QmDoc.csproj'
+    packagesToPack: './src/Adliance.QmDoc/Adliance.QmDoc.csproj'
     versioningScheme: byBuildNumber
 
 - task: PublishBuildArtifacts@1

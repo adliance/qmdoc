@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Adliance.QmDoc.Configuration;
@@ -27,7 +28,13 @@ namespace Adliance.QmDoc.Themes
                 {
                     Directory.CreateDirectory(directory);
                 }
-                await File.WriteAllTextAsync(Path.Combine(directory, fileName), content);
+
+                var filePath = Path.Combine(directory, fileName);
+                if (!File.Exists(filePath) || content != File.ReadAllText(filePath))
+                {
+                    await File.WriteAllTextAsync(filePath, content);
+                    Console.WriteLine($"Updated file \"{fileName}\" of theme \"{theme}\".");
+                }
             }
         }
 
