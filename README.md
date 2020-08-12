@@ -41,5 +41,5 @@ For example
 
     qmdoc set-theme --theme Adliance
     
-to switch the the `Adliance` theme. Themes are automatically downloaded from the GitHub repository and stored locally in the `.qmdoc\themes` directory in your user profile. Please note that it may take a few minutes until changes of the theme on GitHub are picked up by your local installation of QmDoc.
+to switch the the `Adliance` theme. Themes are automatically downloaded from the [GitHub repository](https://github.com/adliance/qmdoc/tree/master/themes) and cached locally in the `USERPROFILE\.qmdoc\themes` directory. Please note that it may take a few minutes until changes of the theme on GitHub are picked up by your local installation of QmDoc.
 
