@@ -4,7 +4,12 @@ resources:
 - repo: self
 
 trigger:
-- master
+  branches:
+    include:
+    - master
+  paths:
+    include:
+    - src/*
 
 queue:
   name: Default
