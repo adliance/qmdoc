@@ -11,8 +11,8 @@ trigger:
     include:
     - src/*
 
-queue:
-  name: Default
+pool:
+  vmImage: 'windows-latest'
   
 steps:
 - checkout: self
@@ -23,6 +23,22 @@ steps:
   inputs:
     command: restore
     projects: './src/Adliance.QmDoc/Adliance.QmDoc.csproj'
+
+- task: UseDotNet@2 
+  displayName: "Install .NET Core 3.1.x"
+  inputs:
+    version: '3.1.x'
+    packageType: sdk
+- task: DotNetCoreCLI@2
+  displayName: 'Install Set Version'
+  inputs:
+    command: custom
+    custom: tool
+    arguments: 'install -g dotnet-setversion'
+- script: |
+    cd src/Adliance.QmDoc
+    setversion $(Build.BuildNumber)
+  displayName: 'Set Version'
 
 - task: DotNetCoreCLI@2
   displayName: Build
