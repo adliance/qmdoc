@@ -1,4 +1,4 @@
-﻿$adliance-colors: (
+$adliance-colors: (
         "white": #fafafa,
         "dark-blue": rgb(2, 30, 69),
         "medium-blue": rgb(19, 64, 148),
@@ -131,7 +131,7 @@ table, p, li {
   page-break-inside: avoid;
 }
 
-table, p, ul, ol, .mermaid, pre {
+table, p, ul, ol, {
   margin-bottom: $margin-base;
 
   + h1 {
@@ -154,7 +154,7 @@ table, p, ul, ol, .mermaid, pre {
     margin-top: $margin-base;
   }
 
-  + p, + ul, + ol, + table, + .mermaid, pre {
+  + p, + ul, + ol, + table, pre {
     margin-top: $margin-base * 2;
   }
 }
@@ -264,13 +264,6 @@ i.fad.fa-exclamation-circle {
   background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 8C119 8 8 119.08 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 376a32 32 0 1 1 32-32 32 32 0 0 1-32 32zm38.24-238.41l-12.8 128A16 16 0 0 1 265.52 288h-19a16 16 0 0 1-15.92-14.41l-12.8-128A16 16 0 0 1 233.68 128h44.64a16 16 0 0 1 15.92 17.59z" fill="rgb(237, 70, 34)" fill-opacity="0.4"/><path fill="rgb(237, 70, 34)" d="M278.32 128h-44.64a16 16 0 0 0-15.92 17.59l12.8 128A16 16 0 0 0 246.48 288h19a16 16 0 0 0 15.92-14.41l12.8-128A16 16 0 0 0 278.32 128zM256 320a32 32 0 1 0 32 32 32 32 0 0 0-32-32z"/></svg>');
 }
 
-.mermaid, .mermaid svg {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  max-width: 100% !important;
-}
-
 .footnotes {
   page-break-inside: avoid;
   padding-top: 4rem;
@@ -293,4 +286,22 @@ sup {
   position: relative;
   top: -0.4em;
   font-size: 75%;
+}
+
+span.link-to-document, span.link-to-chapter {
+  white-space: nowrap;
+  
+  a {
+    color: map_get($adliance-colors, "medium-blue") !important;
+  }
+}
+
+span.link-to-document i {
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="rgb(19, 64, 148)" fill-opacity="0.4" d="M256 0H24A23.94 23.94 0 0 0 0 23.88V488a23.94 23.94 0 0 0 23.88 24H360a23.94 23.94 0 0 0 24-23.88V128H272a16 16 0 0 1-16-16z"/><path fill="rgb(19, 64, 148)" d="M384 121.9v6.1H272a16 16 0 0 1-16-16V0h6.1a24 24 0 0 1 17 7l97.9 98a23.9 23.9 0 0 1 7 16.9z" /></svg>');
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  margin-bottom: 4px;
+  vertical-align: bottom;
+  
 }
