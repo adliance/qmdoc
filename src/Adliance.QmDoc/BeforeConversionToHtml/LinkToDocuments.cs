@@ -47,7 +47,7 @@ namespace Adliance.QmDoc.BeforeConversionToHtml
                 {
                     var linkedDocument = new LinkedDocument(fileName.Replace(" ", "%20") + ".html", fileName);
                     context.LinkedDocuments.Add(linkedDocument);
-                    resultingMarkdown = resultingMarkdown.Replace($"[{code}]", $"*[{linkedDocument.NiceName}]({linkedDocument.FileName})*");
+                    resultingMarkdown = resultingMarkdown.Replace($"[{code}]", $"<span class=\"link-to-document\"><i></i>[{linkedDocument.NiceName}]({linkedDocument.FileName})</span>");
                 }
             }
 
@@ -82,7 +82,7 @@ namespace Adliance.QmDoc.BeforeConversionToHtml
 
                     var linkedDocument = new LinkedDocument(fileName.Replace(" ", "%20"), Path.GetFileNameWithoutExtension(fileName.Replace("%20", " ")));
                     context.LinkedDocuments.Add(linkedDocument);
-                    resultingMarkdown = resultingMarkdown.Replace($"[{linkedFileName}]", $"*[{linkedDocument.NiceName}]({linkedDocument.FileName})*");
+                    resultingMarkdown = resultingMarkdown.Replace($"[{linkedFileName}]", $"<span class=\"link-to-document\"><i></i>[{linkedDocument.NiceName}]({linkedDocument.FileName})</span>");
                 }
             }
 

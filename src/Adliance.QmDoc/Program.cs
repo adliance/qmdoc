@@ -155,9 +155,9 @@ namespace Adliance.QmDoc
             }
             else
             {
-                Console.WriteLine($"Working on \"{sourceFilePath}\" (theme \"{theme}\") ...");    
+                Console.WriteLine($"Working on \"{sourceFilePath}\" (theme \"{theme}\") ...");
             }
-            
+
             var errors = new List<ProcessorError>();
             string html;
             try
@@ -210,7 +210,7 @@ namespace Adliance.QmDoc
             if (errors.Any())
             {
                 Console.WriteLine("The following problems have been found:");
-                foreach (var e in errors.OrderBy(x => x.FilePath))
+                foreach (var e in errors.Distinct().OrderBy(x => x.FilePath).ThenBy(x => x.ErrorMessage))
                 {
                     Console.WriteLine($"  - {(e.IsWarningOnly ? " WARN " : "ERROR")}\t{e.FileName}\t {e.ErrorMessage} ");
                 }

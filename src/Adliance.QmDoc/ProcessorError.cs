@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace Adliance.QmDoc
 {
@@ -12,9 +13,29 @@ namespace Adliance.QmDoc
             IsWarningOnly = isWarningOnly;
         }
 
-        public string FileName { get; set; }
-        public string FilePath { get; set; }
-        public string ErrorMessage { get; set; }
-        public bool IsWarningOnly { get; set; }
+        public string FileName { get; }
+        public string FilePath { get; }
+        public string ErrorMessage { get; }
+        public bool IsWarningOnly { get; }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj != null && obj is ProcessorError other)
+            {
+                return Equals(other);
+            }
+
+            return false;
+        }
+
+        private bool Equals(ProcessorError other)
+        {
+            return FileName == other.FileName && FilePath == other.FilePath && ErrorMessage == other.ErrorMessage && IsWarningOnly == other.IsWarningOnly;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(FileName, FilePath, ErrorMessage, IsWarningOnly);
+        }
     }
 }

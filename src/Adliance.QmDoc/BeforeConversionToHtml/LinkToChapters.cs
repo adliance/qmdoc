@@ -13,7 +13,7 @@ namespace Adliance.QmDoc.BeforeConversionToHtml
             foreach (Match? m in matches)
             {
                 if (m == null) continue;
-                result = result.Replace(m.Value, $"[{m.Groups[1].Value}](#{GetChapterId(m.Groups[1].Value)})");
+                result = result.Replace(m.Value, $"<span class=\"link-to-chapter\">[{m.Groups[1].Value}](#{GetChapterId(m.Groups[1].Value)})</span>");
             }
 
             return new Result(result, context);

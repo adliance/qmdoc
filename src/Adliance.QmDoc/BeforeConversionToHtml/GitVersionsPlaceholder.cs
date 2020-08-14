@@ -21,7 +21,7 @@ namespace Adliance.QmDoc.BeforeConversionToHtml
 
             if (Regex.IsMatch(markdown, pattern, RegexOptions.IgnoreCase))
             {
-                var changes = GitService.GetVersions(_sourceFilePath);
+                var changes = GitService.GetVersions(_sourceFilePath).Where(x => !x.Message.StartsWith("Merge", StringComparison.OrdinalIgnoreCase)).ToList();
                 var replacement = "";
                 if (changes.Any())
                 {
@@ -29,7 +29,7 @@ namespace Adliance.QmDoc.BeforeConversionToHtml
 
                     foreach (var change in changes)
                     {
-                        replacement += Environment.NewLine + $"| {change.Date.ToString("dd. MM. yyyy", new CultureInfo("de-DE"))} | {change.Author} | {change.ShaShort} | {change.MessageShort}";
+                        replacement += Environment.NewLine + $"| {change.Date.ToString("dd. MM. yyyy", new CultureInfo("de-DE")).Replace(" ", "&nbsp;")} | {change.Author.Replace(" ", "&nbsp;")} | {change.ShaShort} | {change.MessageShort}";
                     }
                 }
 
