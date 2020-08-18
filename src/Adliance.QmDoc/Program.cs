@@ -162,7 +162,13 @@ namespace Adliance.QmDoc
             string html;
             try
             {
-                html = MarkdownToHtmlConverter.ConvertMarkdownToHtml(theme, sourceFilePath, title, parameters.DisableHeaderNumbering, out var e);
+                html = MarkdownToHtmlConverter.ConvertMarkdownToHtml(
+                    theme, 
+                    sourceFilePath, 
+                    title,
+                    parameters.DisableHeaderNumbering, 
+                    parameters.IgnoreGitCommitsSince, 
+                    out var e);
                 errors.AddRange(e);
             }
             catch (Exception ex)

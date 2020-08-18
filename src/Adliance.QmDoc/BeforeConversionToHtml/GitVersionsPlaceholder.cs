@@ -8,10 +8,12 @@ namespace Adliance.QmDoc.BeforeConversionToHtml
     public class GitVersionsPlaceholder : IBeforeConversionToHtmlStep
     {
         private readonly string _sourceFilePath;
+        private readonly DateTime? _ignoreGitCommitsSince;
 
-        public GitVersionsPlaceholder(string sourceFilePath)
+        public GitVersionsPlaceholder(string sourceFilePath, DateTime? ignoreGitCommitsSince)
         {
             _sourceFilePath = sourceFilePath;
+            _ignoreGitCommitsSince = ignoreGitCommitsSince;
         }
 
         public Result Apply(string markdown, Context context)
@@ -21,7 +23,11 @@ namespace Adliance.QmDoc.BeforeConversionToHtml
 
             if (Regex.IsMatch(markdown, pattern, RegexOptions.IgnoreCase))
             {
-                var changes = GitService.GetVersions(_sourceFilePath).Where(x => !x.Message.StartsWith("Merge", StringComparison.OrdinalIgnoreCase)).ToList();
+                var changes = GitService.GetVersions(_sourceFilePath)
+                    .Where(x => !x.Message.StartsWith("Merge", StringComparison.OrdinalIgnoreCase))
+                    .Where(x => !_ignoreGitCommitsSince.HasValue || x.Date < _ignoreGitCommitsSince.Value)
+                    .ToList();
+                
                 var replacement = "";
                 if (changes.Any())
                 {

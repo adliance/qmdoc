@@ -1,4 +1,5 @@
-﻿using Markdig;
+﻿using System;
+using Markdig;
 using System.Collections.Generic;
 using System.IO;
 using Adliance.QmDoc.AfterConversionToHtml;
@@ -12,7 +13,13 @@ namespace Adliance.QmDoc
 {
     public static class MarkdownToHtmlConverter
     {
-        public static string ConvertMarkdownToHtml(string theme, string sourceFilePath, string title, bool disableHeaderNumbering, out List<ProcessorError> errors)
+        public static string ConvertMarkdownToHtml(
+            string theme,
+            string sourceFilePath,
+            string title,
+            bool disableHeaderNumbering,
+            DateTime? ignoreGitCommitsSince,
+            out List<ProcessorError> errors)
         {
             if (!File.Exists(sourceFilePath))
             {
@@ -24,10 +31,10 @@ namespace Adliance.QmDoc
             IBeforeConversionToHtmlStep[] steps =
             {
                 new TitlePlaceholder(title),
-                new GitVersionsPlaceholder(sourceFilePath),
+                new GitVersionsPlaceholder(sourceFilePath, ignoreGitCommitsSince),
                 new DatePlaceholder(),
                 new LinkToChapters(),
-                new PageBreak(), 
+                new PageBreak(),
                 new ImagesMustNotContainSpaces(sourceFilePath),
                 new LinkToDocuments(sourceFilePath),
                 new LinkedDocumentsPlaceholder(sourceFilePath) // add after the "LinkToDocuments" step, because that one fills the context with the linked documents 

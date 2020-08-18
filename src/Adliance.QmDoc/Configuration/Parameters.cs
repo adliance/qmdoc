@@ -1,4 +1,5 @@
-﻿using CommandLine;
+﻿using System;
+using CommandLine;
 
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 // ReSharper disable ClassNeverInstantiated.Global
@@ -21,6 +22,8 @@ namespace Adliance.QmDoc.Configuration
         [Option("exclude-pdf", Required = false, Default = false, HelpText = "The PDF version should not be saved.")] public bool ExcludePdf { get; set; } = false;
 
         [Option("theme", Required = false, Default = "", HelpText = "The name of the theme that should be used.")] public string Theme { get; set; } = "";
+            
+        [Option("ignore-git-commits-since", Required = false, Default = null, HelpText = "The name of the theme that should be used.")] public DateTime? IgnoreGitCommitsSince { get; set; } = null;
     }
 
     [Verb("set-theme", HelpText = "Sets the theme that will be used for all conversions.")]
