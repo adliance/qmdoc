@@ -1,4 +1,4 @@
-﻿@font-face {
+@font-face {
   font-family: "Proxima Nova Soft";
   src: url("https://www.igevia.com/fonts/proxima-nova-soft-medium.woff") format("woff");
   font-style: normal;
@@ -27,6 +27,7 @@ $sdx-colors: (
         "green": rgb(48, 141, 118),
         "medium-orange": rgb(212, 153, 0),
         "dark-orange": rgb(207, 73, 67),
+		"footer-blue": rgb(31, 43, 125),
 );
 $font-size: 16px;
 $margin-base: .5em;
@@ -82,7 +83,7 @@ div.document-title {
   font-size: 2.5em;
   padding-top: 2.5em;
   margin-bottom: 2.5em;
-  color: map_get($sdx-colors, "medium-blue");
+  color: map_get($sdx-colors, "dark-blue");
   font-weight: 700;
   line-height: 1.5em;
 
@@ -100,10 +101,10 @@ div.document-author {
   font-size: 1em;
   margin-bottom: 2.5em * 2.5;
   font-weight: 700;
-  color: map_get($sdx-colors, "medium-blue");
+  color: map_get($sdx-colors, "footer-blue");
 
   span, a {
-    color: map_get($sdx-colors, "medium-blue");
+    color: map_get($sdx-colors, "footer-blue");
 
     &.name, &.company {
       font-weight: 700;
@@ -112,7 +113,7 @@ div.document-author {
 }
 
 h1, h2, h3, h4, h5 {
-  color: map_get($sdx-colors, "green");
+  color: map_get($sdx-colors, "dark-blue");
   font-weight: 700;
   page-break-after: avoid;
 
@@ -216,7 +217,7 @@ table {
     font-size: $font-size * 0.8;
     text-align: left;
     padding: $margin-base;
-    border-bottom: 2px solid map_get($sdx-colors, "medium-blue");;
+    border-bottom: 2px solid map_get($sdx-colors, "dark-blue");;
     vertical-align: bottom;
     color: map_get($sdx-colors, "dark-blue");
   }
@@ -288,13 +289,13 @@ i.fad.fa-exclamation-circle {
 
   hr {
     border: 0;
-    border-top: 1px solid map_get($sdx-colors, "medium-blue");
+    border-top: 1px solid map_get($sdx-colors, "dark-blue");
   }
 }
 
 .footnote-ref {
   sup {
-    color: map_get($sdx-colors, "medium-blue");
+    color: map_get($sdx-colors, "dark-blue");
   }
 }
 
