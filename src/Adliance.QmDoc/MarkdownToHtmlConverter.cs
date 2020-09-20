@@ -69,7 +69,7 @@ namespace Adliance.QmDoc
                 new AuthorLine(),
                 new HeaderNumbering(!disableHeaderNumbering),
                 new IconBlocks(),
-                new ListIcons(),
+                new IconLists(),
                 new SetCorrectChaptersLinkTitle(sourceFilePath),
                 new EmbedImages(sourceFilePath)
             };

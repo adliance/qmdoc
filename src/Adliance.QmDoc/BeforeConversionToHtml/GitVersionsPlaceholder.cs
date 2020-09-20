@@ -38,6 +38,10 @@ namespace Adliance.QmDoc.BeforeConversionToHtml
                         replacement += Environment.NewLine + $"| {change.Date.ToString("dd. MM. yyyy", new CultureInfo("de-DE")).Replace(" ", "&nbsp;")} | {change.Author.Replace(" ", "&nbsp;")} | {change.ShaShort} | {change.MessageShort}";
                     }
                 }
+                else
+                {
+                    replacement = "{{!}} Dieses Dokument befindet sich nicht in Versionskontrolle.";
+                }
 
                 result = Regex.Replace(result, pattern, replacement, RegexOptions.IgnoreCase);
             }

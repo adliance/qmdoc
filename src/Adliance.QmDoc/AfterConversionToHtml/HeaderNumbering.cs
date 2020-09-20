@@ -40,7 +40,7 @@ namespace Adliance.QmDoc.AfterConversionToHtml
 
                 if (h1Match.Success)
                 {
-                    var newTitle = $"{++h1} {h1Match.Groups[2].Value}";
+                    var newTitle = $"{++h1}&nbsp;&nbsp;&nbsp;{h1Match.Groups[2].Value}";
                     titlesToReplace.Add(new Tuple<string, string>(h1Match.Groups[2].Value, newTitle));
 
                     lineClosure = line.Replace(h1Match.Value, $"<h1{h1Match.Groups[1].Value}>{newTitle}</h1>");
@@ -50,7 +50,7 @@ namespace Adliance.QmDoc.AfterConversionToHtml
                 }
                 else if (h2Match.Success)
                 {
-                    var newTitle = $"{h1}.{++h2} {h2Match.Groups[2].Value}";
+                    var newTitle = $"{h1}.{++h2}&nbsp;&nbsp;&nbsp;{h2Match.Groups[2].Value}";
                     titlesToReplace.Add(new Tuple<string, string>(h2Match.Groups[2].Value, newTitle));
 
                     lineClosure = line.Replace(h2Match.Value, $"<h2{h2Match.Groups[1].Value}>{newTitle}</h2>");
@@ -59,7 +59,7 @@ namespace Adliance.QmDoc.AfterConversionToHtml
                 }
                 else if (h3Match.Success)
                 {
-                    var newTitle = $"{h1}.{h2}.{++h3} {h3Match.Groups[2].Value}";
+                    var newTitle = $"{h1}.{h2}.{++h3}&nbsp;&nbsp;&nbsp;{h3Match.Groups[2].Value}";
                     titlesToReplace.Add(new Tuple<string, string>(h3Match.Groups[2].Value, newTitle));
 
                     lineClosure = line.Replace(h3Match.Value, $"<h3{h3Match.Groups[1].Value}>{newTitle}</h3>");
@@ -67,7 +67,7 @@ namespace Adliance.QmDoc.AfterConversionToHtml
                 }
                 else if (h4Match.Success)
                 {
-                    var newTitle = $"{h1}.{h2}.{h3}.{++h4} {h4Match.Groups[2].Value}";
+                    var newTitle = $"{h1}.{h2}.{h3}.{++h4}&nbsp;&nbsp;&nbsp;{h4Match.Groups[2].Value}";
                     titlesToReplace.Add(new Tuple<string, string>(h4Match.Groups[2].Value, newTitle));
 
                     lineClosure = line.Replace(h4Match.Value, $"<h4{h4Match.Groups[1].Value}>{newTitle}</h4>");
@@ -80,7 +80,7 @@ namespace Adliance.QmDoc.AfterConversionToHtml
 
             foreach (var title in titlesToReplace)
             {
-                result = Regex.Replace(result, $"(<a.*?)>{title.Item1}</a>", $"$1>{title.Item2}</a>");
+                result = Regex.Replace(result, $"(<a.*?)>{title.Item1}</a>", $"$1>{title.Item2.Replace("&nbsp;&nbsp;&nbsp;", " ")}</a>");
             }
 
             return new Result(result);
