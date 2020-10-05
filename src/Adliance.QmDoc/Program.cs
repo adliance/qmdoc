@@ -16,7 +16,7 @@ namespace Adliance.QmDoc
     {
         private static void Main(string[] args)
         {
-            var parserResult = Parser.Default.ParseArguments<RunParameters, SetThemeParameters>(args);
+            var parserResult = Parser.Default.ParseArguments<RunParameters, SetThemeParameters, UpdateParameters>(args);
             parserResult
                 .WithParsed<RunParameters>(p =>
                 {
@@ -35,6 +35,18 @@ namespace Adliance.QmDoc
                     try
                     {
                         SetTheme(p).GetAwaiter().GetResult();
+                        Exit(0);
+                    }
+                    catch (Exception ex)
+                    {
+                        Exit(-3, ex.Message);
+                    }
+                })
+                .WithParsed<UpdateParameters>(p =>
+                {
+                    try
+                    {
+                        new UpdateService().Run();
                         Exit(0);
                     }
                     catch (Exception ex)
