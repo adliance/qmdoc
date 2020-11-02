@@ -131,7 +131,7 @@ table, p, li {
   page-break-inside: avoid;
 }
 
-table, p, ul, ol, .mermaid, pre {
+table, p, ul, ol, pre {
   margin-bottom: $margin-base;
 
   + h1 {
@@ -154,7 +154,7 @@ table, p, ul, ol, .mermaid, pre {
     margin-top: $margin-base;
   }
 
-  + p, + ul, + ol, + table, + .mermaid, pre {
+  + p, + ul, + ol, + table, pre {
     margin-top: $margin-base * 2;
   }
 }
@@ -262,13 +262,6 @@ i.fad.fa-info-circle {
 
 i.fad.fa-exclamation-circle {
   background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 8C119 8 8 119.08 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 376a32 32 0 1 1 32-32 32 32 0 0 1-32 32zm38.24-238.41l-12.8 128A16 16 0 0 1 265.52 288h-19a16 16 0 0 1-15.92-14.41l-12.8-128A16 16 0 0 1 233.68 128h44.64a16 16 0 0 1 15.92 17.59z" fill="rgb(237, 70, 34)" fill-opacity="0.4"/><path fill="rgb(237, 70, 34)" d="M278.32 128h-44.64a16 16 0 0 0-15.92 17.59l12.8 128A16 16 0 0 0 246.48 288h19a16 16 0 0 0 15.92-14.41l12.8-128A16 16 0 0 0 278.32 128zM256 320a32 32 0 1 0 32 32 32 32 0 0 0-32-32z"/></svg>');
-}
-
-.mermaid, .mermaid svg {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  max-width: 100% !important;
 }
 
 .footnotes {
