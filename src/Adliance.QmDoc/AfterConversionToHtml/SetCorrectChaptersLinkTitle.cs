@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Adliance.QmDoc.Extensions;
 
 namespace Adliance.QmDoc.AfterConversionToHtml
 {
@@ -23,8 +24,8 @@ namespace Adliance.QmDoc.AfterConversionToHtml
                 
                 var id = m.Groups[1].Value;
                 var title = m.Groups[2].Value;
-
-                resultingHtml = Regex.Replace(resultingHtml, $"<a href=\"#{id}\">{id}</a>", $"<a href=\"#{id}\">{title}</a>");
+                
+                resultingHtml = Regex.Replace(resultingHtml, $"<a href=\"#{id}\">{id}</a>", $"<a href=\"#{id}\">{(title ?? "").RemoveMultipleNbsp().Trim()}</a>");
             }
 
             var result = new Result(resultingHtml);
