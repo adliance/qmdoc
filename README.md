@@ -50,3 +50,67 @@ You can also set the theme for a single conversion by using the `--theme` parame
 will convert all Markdown files in the current directory to PDF by using the "ScientificDX" theme.
 
 Each theme must consist of 5 different files (`index.html`, `footer.html`, `header.html`, `styles.scss`, `options.json`) that specify the behaviour and look and feel of the resulting PDF files. If no theme is specified, a simple default theme will be used.
+
+## Features
+### Automatic numbering of headlines
+
+```
+# Headline1
+## Headline2
+
+Output
+1 Headline1
+1.1 Headline2
+```
+
+
+
+### Reference to other markdown-file in the same directory
+
+Write in the main-document: 
+
+```
+[filename.md]
+```
+
+At the end of the document you can list all documents to wich you've created a reference:
+
+```
+{{LINKED_DOCUMENTS}}
+```
+
+### Link in the document
+
+```
+[#titel]
+```
+
+
+
+### Link to GIT commit history of the specific document
+
+Display commit-messages:
+
+```
+{{GIT_VERSIONS}}
+```
+
+
+### Alert/Warning/Question-blocks
+
+```
+{!} Your alertmessage
+{!!} Your warningmessage
+{?} Your question
+```
+
+### Date
+
+```
+{{DATE}}
+```
+
+### View errors
+
+Errors will be viewed in the command window.
+
