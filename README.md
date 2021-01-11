@@ -82,7 +82,7 @@ At the end of the document you can list all documents to wich you've created a r
 ### Link in the document
 
 ```
-[#titel]
+[#title]
 ```
 
 
