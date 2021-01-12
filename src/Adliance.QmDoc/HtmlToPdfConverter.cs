@@ -52,8 +52,8 @@ namespace Adliance.QmDoc
         }
     }
 
-    public class AdliancePdferSettings : IAdliancePdferSettings
+    public class AdliancePdferSettings : IPdferConfiguration
     {
-        public string PdfServerUrl => "https://adliance-pdf-on-linux.azurewebsites.net/html-to-pdf";
+        public string ServerUrl=> "https://adliance-pdf-on-linux.azurewebsites.net/html-to-pdf";
     }
 }
