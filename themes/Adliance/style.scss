@@ -290,7 +290,7 @@ sup {
 
 span.link-to-document, span.link-to-chapter {
   white-space: nowrap;
-  
+
   a {
     color: map_get($adliance-colors, "medium-blue") !important;
   }
@@ -314,4 +314,6 @@ span.link-to-chapter i {
   vertical-align: bottom;
 }
 
-
+span.git-version-details {
+  font-size:85%;
+}
