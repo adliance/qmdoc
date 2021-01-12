@@ -23,12 +23,9 @@ namespace Adliance.QmDoc.BeforeConversionToHtml
 
             if (Regex.IsMatch(markdown, pattern, RegexOptions.IgnoreCase))
             {
-                var changes = GitService.GetVersions(_sourceFilePath)
-                    .Where(x => !x.Message.StartsWith("Merge", StringComparison.OrdinalIgnoreCase))
-                    .Where(x => !_ignoreGitCommitsSince.HasValue || x.Date < _ignoreGitCommitsSince.Value)
-                    .ToList();
+                var changes = GitService.GetVersions(_sourceFilePath, _ignoreGitCommitsSince);
 
-                var replacement = "";
+                string replacement;
                 if (changes.Any())
                 {
                     replacement = "| Datum | Person | Version | Änderung" + Environment.NewLine + "|-|-|-|-|";

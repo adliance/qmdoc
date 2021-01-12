@@ -175,11 +175,11 @@ namespace Adliance.QmDoc
             try
             {
                 html = MarkdownToHtmlConverter.ConvertMarkdownToHtml(
-                    theme, 
-                    sourceFilePath, 
+                    theme,
+                    sourceFilePath,
                     title,
-                    parameters.DisableHeaderNumbering, 
-                    parameters.IgnoreGitCommitsSince, 
+                    parameters.DisableHeaderNumbering,
+                    parameters.IgnoreGitCommitsSince,
                     out var e);
                 errors.AddRange(e);
             }
@@ -217,7 +217,13 @@ namespace Adliance.QmDoc
                 try
                 {
                     var targetPdfPath = Path.Combine(targetDirectory, Path.GetFileName(sourceFilePath).Replace(".md", ".pdf"));
-                    await HtmlToPdfConverter.ConvertHtmlTPdf(theme, html, targetPdfPath, title);
+                    await HtmlToPdfConverter.ConvertHtmlTPdf(
+                        theme,
+                        html,
+                        sourceFilePath,
+                        targetPdfPath,
+                        title,
+                        parameters.IgnoreGitCommitsSince);
                 }
                 catch (Exception ex)
                 {

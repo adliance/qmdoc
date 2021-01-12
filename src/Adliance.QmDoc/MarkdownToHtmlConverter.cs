@@ -5,7 +5,6 @@ using System.IO;
 using Adliance.QmDoc.AfterConversionToHtml;
 using Adliance.QmDoc.BeforeConversionToHtml;
 using Adliance.QmDoc.Themes;
-using DatePlaceholder = Adliance.QmDoc.BeforeConversionToHtml.DatePlaceholder;
 using HeaderNumbering = Adliance.QmDoc.AfterConversionToHtml.HeaderNumbering;
 using TitlePlaceholder = Adliance.QmDoc.BeforeConversionToHtml.TitlePlaceholder;
 
@@ -32,7 +31,6 @@ namespace Adliance.QmDoc
             {
                 new TitlePlaceholder(title),
                 new GitVersionsPlaceholder(sourceFilePath, ignoreGitCommitsSince),
-                new DatePlaceholder(),
                 new LinkToChapters(),
                 new PageBreak(),
                 new ImagesMustNotContainSpaces(sourceFilePath),
@@ -65,7 +63,7 @@ namespace Adliance.QmDoc
                 new BodyPlaceholder(html), // should be the first step
                 new CssPlaceholder(theme),
                 new AfterConversionToHtml.TitlePlaceholder(title),
-                new AfterConversionToHtml.DatePlaceholder(),
+                new DatePlaceholder(),
                 new AuthorLine(),
                 new HeaderNumbering(!disableHeaderNumbering),
                 new IconBlocks(),

@@ -2,13 +2,19 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Adliance.QmDoc
 {
     public static class GitService
     {
+        public static Change? GetLatestVersion(string sourceFilePath, DateTime? ignoreGitCommitsSince)
+        {
+            var versions = GetVersions(sourceFilePath, ignoreGitCommitsSince);
+            return versions.FirstOrDefault();
+        }
 
-        public static IList<Change> GetVersions(string sourceFilePath)
+        public static IList<Change> GetVersions(string sourceFilePath, DateTime? ignoreGitCommitsSince)
         {
             var result = new List<Change>();
 
@@ -23,7 +29,7 @@ namespace Adliance.QmDoc
 
             using (var repo = new Repository(repoPath))
             {
-                var filter = new CommitFilter { SortBy = CommitSortStrategies.Topological | CommitSortStrategies.Time };
+                var filter = new CommitFilter {SortBy = CommitSortStrategies.Topological | CommitSortStrategies.Time};
 
                 foreach (var commit in repo.Commits.QueryBy(filter))
                 {
@@ -47,7 +53,12 @@ namespace Adliance.QmDoc
                 }
             }
 
-            return result;
+            result = result.ToList();
+            
+            return result.Where(x => !x.Message.StartsWith("Merge", StringComparison.OrdinalIgnoreCase))
+                .Where(x => !ignoreGitCommitsSince.HasValue || x.Date < ignoreGitCommitsSince.Value)
+                .OrderByDescending(x => x.Date)
+                .ToList();
         }
 
         public static string? GetRepoDirectory(string sourceDirectory)
@@ -80,6 +91,5 @@ namespace Adliance.QmDoc
             public string Message { get; set; } = "";
             public string MessageShort { get; set; } = "";
         }
-
     }
 }

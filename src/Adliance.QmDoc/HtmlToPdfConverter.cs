@@ -1,22 +1,25 @@
-﻿using Adliance.AspNetCore.Buddy.Pdf;
+﻿using System;
+using Adliance.AspNetCore.Buddy.Pdf;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Adliance.QmDoc.AfterConversionToHtml;
 using Adliance.QmDoc.Themes;
+using DatePlaceholder = Adliance.QmDoc.AfterConversionToHtml.DatePlaceholder;
+using TitlePlaceholder = Adliance.QmDoc.AfterConversionToHtml.TitlePlaceholder;
 
 namespace Adliance.QmDoc
 {
     public static class HtmlToPdfConverter
     {
-        public static async Task ConvertHtmlTPdf(string theme, string html, string targetFilePath, string title)
+        public static async Task ConvertHtmlTPdf(string theme, string html, string sourceFilePath, string targetFilePath, string title, DateTime? ignoreGitCommitsSince)
         {
             var settings = ThemeProvider.GetOptions(theme);
 
             var pdfOptions = new PdfOptions
             {
-                FooterHtml = ReplacePlaceholders(theme, title, ThemeProvider.GetFooter(theme)),
-                HeaderHtml = ReplacePlaceholders(theme, title, ThemeProvider.GetHeader(theme)),
+                FooterHtml = ReplacePlaceholders(theme, ThemeProvider.GetFooter(theme), sourceFilePath, title, ignoreGitCommitsSince),
+                HeaderHtml = ReplacePlaceholders(theme, ThemeProvider.GetHeader(theme), sourceFilePath, title, ignoreGitCommitsSince),
                 MarginBottom = settings.Pdf.MarginBottom,
                 MarginTop = settings.Pdf.MarginTop,
                 MarginLeft = settings.Pdf.MarginLeft,
@@ -30,13 +33,16 @@ namespace Adliance.QmDoc
             await File.WriteAllBytesAsync(targetFilePath, pdf);
         }
 
-        private static string ReplacePlaceholders(string theme, string title, string html)
+        private static string ReplacePlaceholders(string theme, string html, string sourceFilePath, string title, DateTime? ignoreGitCommitsSince)
         {
             IAfterConversionToHtmlStep[] steps =
             {
                 new TitlePlaceholder(title),
                 new DatePlaceholder(),
-                new CssPlaceholder(theme)
+                new CssPlaceholder(theme),
+                new GitVersionPlaceholder(sourceFilePath, ignoreGitCommitsSince),
+                new GitDatePlaceholder(sourceFilePath, ignoreGitCommitsSince),
+                new GitDateAndVersionPlaceholder(sourceFilePath, ignoreGitCommitsSince)
             };
 
             var errors = new List<ProcessorError>();
@@ -54,6 +60,6 @@ namespace Adliance.QmDoc
 
     public class AdliancePdferSettings : IPdferConfiguration
     {
-        public string ServerUrl=> "https://adliance-pdf-on-linux.azurewebsites.net/html-to-pdf";
+        public string ServerUrl => "https://adliance-pdf-on-linux.azurewebsites.net/html-to-pdf";
     }
 }
