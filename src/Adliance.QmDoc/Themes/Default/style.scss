@@ -131,7 +131,7 @@ table, p, li {
   page-break-inside: avoid;
 }
 
-table, p, ul, ol, pre {
+table, p, ul, ol, {
   margin-bottom: $margin-base;
 
   + h1 {
@@ -286,4 +286,34 @@ sup {
   position: relative;
   top: -0.4em;
   font-size: 75%;
+}
+
+span.link-to-document, span.link-to-chapter {
+  white-space: nowrap;
+
+  a {
+    color: map_get($adliance-colors, "medium-blue") !important;
+  }
+}
+
+span.link-to-document i {
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="rgb(19, 64, 148)" fill-opacity="0.4" d="M256 0H24A23.94 23.94 0 0 0 0 23.88V488a23.94 23.94 0 0 0 23.88 24H360a23.94 23.94 0 0 0 24-23.88V128H272a16 16 0 0 1-16-16z"/><path fill="rgb(19, 64, 148)" d="M384 121.9v6.1H272a16 16 0 0 1-16-16V0h6.1a24 24 0 0 1 17 7l97.9 98a23.9 23.9 0 0 1 7 16.9z" /></svg>');
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  margin-bottom: 4px;
+  vertical-align: bottom;
+}
+
+
+span.link-to-chapter i {
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M384 232c0 21.44-25.94 32-41 17l-32-32-195.48 195.48a12 12 0 0 1-17 0l-31-31a12 12 0 0 1 0-17L263 169l-32-32c-15.11-15.11-4.34-41 17-41h112a24 24 0 0 1 24 24z" fill-opacity="0.4" /></svg>');  display: inline-block;
+  width: 18px;
+  height: 18px;
+  margin-bottom: 4px;
+  vertical-align: bottom;
+}
+
+span.git-version-details {
+  font-size:85%;
 }

@@ -27,7 +27,7 @@ namespace Adliance.QmDoc.BeforeConversionToHtml
                     .Where(x => !x.Message.StartsWith("Merge", StringComparison.OrdinalIgnoreCase))
                     .Where(x => !_ignoreGitCommitsSince.HasValue || x.Date < _ignoreGitCommitsSince.Value)
                     .ToList();
-                
+
                 var replacement = "";
                 if (changes.Any())
                 {
@@ -35,7 +35,10 @@ namespace Adliance.QmDoc.BeforeConversionToHtml
 
                     foreach (var change in changes)
                     {
-                        replacement += Environment.NewLine + $"| {change.Date.ToString("dd. MM. yyyy", new CultureInfo("de-DE")).Replace(" ", "&nbsp;")} | {change.Author.Replace(" ", "&nbsp;")} | {change.ShaShort} | {change.MessageShort}";
+                        replacement += Environment.NewLine + $"| {change.Date.ToString("dd. MM. yyyy", new CultureInfo("de-DE")).Replace(" ", "&nbsp;")} |" +
+                                       $" {change.Author.Replace(" ", "&nbsp;")} |" +
+                                       $" {change.ShaShort} |" +
+                                       $" {change.MessageShort} {(string.IsNullOrWhiteSpace(change.Message) ? "" : $"<span class=\"git-version-details\"><br />{change.Message.Substring(change.MessageShort.Length).Replace("\r", "").Replace("\n", "").Trim()}")}</span>";
                     }
                 }
                 else
