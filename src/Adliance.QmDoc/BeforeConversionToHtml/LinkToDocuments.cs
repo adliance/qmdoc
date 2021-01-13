@@ -33,12 +33,12 @@ namespace Adliance.QmDoc.BeforeConversionToHtml
 
             foreach (Match? m in matches)
             {
-                if (m==null) continue;
-                
+                if (m == null) continue;
+
                 var code = m.Groups[1].Value;
 
                 var allFiles = Directory.GetFiles(Path.GetDirectoryName(_filePath), "*.md").ToList();
-                var fileName = allFiles.Select(Path.GetFileNameWithoutExtension).FirstOrDefault(x => x!=null && x.StartsWith(code + " ", true, CultureInfo.InvariantCulture));
+                var fileName = allFiles.Select(Path.GetFileNameWithoutExtension).FirstOrDefault(x => x != null && x.StartsWith(code + " ", true, CultureInfo.InvariantCulture));
                 if (fileName == null)
                 {
                     result.Errors.Add(new ProcessorError(_filePath, $"Unable to find a document \"{code}\", but there's a reference to it."));
@@ -62,9 +62,10 @@ namespace Adliance.QmDoc.BeforeConversionToHtml
             foreach (Match? m in matches)
             {
                 if (m == null) continue;
-                
-                var linkedFileName = m.Groups[1].Value;
 
+                var linkedFileName = m.Groups[1].Value;
+                if (linkedFileName.Contains("@")) continue;
+                
                 var allFiles = Directory.GetFiles(Path.GetDirectoryName(_filePath), "*.*", SearchOption.AllDirectories).ToList();
                 var matchingFile = allFiles.FirstOrDefault(x => x.EndsWith(linkedFileName.Replace("%20", " ").Replace('/', Path.DirectorySeparatorChar), StringComparison.OrdinalIgnoreCase));
                 if (matchingFile == null)

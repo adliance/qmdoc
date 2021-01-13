@@ -28,13 +28,17 @@ namespace Adliance.QmDoc.BeforeConversionToHtml
 
             var result = chapterName.Trim();
             result = result.Replace(" ", "-");
+            result = result.Replace(",", "");
             result = result.ToLower();
             result = result.Replace("ä", "a");
             result = result.Replace("ö", "o");
             result = result.Replace("ü", "u");
             result = result.Replace("\"", "");
             result = result.Replace("%22", "");
-
+            result = result.Replace("ß", "");
+            result = result.Replace("---", "-");
+            result = result.Replace("--", "-");
+            
             return result;
         }
     }
