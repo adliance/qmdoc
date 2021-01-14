@@ -64,11 +64,11 @@ namespace Adliance.QmDoc.BeforeConversionToHtml
                 if (m == null) continue;
 
                 var linkedFileName = m.Groups[1].Value;
+                linkedFileName = linkedFileName.Replace("%20", " ");
                 if (linkedFileName.Contains("@")) continue;
-                
-                var allFiles = Directory.GetFiles(Path.GetDirectoryName(_filePath), "*.*", SearchOption.AllDirectories).ToList();
-                var matchingFile = allFiles.FirstOrDefault(x => x.EndsWith(linkedFileName.Replace("%20", " ").Replace('/', Path.DirectorySeparatorChar), StringComparison.OrdinalIgnoreCase));
-                if (matchingFile == null)
+
+                var matchingFile = new FileInfo(Path.Combine(Path.GetDirectoryName(_filePath)!, linkedFileName));
+                if (!matchingFile.Exists)
                 {
                     result.Errors.Add(new ProcessorError(_filePath, $"Unable to find a document \"{linkedFileName}\", but there's a reference to it."));
                 }
