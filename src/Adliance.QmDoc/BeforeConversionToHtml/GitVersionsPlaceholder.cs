@@ -33,9 +33,8 @@ namespace Adliance.QmDoc.BeforeConversionToHtml
                     for (var i = 0; i < changes.Count; i++)
                     {
                         var change = changes[i];
-
                         // if we have the same message multiple times in a row, just use the latest commit
-                        if (changes.Count > i + 1 && (changes[i + 1].Message ?? "").Equals(change.Message, StringComparison.OrdinalIgnoreCase))
+                        if (i > 0 && (changes[i - 1].Message ?? "").Equals(change.Message, StringComparison.OrdinalIgnoreCase))
                         {
                             continue;
                         }
