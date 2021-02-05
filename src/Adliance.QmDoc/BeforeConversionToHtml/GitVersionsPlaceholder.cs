@@ -23,15 +23,23 @@ namespace Adliance.QmDoc.BeforeConversionToHtml
 
             if (Regex.IsMatch(markdown, pattern, RegexOptions.IgnoreCase))
             {
-                var changes = GitService.GetVersions(_sourceFilePath, _ignoreGitCommitsSince);
+                var changes = GitService.GetVersions(_sourceFilePath, _ignoreGitCommitsSince).ToList();
 
                 string replacement;
                 if (changes.Any())
                 {
                     replacement = "| Datum | Person | Version | Änderung" + Environment.NewLine + "|-|-|-|-|";
 
-                    foreach (var change in changes)
+                    for (var i = 0; i < changes.Count; i++)
                     {
+                        var change = changes[i];
+
+                        // if we have the same message multiple times in a row, just use the latest commit
+                        if (changes.Count > i + 1 && (changes[i + 1].Message ?? "").Equals(change.Message, StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+
                         replacement += Environment.NewLine + $"| {change.Date.ToString("dd. MM. yyyy", new CultureInfo("de-DE")).Replace(" ", "&nbsp;")} |" +
                                        $" {change.Author.Replace(" ", "&nbsp;")} |" +
                                        $" {change.ShaShort} |" +
