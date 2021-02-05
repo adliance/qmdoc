@@ -150,7 +150,7 @@ namespace Adliance.QmDoc
             var targetDirectory = parameters.Target;
             if (targetDirectory.Equals("./"))
             {
-                targetDirectory = Path.GetDirectoryName(sourceFilePath) ?? "";
+                targetDirectory = Path.GetDirectoryName(baseDirectory) ?? "";
             }
 
             if (!Directory.Exists(targetDirectory))
@@ -226,6 +226,12 @@ namespace Adliance.QmDoc
                 {
                     var relativeTargetPdfPath = Path.GetRelativePath(baseDirectory, sourceFilePath).Replace(".md", ".pdf");
                     var targetPdfPath = Path.Combine(targetDirectory, relativeTargetPdfPath);
+                    var targetPdfDirectory = Path.GetDirectoryName(targetPdfPath);
+                    if (!Directory.Exists(targetPdfDirectory))
+                    {
+                        Directory.CreateDirectory(targetPdfDirectory);
+                    }
+                    
                     await HtmlToPdfConverter.ConvertHtmlTPdf(
                         theme,
                         html,
