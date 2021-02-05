@@ -12,7 +12,7 @@ namespace Adliance.QmDoc
 {
     public static class HtmlToPdfConverter
     {
-        public static async Task ConvertHtmlTPdf(string theme, string html, string sourceFilePath, string targetFilePath, string title, DateTime? ignoreGitCommitsSince)
+        public static async Task ConvertHtmlTPdf(string theme, string html, string baseDirectory, string sourceFilePath, string targetFilePath, string title, DateTime? ignoreGitCommitsSince)
         {
             var settings = ThemeProvider.GetOptions(theme);
 

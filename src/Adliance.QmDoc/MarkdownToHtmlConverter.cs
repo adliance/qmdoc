@@ -14,6 +14,7 @@ namespace Adliance.QmDoc
     {
         public static string ConvertMarkdownToHtml(
             string theme,
+            string baseDirectory,
             string sourceFilePath,
             string title,
             bool disableHeaderNumbering,
@@ -34,7 +35,7 @@ namespace Adliance.QmDoc
                 new LinkToChapters(),
                 new PageBreak(),
                 new ImagesMustNotContainSpaces(sourceFilePath),
-                new LinkToDocuments(sourceFilePath),
+                new LinkToDocuments(baseDirectory, sourceFilePath),
                 new LinkedDocumentsPlaceholder(sourceFilePath) // add after the "LinkToDocuments" step, because that one fills the context with the linked documents 
             };
 

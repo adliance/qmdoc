@@ -8,10 +8,12 @@ namespace Adliance.QmDoc.BeforeConversionToHtml
 {
     public class LinkToDocuments : IBeforeConversionToHtmlStep
     {
+        private readonly string _baseDirectory;
         private readonly string _filePath;
 
-        public LinkToDocuments(string filePath)
+        public LinkToDocuments(string baseDirectory, string filePath)
         {
+            _baseDirectory = baseDirectory;
             _filePath = filePath;
         }
 
@@ -19,8 +21,8 @@ namespace Adliance.QmDoc.BeforeConversionToHtml
         {
             var result = new Result(markdown, context);
 
-            var resultingMarkdown = ReplaceDocumentsByCode(result, markdown, context);
-            resultingMarkdown = ReplaceDocumentsByFileExtension(result, resultingMarkdown, context);
+            var resultingMarkdown = ReplaceDocumentsByFileExtension(result, markdown, context);
+            resultingMarkdown = ReplaceDocumentsByCode(result, resultingMarkdown, context);
 
             result.ResultingMarkdown = resultingMarkdown;
             return result;
@@ -37,15 +39,17 @@ namespace Adliance.QmDoc.BeforeConversionToHtml
 
                 var code = m.Groups[1].Value;
 
-                var allFiles = Directory.GetFiles(Path.GetDirectoryName(_filePath), "*.md").ToList();
-                var fileName = allFiles.Select(Path.GetFileNameWithoutExtension).FirstOrDefault(x => x != null && x.StartsWith(code + " ", true, CultureInfo.InvariantCulture));
-                if (fileName == null)
+                var allFiles = Directory.GetFiles(Path.GetDirectoryName(_baseDirectory), "*.md", SearchOption.AllDirectories).ToList();
+                var linkedFilePath = allFiles.FirstOrDefault(x => x != null && Path.GetFileName(x).StartsWith(code + " ", true, CultureInfo.InvariantCulture));
+                if (linkedFilePath == null)
                 {
-                    result.Errors.Add(new ProcessorError(_filePath, $"Unable to find a document \"{code}\", but there's a reference to it."));
+                    result.Errors.Add(new ProcessorError(_filePath, $"Unable to find a document \"{code}\", but there's a referenced document number to it."));
                 }
                 else
                 {
-                    var linkedDocument = new LinkedDocument(fileName.Replace(" ", "%20") + ".html", fileName);
+                    var relativeFilePath = Path.GetRelativePath(Path.GetDirectoryName(_filePath)!, linkedFilePath).Replace("\\", "/");
+                    var targetFilePath = relativeFilePath.Replace(" ", "%20").Replace(".md", ".html");
+                    var linkedDocument = new LinkedDocument(targetFilePath, Path.GetFileNameWithoutExtension(relativeFilePath));
                     context.LinkedDocuments.Add(linkedDocument);
                     resultingMarkdown = resultingMarkdown.Replace($"[{code}]", $"<span class=\"link-to-document\"><i></i>[{linkedDocument.NiceName}]({linkedDocument.FileName})</span>");
                 }

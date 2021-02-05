@@ -92,15 +92,15 @@ namespace Adliance.QmDoc
 
             if (File.Exists(parameters.Source))
             {
-                await Convert(parameters.Source, options, parameters);
+                await Convert(new FileInfo(parameters.Source).DirectoryName!, parameters.Source, options, parameters);
             }
             else if (Directory.Exists(parameters.Source))
             {
-                foreach (var file in Directory.GetFiles(parameters.Source, "*.md").OrderBy(x => x))
+                foreach (var file in Directory.GetFiles(parameters.Source, "*.md", SearchOption.AllDirectories).OrderBy(x => x))
                 {
                     try
                     {
-                        await Convert(file, options, parameters);
+                        await Convert(new DirectoryInfo(parameters.Source).FullName!, file, options, parameters);
                     }
                     catch (Exception ex)
                     {
@@ -131,7 +131,7 @@ namespace Adliance.QmDoc
             AppOptionsProvider.StoreOptions(options);
         }
 
-        private static async Task Convert(string sourceFilePath, AppOptions options, RunParameters parameters)
+        private static async Task Convert(string baseDirectory, string sourceFilePath, AppOptions options, RunParameters parameters)
         {
             var theme = !string.IsNullOrWhiteSpace(parameters.Theme) ? parameters.Theme : options.Theme;
 
@@ -176,6 +176,7 @@ namespace Adliance.QmDoc
             {
                 html = MarkdownToHtmlConverter.ConvertMarkdownToHtml(
                     theme,
+                    baseDirectory,
                     sourceFilePath,
                     title,
                     parameters.DisableHeaderNumbering,
@@ -192,7 +193,14 @@ namespace Adliance.QmDoc
             {
                 try
                 {
-                    var targetHtmlPath = Path.Combine(targetDirectory, Path.GetFileName(sourceFilePath).Replace(".md", ".html"));
+                    var relativeTargetHtmlPath = Path.GetRelativePath(baseDirectory, sourceFilePath).Replace(".md", ".html");
+                    var targetHtmlPath = Path.Combine(targetDirectory, relativeTargetHtmlPath);
+                    var targetHtmlDirectory = Path.GetDirectoryName(targetHtmlPath);
+                    if (!Directory.Exists(targetHtmlDirectory))
+                    {
+                        Directory.CreateDirectory(targetHtmlDirectory);
+                    }
+
                     await File.WriteAllTextAsync(targetHtmlPath, html);
                 }
                 catch (Exception ex)
@@ -216,10 +224,12 @@ namespace Adliance.QmDoc
             {
                 try
                 {
-                    var targetPdfPath = Path.Combine(targetDirectory, Path.GetFileName(sourceFilePath).Replace(".md", ".pdf"));
+                    var relativeTargetPdfPath = Path.GetRelativePath(baseDirectory, sourceFilePath).Replace(".md", ".pdf");
+                    var targetPdfPath = Path.Combine(targetDirectory, relativeTargetPdfPath);
                     await HtmlToPdfConverter.ConvertHtmlTPdf(
                         theme,
                         html,
+                        baseDirectory,
                         sourceFilePath,
                         targetPdfPath,
                         title,
