@@ -33,11 +33,11 @@ namespace Adliance.QmDoc
 
                 foreach (var commit in repo.Commits.QueryBy(filter))
                 {
-                    foreach (var parent in commit.Parents)
+                    foreach (var parent in commit.Parents.Take(1))
                     {
                         foreach (var change in repo.Diff.Compare<TreeChanges>(parent.Tree, commit.Tree))
                         {
-                            if (change.Path.Replace('/', Path.DirectorySeparatorChar).Equals(relativeFilePath))
+                            if (change.Path.Replace('/', Path.DirectorySeparatorChar).Equals(relativeFilePath, StringComparison.OrdinalIgnoreCase))
                             {
                                 result.Add(new Change
                                 {
