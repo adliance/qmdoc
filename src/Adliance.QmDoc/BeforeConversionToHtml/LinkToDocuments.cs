@@ -39,8 +39,8 @@ namespace Adliance.QmDoc.BeforeConversionToHtml
 
                 var code = m.Groups[1].Value;
 
-                var allFiles = Directory.GetFiles(Path.GetDirectoryName(_baseDirectory), "*.md", SearchOption.AllDirectories).ToList();
-                var linkedFilePath = allFiles.FirstOrDefault(x => x != null && Path.GetFileName(x).StartsWith(code + " ", true, CultureInfo.InvariantCulture));
+                var allFiles = Directory.GetFiles(Path.GetDirectoryName(_baseDirectory) ?? "", "*.md", SearchOption.AllDirectories).ToList();
+                var linkedFilePath = allFiles.FirstOrDefault(x => Path.GetFileName(x).StartsWith(code + " ", true, CultureInfo.InvariantCulture));
                 if (linkedFilePath == null)
                 {
                     result.Errors.Add(new ProcessorError(_filePath, $"Unable to find a document \"{code}\", but there's a referenced document number to it."));

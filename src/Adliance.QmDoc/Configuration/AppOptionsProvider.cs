@@ -21,7 +21,7 @@ namespace Adliance.QmDoc.Configuration
         {
             if (File.Exists(AppOptionsFilePath))
             {
-                return JsonSerializer.Deserialize<AppOptions>(File.ReadAllText(AppOptionsFilePath));
+                return JsonSerializer.Deserialize<AppOptions>(File.ReadAllText(AppOptionsFilePath)) ?? new AppOptions();
             }
 
             return new AppOptions();

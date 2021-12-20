@@ -31,7 +31,7 @@ namespace Adliance.QmDoc.Themes
             var json = GetContent(theme, "options.json") ?? GetEmbeddedContent("options.json");
             if (!string.IsNullOrWhiteSpace(json))
             {
-                return JsonSerializer.Deserialize<ThemeOptions>(json);
+                return JsonSerializer.Deserialize<ThemeOptions>(json) ?? new ThemeOptions();
             }
 
             return new ThemeOptions();

@@ -3,6 +3,7 @@ using Adliance.AspNetCore.Buddy.Pdf;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Adliance.AspNetCore.Buddy.Pdf.V1;
 using Adliance.QmDoc.AfterConversionToHtml;
 using Adliance.QmDoc.Themes;
 using DatePlaceholder = Adliance.QmDoc.AfterConversionToHtml.DatePlaceholder;

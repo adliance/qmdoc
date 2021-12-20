@@ -198,7 +198,7 @@ namespace Adliance.QmDoc
                     var targetHtmlDirectory = Path.GetDirectoryName(targetHtmlPath);
                     if (!Directory.Exists(targetHtmlDirectory))
                     {
-                        Directory.CreateDirectory(targetHtmlDirectory);
+                        Directory.CreateDirectory(targetHtmlDirectory!);
                     }
 
                     await File.WriteAllTextAsync(targetHtmlPath, html);
@@ -229,7 +229,7 @@ namespace Adliance.QmDoc
                     var targetPdfDirectory = Path.GetDirectoryName(targetPdfPath);
                     if (!Directory.Exists(targetPdfDirectory))
                     {
-                        Directory.CreateDirectory(targetPdfDirectory);
+                        Directory.CreateDirectory(targetPdfDirectory!);
                     }
                     
                     await HtmlToPdfConverter.ConvertHtmlTPdf(

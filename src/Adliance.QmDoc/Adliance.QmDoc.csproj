@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <LangVersion>Latest</LangVersion>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>qmdoc</ToolCommandName>
@@ -21,10 +21,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Adliance.AspNetCore.Buddy.Pdf" Version="5.1.2" />
+    <PackageReference Include="Adliance.AspNetCore.Buddy.Pdf" Version="5.4.10" />
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
     <PackageReference Include="LibGit2Sharp" Version="0.26.2" />
-    <PackageReference Include="Markdig" Version="0.22.1" />
+    <PackageReference Include="Markdig" Version="0.26.0" />
     <PackageReference Include="SharpScss" Version="2.0.0" />
   </ItemGroup>
   
