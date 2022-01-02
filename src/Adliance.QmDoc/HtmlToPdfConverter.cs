@@ -61,6 +61,6 @@ namespace Adliance.QmDoc
 
     public class AdliancePdferSettings : IPdferConfiguration
     {
-        public string ServerUrl => "https://adliance-pdf-on-linux.azurewebsites.net/html-to-pdf";
+        public string ServerUrl => "https://pdf1.adliance.dev";
     }
 }

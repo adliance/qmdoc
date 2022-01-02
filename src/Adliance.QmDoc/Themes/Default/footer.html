@@ -30,23 +30,26 @@
 </head>
 <body>
 
+
+
 <div class="right">
     <span id="page"></span> | <span id="topage"></span>
+
+    <script>
+        var vars = {};
+        var x = window.location.search.substring(1).split("&");
+        for (var i in x) {
+            var z = x[i].split("=", 2);
+            vars[z[0]] = unescape(z[1]);
+        }
+        document.getElementById("page").innerHTML = vars["page"];
+        document.getElementById("topage").innerHTML = vars["topage"];
+    </script>
 </div>
 
 <div class="left">
     {{TITLE}}
 </div>
 
-<script>
-    const vars = {};
-    const x = window.location.search.substring(1).split('&');
-    for (let i in x) {
-        let z = x[i].split('=', 2);
-        vars[z[0]] = unescape(z[1]);
-    }
-    document.getElementById('page').innerHTML = vars["page"];
-    document.getElementById('topage').innerHTML = vars["topage"];
-</script>
 </body>
 </html>
