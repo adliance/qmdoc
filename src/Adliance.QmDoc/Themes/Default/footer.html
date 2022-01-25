@@ -42,8 +42,8 @@
             var z = x[i].split("=", 2);
             vars[z[0]] = unescape(z[1]);
         }
-        document.getElementById("page").innerHTML = vars["page"];
-        document.getElementById("topage").innerHTML = vars["topage"];
+        document.getElementById("page").innerHTML = vars.page;
+        document.getElementById("topage").innerHTML = vars.topage;
     </script>
 </div>
 
