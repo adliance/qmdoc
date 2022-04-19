@@ -181,6 +181,7 @@ namespace Adliance.QmDoc
                     title,
                     parameters.DisableHeaderNumbering,
                     parameters.IgnoreGitCommitsSince,
+                    parameters.PlaceholdersFile ?? "",
                     out var e);
                 errors.AddRange(e);
             }

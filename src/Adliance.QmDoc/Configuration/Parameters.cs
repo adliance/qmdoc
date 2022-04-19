@@ -24,6 +24,7 @@ namespace Adliance.QmDoc.Configuration
         [Option("theme", Required = false, Default = "", HelpText = "The name of the theme that should be used.")] public string Theme { get; set; } = "";
 
         [Option("ignore-git-commits-since", Required = false, Default = null, HelpText = "The name of the theme that should be used.")] public DateTime? IgnoreGitCommitsSince { get; set; } = null;
+        [Option("placeholders", Required = false, Default = "placeholders.json", HelpText = "Path to an optional JSON file that contains placeholders to be merged into the resulting document.")] public string? PlaceholdersFile { get; set; } = null;
     }
 
     [Verb("set-theme", HelpText = "Sets the theme that will be used for all conversions.")]

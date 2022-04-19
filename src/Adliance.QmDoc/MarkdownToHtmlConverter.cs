@@ -19,6 +19,7 @@ namespace Adliance.QmDoc
             string title,
             bool disableHeaderNumbering,
             DateTime? ignoreGitCommitsSince,
+            string configurableParametersFileName,
             out List<ProcessorError> errors)
         {
             if (!File.Exists(sourceFilePath))
@@ -52,10 +53,10 @@ namespace Adliance.QmDoc
             var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
             var html = Markdown.ToHtml(markdown, pipeline);
 
-            return WrapInHtmlDocument(theme, sourceFilePath, html, title, disableHeaderNumbering, ref errors);
+            return WrapInHtmlDocument(theme, sourceFilePath, html, title, disableHeaderNumbering, configurableParametersFileName, ref errors);
         }
 
-        private static string WrapInHtmlDocument(string theme, string sourceFilePath, string html, string title, bool disableHeaderNumbering, ref List<ProcessorError> errors)
+        private static string WrapInHtmlDocument(string theme, string sourceFilePath, string html, string title, bool disableHeaderNumbering, string configurableParametersFileName, ref List<ProcessorError> errors)
         {
             var layout = ThemeProvider.GetContent(theme);
 
@@ -70,7 +71,8 @@ namespace Adliance.QmDoc
                 new IconBlocks(),
                 new IconLists(),
                 new SetCorrectChaptersLinkTitle(sourceFilePath),
-                new EmbedImages(sourceFilePath)
+                new EmbedImages(sourceFilePath),
+                new ConfigurablePlaceholders(sourceFilePath, configurableParametersFileName)
             };
 
             var result = layout;
