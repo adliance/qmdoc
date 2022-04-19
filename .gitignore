@@ -6,3 +6,4 @@ obj
 .idea
 test/*.html
 test/*.pdf
+.DS_Store

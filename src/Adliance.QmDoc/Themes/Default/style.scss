@@ -11,7 +11,7 @@
         "green-blue": linear-gradient(165deg, #134094, #10a8e5, #00c7c7, #8cb918),
         "orange-red": linear-gradient(165deg, #f47d09, #ed4622, #e5007d)
 );
-$font-size: 16px;
+$font-size: 20px;
 $margin-base: .5em;
 
 * {
@@ -28,9 +28,6 @@ body {
   font-size: $font-size;
   color: map_get($adliance-colors, "dark-blue");
   line-height: 1.5em;
-  max-width: 1000px;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 code, pre {
@@ -105,18 +102,18 @@ h1, h2, h3, h4, h5 {
 }
 
 h1 {
-  margin-bottom: $margin-base * 3;
-  font-size: $font-size * 2;
+  margin-bottom: $margin-base * 2;
+  font-size: $font-size * 1.5;
   line-height: $font-size * 2.2;
 }
 
 h2 {
-  margin-bottom: $margin-base * 2;
-  font-size: $font-size * 1.5;
+  margin-bottom: $margin-base * 1.5;
+  font-size: $font-size * 1.3;
 }
 
 h3 {
-  font-size: $font-size * 1.25;
+  font-size: $font-size * 1.15;
 }
 
 h4, h5, h6 {

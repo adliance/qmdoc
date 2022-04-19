@@ -1,9 +1,8 @@
 ﻿using System;
-using Adliance.AspNetCore.Buddy.Pdf;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Adliance.AspNetCore.Buddy.Pdf.V1;
+using Adliance.AspNetCore.Buddy.Pdf.V2;
 using Adliance.QmDoc.AfterConversionToHtml;
 using Adliance.QmDoc.Themes;
 using DatePlaceholder = Adliance.QmDoc.AfterConversionToHtml.DatePlaceholder;
@@ -21,12 +20,8 @@ namespace Adliance.QmDoc
             {
                 FooterHtml = ReplacePlaceholders(theme, ThemeProvider.GetFooter(theme), sourceFilePath, title, ignoreGitCommitsSince),
                 HeaderHtml = ReplacePlaceholders(theme, ThemeProvider.GetHeader(theme), sourceFilePath, title, ignoreGitCommitsSince),
-                MarginBottom = settings.Pdf.MarginBottom,
-                MarginTop = settings.Pdf.MarginTop,
-                MarginLeft = settings.Pdf.MarginLeft,
-                MarginRight = settings.Pdf.MarginRight,
-                HeaderSpacing = settings.Pdf.HeaderSpacing,
-                FooterSpacing = settings.Pdf.FooterSpacing
+                FooterHeight = settings.Pdf.FooterHeight,
+                HeaderHeight = settings.Pdf.HeaderHeight
             };
 
             var pdfer = new AdliancePdfer(new AdliancePdferSettings());
@@ -61,6 +56,6 @@ namespace Adliance.QmDoc
 
     public class AdliancePdferSettings : IPdferConfiguration
     {
-        public string ServerUrl => "https://pdf1.adliance.dev";
+        public string ServerUrl => "https://pdf2.adliance.dev";
     }
 }

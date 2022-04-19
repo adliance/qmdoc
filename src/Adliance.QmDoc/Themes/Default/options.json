@@ -1,10 +1,6 @@
 ﻿{
   "pdf": {
-    "margin_left": 0,
-    "margin_right": 0,
-    "margin_bottom": 25,
-    "margin_top": 25,
-    "header_spacing": 22,
-    "footer_spacing": 10
+    "header_height": 100,
+    "footer_height": 50
   }
 }
