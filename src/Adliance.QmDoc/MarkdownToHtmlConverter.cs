@@ -19,6 +19,8 @@ namespace Adliance.QmDoc
             string title,
             bool disableHeaderNumbering,
             DateTime? ignoreGitCommitsSince,
+            IList<string> ignoreCommits,
+            IList<string> ignoreCommitsWithout,
             string configurableParametersFileName,
             out List<ProcessorError> errors)
         {
@@ -32,7 +34,7 @@ namespace Adliance.QmDoc
             IBeforeConversionToHtmlStep[] steps =
             {
                 new TitlePlaceholder(title),
-                new GitVersionsPlaceholder(sourceFilePath, ignoreGitCommitsSince),
+                new GitVersionsPlaceholder(sourceFilePath, ignoreGitCommitsSince, ignoreCommits, ignoreCommitsWithout),
                 new LinkToChapters(),
                 new PageBreak(),
                 new ImagesMustNotContainSpaces(sourceFilePath),

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Adliance.QmDoc.BeforeConversionToPdf;
 using Adliance.QmDoc.Configuration;
+using Adliance.QmDoc.Extensions;
 using Adliance.QmDoc.Themes;
 
 namespace Adliance.QmDoc
@@ -158,7 +159,6 @@ namespace Adliance.QmDoc
                 Directory.CreateDirectory(targetDirectory);
             }
 
-
             var title = string.IsNullOrEmpty(parameters.Title) ? Path.GetFileNameWithoutExtension(sourceFilePath) : parameters.Title;
 
             if (string.IsNullOrWhiteSpace(theme))
@@ -181,6 +181,8 @@ namespace Adliance.QmDoc
                     title,
                     parameters.DisableHeaderNumbering,
                     parameters.IgnoreGitCommitsSince,
+                    parameters.IgnoreGitCommits.SplitCleanOrder(),
+                    parameters.IgnoreGitCommitsWithout.SplitCleanOrder(),
                     parameters.PlaceholdersFile ?? "",
                     out var e);
                 errors.AddRange(e);
@@ -232,7 +234,7 @@ namespace Adliance.QmDoc
                     {
                         Directory.CreateDirectory(targetPdfDirectory!);
                     }
-                    
+
                     await HtmlToPdfConverter.ConvertHtmlTPdf(
                         theme,
                         html,
@@ -240,7 +242,9 @@ namespace Adliance.QmDoc
                         sourceFilePath,
                         targetPdfPath,
                         title,
-                        parameters.IgnoreGitCommitsSince);
+                        parameters.IgnoreGitCommitsSince,
+                        parameters.IgnoreGitCommits.SplitCleanOrder(),
+                        parameters.IgnoreGitCommitsWithout.SplitCleanOrder());
                 }
                 catch (Exception ex)
                 {

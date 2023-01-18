@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Adliance.QmDoc.BeforeConversionToHtml;
 
 namespace Adliance.QmDoc.AfterConversionToHtml
 {
@@ -9,16 +9,20 @@ namespace Adliance.QmDoc.AfterConversionToHtml
     {
         private readonly string _sourceFilePath;
         private readonly DateTime? _ignoreGitCommitsSince;
+        private readonly IList<string> _ignoreCommits;
+        private readonly IList<string> _ignoreCommitsWithout;
 
-        public GitDatePlaceholder(string sourceFilePath, DateTime? ignoreGitCommitsSince)
+        public GitDatePlaceholder(string sourceFilePath, DateTime? ignoreGitCommitsSince, IList<string> ignoreCommits, IList<string> ignoreCommitsWithout)
         {
             _sourceFilePath = sourceFilePath;
             _ignoreGitCommitsSince = ignoreGitCommitsSince;
+            _ignoreCommits = ignoreCommits;
+            _ignoreCommitsWithout = ignoreCommitsWithout;
         }
 
         public Result Apply(string html)
         {
-            var latestVersion = GitService.GetLatestVersion(_sourceFilePath, _ignoreGitCommitsSince);
+            var latestVersion = GitService.GetLatestVersion(_sourceFilePath, _ignoreGitCommitsSince, _ignoreCommits, _ignoreCommitsWithout);
             var result = html;
             if (latestVersion != null)
             {

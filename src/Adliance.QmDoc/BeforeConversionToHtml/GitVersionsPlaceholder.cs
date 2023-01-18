@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -9,11 +10,15 @@ namespace Adliance.QmDoc.BeforeConversionToHtml
     {
         private readonly string _sourceFilePath;
         private readonly DateTime? _ignoreGitCommitsSince;
+        private readonly IList<string> _ignoreCommits;
+        private readonly IList<string> _ignoreCommitsWithout;
 
-        public GitVersionsPlaceholder(string sourceFilePath, DateTime? ignoreGitCommitsSince)
+        public GitVersionsPlaceholder(string sourceFilePath, DateTime? ignoreGitCommitsSince, IList<string> ignoreCommits, IList<string> ignoreCommitsWithout)
         {
             _sourceFilePath = sourceFilePath;
             _ignoreGitCommitsSince = ignoreGitCommitsSince;
+            _ignoreCommits = ignoreCommits;
+            _ignoreCommitsWithout = ignoreCommitsWithout;
         }
 
         public Result Apply(string markdown, Context context)
@@ -23,7 +28,7 @@ namespace Adliance.QmDoc.BeforeConversionToHtml
 
             if (Regex.IsMatch(markdown, pattern, RegexOptions.IgnoreCase))
             {
-                var changes = GitService.GetVersions(_sourceFilePath, _ignoreGitCommitsSince).ToList();
+                var changes = GitService.GetVersions(_sourceFilePath, _ignoreGitCommitsSince, _ignoreCommits, _ignoreCommitsWithout).ToList();
 
                 string replacement;
                 if (changes.Any())

@@ -8,13 +8,13 @@ namespace Adliance.QmDoc
 {
     public static class GitService
     {
-        public static Change? GetLatestVersion(string sourceFilePath, DateTime? ignoreGitCommitsSince)
+        public static Change? GetLatestVersion(string sourceFilePath, DateTime? ignoreGitCommitsSince, IList<string> ignoreCommits, IList<string> requiredWordsForCommit)
         {
-            var versions = GetVersions(sourceFilePath, ignoreGitCommitsSince);
+            var versions = GetVersions(sourceFilePath, ignoreGitCommitsSince, ignoreCommits, requiredWordsForCommit);
             return versions.FirstOrDefault();
         }
 
-        public static IList<Change> GetVersions(string sourceFilePath, DateTime? ignoreGitCommitsSince)
+        public static IList<Change> GetVersions(string sourceFilePath, DateTime? ignoreGitCommitsSince, IList<string> ignoreCommits, IList<string> ignoreCommitsWithout)
         {
             var result = new List<Change>();
 
@@ -29,7 +29,7 @@ namespace Adliance.QmDoc
 
             using (var repo = new Repository(repoPath))
             {
-                var filter = new CommitFilter {SortBy = CommitSortStrategies.Topological | CommitSortStrategies.Time};
+                var filter = new CommitFilter { SortBy = CommitSortStrategies.Topological | CommitSortStrategies.Time };
 
                 foreach (var commit in repo.Commits.QueryBy(filter))
                 {
@@ -37,6 +37,9 @@ namespace Adliance.QmDoc
                     {
                         foreach (var change in repo.Diff.Compare<TreeChanges>(parent.Tree, commit.Tree))
                         {
+                            if (ignoreCommitsWithout.Any() && !ignoreCommitsWithout.Any(x => commit.Message != null && commit.Message.Contains(x, StringComparison.OrdinalIgnoreCase))) continue;
+                            if (ignoreCommits.Any() && ignoreCommits.Any(x => commit.Sha.Contains(x, StringComparison.OrdinalIgnoreCase))) continue;
+
                             if (change.Path.Replace('/', Path.DirectorySeparatorChar).Equals(relativeFilePath, StringComparison.OrdinalIgnoreCase))
                             {
                                 result.Add(new Change
@@ -54,7 +57,7 @@ namespace Adliance.QmDoc
             }
 
             result = result.ToList();
-            
+
             return result.Where(x => !x.Message.StartsWith("Merge", StringComparison.OrdinalIgnoreCase))
                 .Where(x => !ignoreGitCommitsSince.HasValue || x.Date < ignoreGitCommitsSince.Value)
                 .OrderByDescending(x => x.Date)
