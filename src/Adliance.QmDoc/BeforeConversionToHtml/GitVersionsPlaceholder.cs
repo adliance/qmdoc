@@ -4,61 +4,60 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Adliance.QmDoc.BeforeConversionToHtml
+namespace Adliance.QmDoc.BeforeConversionToHtml;
+
+public class GitVersionsPlaceholder : IBeforeConversionToHtmlStep
 {
-    public class GitVersionsPlaceholder : IBeforeConversionToHtmlStep
+    private readonly string _sourceFilePath;
+    private readonly DateTime? _ignoreGitCommitsSince;
+    private readonly IList<string> _ignoreCommits;
+    private readonly IList<string> _ignoreCommitsWithout;
+
+    public GitVersionsPlaceholder(string sourceFilePath, DateTime? ignoreGitCommitsSince, IList<string> ignoreCommits, IList<string> ignoreCommitsWithout)
     {
-        private readonly string _sourceFilePath;
-        private readonly DateTime? _ignoreGitCommitsSince;
-        private readonly IList<string> _ignoreCommits;
-        private readonly IList<string> _ignoreCommitsWithout;
+        _sourceFilePath = sourceFilePath;
+        _ignoreGitCommitsSince = ignoreGitCommitsSince;
+        _ignoreCommits = ignoreCommits;
+        _ignoreCommitsWithout = ignoreCommitsWithout;
+    }
 
-        public GitVersionsPlaceholder(string sourceFilePath, DateTime? ignoreGitCommitsSince, IList<string> ignoreCommits, IList<string> ignoreCommitsWithout)
+    public Result Apply(string markdown, Context context)
+    {
+        var pattern = @"\{\{\W*GIT_VERSIONS\W*\}\}";
+        var result = markdown;
+
+        if (Regex.IsMatch(markdown, pattern, RegexOptions.IgnoreCase))
         {
-            _sourceFilePath = sourceFilePath;
-            _ignoreGitCommitsSince = ignoreGitCommitsSince;
-            _ignoreCommits = ignoreCommits;
-            _ignoreCommitsWithout = ignoreCommitsWithout;
-        }
+            var changes = GitService.GetVersions(_sourceFilePath, _ignoreGitCommitsSince, _ignoreCommits, _ignoreCommitsWithout).ToList();
 
-        public Result Apply(string markdown, Context context)
-        {
-            var pattern = @"\{\{\W*GIT_VERSIONS\W*\}\}";
-            var result = markdown;
-
-            if (Regex.IsMatch(markdown, pattern, RegexOptions.IgnoreCase))
+            string replacement;
+            if (changes.Any())
             {
-                var changes = GitService.GetVersions(_sourceFilePath, _ignoreGitCommitsSince, _ignoreCommits, _ignoreCommitsWithout).ToList();
+                replacement = "| Datum | Person | Version | Änderung" + Environment.NewLine + "|-|-|-|-|";
 
-                string replacement;
-                if (changes.Any())
+                for (var i = 0; i < changes.Count; i++)
                 {
-                    replacement = "| Datum | Person | Version | Änderung" + Environment.NewLine + "|-|-|-|-|";
-
-                    for (var i = 0; i < changes.Count; i++)
+                    var change = changes[i];
+                    // if we have the same message multiple times in a row, just use the latest commit
+                    if (i > 0 && (changes[i - 1].Message ?? "").Equals(change.Message, StringComparison.OrdinalIgnoreCase))
                     {
-                        var change = changes[i];
-                        // if we have the same message multiple times in a row, just use the latest commit
-                        if (i > 0 && (changes[i - 1].Message ?? "").Equals(change.Message, StringComparison.OrdinalIgnoreCase))
-                        {
-                            continue;
-                        }
-
-                        replacement += Environment.NewLine + $"| {change.Date.ToString("dd. MM. yyyy", new CultureInfo("de-DE")).Replace(" ", "&nbsp;")} |" +
-                                       $" {change.Author.Replace(" ", "&nbsp;")} |" +
-                                       $" {change.ShaShort} |" +
-                                       $" {change.MessageShort} {(string.IsNullOrWhiteSpace(change.Message) ? "" : $"<span class=\"git-version-details\"><br />{change.Message.Substring(change.MessageShort.Length).Replace("\r", "").Replace("\n", "").Trim()}")}</span>";
+                        continue;
                     }
-                }
-                else
-                {
-                    replacement = "{{!}} Dieses Dokument befindet sich nicht in Versionskontrolle.";
-                }
 
-                result = Regex.Replace(result, pattern, replacement, RegexOptions.IgnoreCase);
+                    replacement += Environment.NewLine + $"| {change.Date.ToString("dd. MM. yyyy", new CultureInfo("de-DE")).Replace(" ", "&nbsp;")} |" +
+                                   $" {change.Author.Replace(" ", "&nbsp;")} |" +
+                                   $" {change.ShaShort} |" +
+                                   $" {change.MessageShort} {(string.IsNullOrWhiteSpace(change.Message) ? "" : $"<span class=\"git-version-details\"><br />{change.Message.Substring(change.MessageShort.Length).Replace("\r", "").Replace("\n", "").Trim()}")}</span>";
+                }
+            }
+            else
+            {
+                replacement = "{{!}} Dieses Dokument befindet sich nicht in Versionskontrolle.";
             }
 
-            return new Result(result, context);
+            result = Regex.Replace(result, pattern, replacement, RegexOptions.IgnoreCase);
         }
+
+        return new Result(result, context);
     }
 }

@@ -2,29 +2,28 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Adliance.QmDoc.BeforeConversionToHtml
+namespace Adliance.QmDoc.BeforeConversionToHtml;
+
+public class LinkedDocumentsPlaceholder : IBeforeConversionToHtmlStep
 {
-    public class LinkedDocumentsPlaceholder : IBeforeConversionToHtmlStep
+    private readonly string _sourceFilePath;
+
+    public LinkedDocumentsPlaceholder(string sourceFilePath)
     {
-        private readonly string _sourceFilePath;
+        _sourceFilePath = sourceFilePath;
+    }
 
-        public LinkedDocumentsPlaceholder(string sourceFilePath)
+    public Result Apply(string markdown, Context context)
+    {
+        var pattern = @"\{\{\W*LINKED_DOCUMENTS\W*\}\}";
+        var result = markdown;
+
+        if (Regex.IsMatch(markdown, pattern, RegexOptions.IgnoreCase))
         {
-            _sourceFilePath = sourceFilePath;
+            var replacement = context.LinkedDocuments.Distinct().OrderBy(x => x.NiceName).Aggregate("", (current, d) => current + $"{Environment.NewLine}* <span class=\"link-to-document\"><i></i>[{d.NiceName}]({d.FileName})</span>");
+            result = Regex.Replace(result, pattern, replacement.Trim(), RegexOptions.IgnoreCase);
         }
 
-        public Result Apply(string markdown, Context context)
-        {
-            var pattern = @"\{\{\W*LINKED_DOCUMENTS\W*\}\}";
-            var result = markdown;
-
-            if (Regex.IsMatch(markdown, pattern, RegexOptions.IgnoreCase))
-            {
-                var replacement = context.LinkedDocuments.Distinct().OrderBy(x => x.NiceName).Aggregate("", (current, d) => current + $"{Environment.NewLine}* <span class=\"link-to-document\"><i></i>[{d.NiceName}]({d.FileName})</span>");
-                result = Regex.Replace(result, pattern, replacement.Trim(), RegexOptions.IgnoreCase);
-            }
-
-            return new Result(result, context);
-        }
+        return new Result(result, context);
     }
 }

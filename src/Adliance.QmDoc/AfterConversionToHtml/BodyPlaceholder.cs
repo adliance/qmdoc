@@ -1,20 +1,19 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace Adliance.QmDoc.AfterConversionToHtml
+namespace Adliance.QmDoc.AfterConversionToHtml;
+
+public class BodyPlaceholder : IAfterConversionToHtmlStep
 {
-    public class BodyPlaceholder : IAfterConversionToHtmlStep
+    private readonly string _body;
+
+    public BodyPlaceholder(string body)
     {
-        private readonly string _body;
+        _body = body;
+    }
 
-        public BodyPlaceholder(string body)
-        {
-            _body = body;
-        }
-
-        public Result Apply(string html)
-        {
-            var result = Regex.Replace(html, @"\{\{\W*BODY\W*\}\}", _body, RegexOptions.IgnoreCase);
-            return new Result(result);
-        }
+    public Result Apply(string html)
+    {
+        var result = Regex.Replace(html, @"\{\{\W*BODY\W*\}\}", _body, RegexOptions.IgnoreCase);
+        return new Result(result);
     }
 }

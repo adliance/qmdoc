@@ -8,84 +8,83 @@ using Adliance.QmDoc.Themes;
 using HeaderNumbering = Adliance.QmDoc.AfterConversionToHtml.HeaderNumbering;
 using TitlePlaceholder = Adliance.QmDoc.BeforeConversionToHtml.TitlePlaceholder;
 
-namespace Adliance.QmDoc
+namespace Adliance.QmDoc;
+
+public static class MarkdownToHtmlConverter
 {
-    public static class MarkdownToHtmlConverter
+    public static string ConvertMarkdownToHtml(
+        string theme,
+        string baseDirectory,
+        string sourceFilePath,
+        string title,
+        bool disableHeaderNumbering,
+        DateTime? ignoreGitCommitsSince,
+        IList<string> ignoreCommits,
+        IList<string> ignoreCommitsWithout,
+        string configurableParametersFileName,
+        out List<ProcessorError> errors)
     {
-        public static string ConvertMarkdownToHtml(
-            string theme,
-            string baseDirectory,
-            string sourceFilePath,
-            string title,
-            bool disableHeaderNumbering,
-            DateTime? ignoreGitCommitsSince,
-            IList<string> ignoreCommits,
-            IList<string> ignoreCommitsWithout,
-            string configurableParametersFileName,
-            out List<ProcessorError> errors)
+        if (!File.Exists(sourceFilePath))
         {
-            if (!File.Exists(sourceFilePath))
-            {
-                throw new FileNotFoundException("Source file not found", sourceFilePath);
-            }
-
-            var markdown = File.ReadAllText(sourceFilePath);
-
-            IBeforeConversionToHtmlStep[] steps =
-            {
-                new TitlePlaceholder(title),
-                new GitVersionsPlaceholder(sourceFilePath, ignoreGitCommitsSince, ignoreCommits, ignoreCommitsWithout),
-                new LinkToChapters(),
-                new PageBreak(),
-                new ImagesMustNotContainSpaces(sourceFilePath),
-                new LinkToDocuments(baseDirectory, sourceFilePath),
-                new LinkedDocumentsPlaceholder(sourceFilePath) // add after the "LinkToDocuments" step, because that one fills the context with the linked documents 
-            };
-
-            var context = new Context();
-            errors = new List<ProcessorError>();
-            foreach (var step in steps)
-            {
-                var stepResult = step.Apply(markdown, context);
-                context = stepResult.Context;
-                errors.AddRange(stepResult.Errors);
-                markdown = stepResult.ResultingMarkdown;
-            }
-
-            var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
-            var html = Markdown.ToHtml(markdown, pipeline);
-
-            return WrapInHtmlDocument(theme, sourceFilePath, html, title, disableHeaderNumbering, configurableParametersFileName, ref errors);
+            throw new FileNotFoundException("Source file not found", sourceFilePath);
         }
 
-        private static string WrapInHtmlDocument(string theme, string sourceFilePath, string html, string title, bool disableHeaderNumbering, string configurableParametersFileName, ref List<ProcessorError> errors)
+        var markdown = File.ReadAllText(sourceFilePath);
+
+        IBeforeConversionToHtmlStep[] steps =
         {
-            var layout = ThemeProvider.GetContent(theme);
+            new TitlePlaceholder(title),
+            new GitVersionsPlaceholder(sourceFilePath, ignoreGitCommitsSince, ignoreCommits, ignoreCommitsWithout),
+            new LinkToChapters(),
+            new PageBreak(),
+            new ImagesMustNotContainSpaces(sourceFilePath),
+            new LinkToDocuments(baseDirectory, sourceFilePath),
+            new LinkedDocumentsPlaceholder(sourceFilePath) // add after the "LinkToDocuments" step, because that one fills the context with the linked documents 
+        };
 
-            IAfterConversionToHtmlStep[] steps =
-            {
-                new BodyPlaceholder(html), // should be the first step
-                new CssPlaceholder(theme),
-                new AfterConversionToHtml.TitlePlaceholder(title),
-                new DatePlaceholder(),
-                new AuthorLine(),
-                new HeaderNumbering(!disableHeaderNumbering),
-                new IconBlocks(),
-                new IconLists(),
-                new SetCorrectChaptersLinkTitle(sourceFilePath),
-                new EmbedImages(sourceFilePath),
-                new ConfigurablePlaceholders(sourceFilePath, configurableParametersFileName)
-            };
-
-            var result = layout;
-            foreach (var step in steps)
-            {
-                var stepResult = step.Apply(result);
-                errors.AddRange(stepResult.Errors);
-                result = stepResult.ResultingHtml;
-            }
-
-            return result;
+        var context = new Context();
+        errors = new List<ProcessorError>();
+        foreach (var step in steps)
+        {
+            var stepResult = step.Apply(markdown, context);
+            context = stepResult.Context;
+            errors.AddRange(stepResult.Errors);
+            markdown = stepResult.ResultingMarkdown;
         }
+
+        var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
+        var html = Markdown.ToHtml(markdown, pipeline);
+
+        return WrapInHtmlDocument(theme, sourceFilePath, html, title, disableHeaderNumbering, configurableParametersFileName, ref errors);
+    }
+
+    private static string WrapInHtmlDocument(string theme, string sourceFilePath, string html, string title, bool disableHeaderNumbering, string configurableParametersFileName, ref List<ProcessorError> errors)
+    {
+        var layout = ThemeProvider.GetContent(theme);
+
+        IAfterConversionToHtmlStep[] steps =
+        {
+            new BodyPlaceholder(html), // should be the first step
+            new CssPlaceholder(theme),
+            new AfterConversionToHtml.TitlePlaceholder(title),
+            new DatePlaceholder(),
+            new AuthorLine(),
+            new HeaderNumbering(!disableHeaderNumbering),
+            new IconBlocks(),
+            new IconLists(),
+            new SetCorrectChaptersLinkTitle(sourceFilePath),
+            new EmbedImages(sourceFilePath),
+            new ConfigurablePlaceholders(sourceFilePath, configurableParametersFileName)
+        };
+
+        var result = layout;
+        foreach (var step in steps)
+        {
+            var stepResult = step.Apply(result);
+            errors.AddRange(stepResult.Errors);
+            result = stepResult.ResultingHtml;
+        }
+
+        return result;
     }
 }

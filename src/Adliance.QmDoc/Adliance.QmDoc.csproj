@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <LangVersion>Latest</LangVersion>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>qmdoc</ToolCommandName>
@@ -25,6 +25,7 @@
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
     <PackageReference Include="LibGit2Sharp" Version="0.27.0-preview-0182" />
     <PackageReference Include="Markdig" Version="0.30.4" />
+    <PackageReference Include="Morincer.Markdig.Renderers.Docx" Version="1.0.0" />
     <PackageReference Include="SharpScss" Version="2.0.0" />
   </ItemGroup>
   
