@@ -1,27 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Adliance.QmDoc.BeforeConversionToHtml;
+namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
-internal interface IBeforeConversionToHtmlStep
+public interface IMarkdownProcessor
 {
-    Result Apply(string markdown, Context context);
+    MarkdownProcessorResult Apply(string markdown, MarkdownProcessorContext markdownProcessorContext);
 }
 
-public class Result
+public class MarkdownProcessorResult
 {
-    public Result(string resultingMarkdown, Context context)
+    public MarkdownProcessorResult(string resultingMarkdown, MarkdownProcessorContext markdownProcessorContext)
     {
-        Context = context;
+        MarkdownProcessorContext = markdownProcessorContext;
         ResultingMarkdown = resultingMarkdown;
     }
 
     public string ResultingMarkdown { get; set; }
     public IList<ProcessorError> Errors { get; set; } = new List<ProcessorError>();
-    public Context Context { get; set; }
+    public MarkdownProcessorContext MarkdownProcessorContext { get; set; }
 }
 
-public class Context
+public class MarkdownProcessorContext
 {
     public IList<LinkedDocument> LinkedDocuments { get; set; } = new List<LinkedDocument>();
 }

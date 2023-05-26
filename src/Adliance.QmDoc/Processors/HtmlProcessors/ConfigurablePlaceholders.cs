@@ -4,14 +4,15 @@ using System.IO;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
-namespace Adliance.QmDoc.AfterConversionToHtml;
+namespace Adliance.QmDoc.Processors.HtmlProcessors;
 
-public class ConfigurablePlaceholders : IAfterConversionToHtmlStep
+public class ConfigurablePlaceholders : IHtmlProcessor
 {
     private readonly IDictionary<string, string> _placeholders = new Dictionary<string, string>();
 
-    public ConfigurablePlaceholders(string sourceFileName, string pathToJsonFile)
+    public ConfigurablePlaceholders(string sourceFileName, string? pathToJsonFile)
     {
+        if (string.IsNullOrWhiteSpace(pathToJsonFile)) return;
         if (!Path.IsPathRooted(pathToJsonFile)) pathToJsonFile = Path.Combine(Path.GetDirectoryName(sourceFileName)!, pathToJsonFile);
             
         var file = new FileInfo(pathToJsonFile);
@@ -29,7 +30,7 @@ public class ConfigurablePlaceholders : IAfterConversionToHtmlStep
         }
     }
 
-    public Result Apply(string html)
+    public HtmlProcessorResult Apply(string html)
     {
         var result = html;
         foreach (var (placeholder, value) in _placeholders)
@@ -37,6 +38,6 @@ public class ConfigurablePlaceholders : IAfterConversionToHtmlStep
             result = Regex.Replace(result, @"\{?\{\W*" + placeholder + @"\W*\}\}?", value, RegexOptions.IgnoreCase);
         }
 
-        return new Result(result);
+        return new HtmlProcessorResult(result);
     }
 }

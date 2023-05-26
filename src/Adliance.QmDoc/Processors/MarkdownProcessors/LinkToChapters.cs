@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-namespace Adliance.QmDoc.BeforeConversionToHtml;
+namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
-public class LinkToChapters : IBeforeConversionToHtmlStep
+public class LinkToChapters : IMarkdownProcessor
 {
-    public Result Apply(string markdown, Context context)
+    public MarkdownProcessorResult Apply(string markdown, MarkdownProcessorContext markdownProcessorContext)
     {
         var result = markdown;
 
@@ -16,7 +16,7 @@ public class LinkToChapters : IBeforeConversionToHtmlStep
             result = result.Replace(m.Value, $"<span class=\"link-to-chapter\"><i></i>[{(m.Groups[1].Value ?? "").Trim()}](#{GetChapterId(m.Groups[1].Value)})</span>");
         }
 
-        return new Result(result, context);
+        return new MarkdownProcessorResult(result, markdownProcessorContext);
     }
 
     private string GetChapterId(string chapterName)

@@ -4,9 +4,9 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Adliance.QmDoc.BeforeConversionToHtml;
+namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
-public class GitVersionsPlaceholder : IBeforeConversionToHtmlStep
+public class GitVersionsPlaceholder : IMarkdownProcessor
 {
     private readonly string _sourceFilePath;
     private readonly DateTime? _ignoreGitCommitsSince;
@@ -21,7 +21,7 @@ public class GitVersionsPlaceholder : IBeforeConversionToHtmlStep
         _ignoreCommitsWithout = ignoreCommitsWithout;
     }
 
-    public Result Apply(string markdown, Context context)
+    public MarkdownProcessorResult Apply(string markdown, MarkdownProcessorContext markdownProcessorContext)
     {
         var pattern = @"\{\{\W*GIT_VERSIONS\W*\}\}";
         var result = markdown;
@@ -58,6 +58,6 @@ public class GitVersionsPlaceholder : IBeforeConversionToHtmlStep
             result = Regex.Replace(result, pattern, replacement, RegexOptions.IgnoreCase);
         }
 
-        return new Result(result, context);
+        return new MarkdownProcessorResult(result, markdownProcessorContext);
     }
 }

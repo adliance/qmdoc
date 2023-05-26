@@ -1,15 +1,15 @@
 ﻿using System.Collections.Generic;
 
-namespace Adliance.QmDoc.AfterConversionToHtml;
+namespace Adliance.QmDoc.Processors.HtmlProcessors;
 
-internal interface IAfterConversionToHtmlStep
+internal interface IHtmlProcessor
 {
-    Result Apply(string html);
+    HtmlProcessorResult Apply(string html);
 }
 
-public class Result
+public class HtmlProcessorResult
 {
-    public Result(string resultingHtml)
+    public HtmlProcessorResult(string resultingHtml)
     {
         ResultingHtml = resultingHtml;
     }

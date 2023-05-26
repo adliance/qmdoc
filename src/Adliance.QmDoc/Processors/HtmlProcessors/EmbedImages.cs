@@ -2,9 +2,9 @@
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace Adliance.QmDoc.AfterConversionToHtml;
+namespace Adliance.QmDoc.Processors.HtmlProcessors;
 
-public class EmbedImages : IAfterConversionToHtmlStep
+public class EmbedImages : IHtmlProcessor
 {
     private readonly string _sourceFilePath;
 
@@ -15,10 +15,10 @@ public class EmbedImages : IAfterConversionToHtmlStep
 
     }
 
-    public Result Apply(string html)
+    public HtmlProcessorResult Apply(string html)
     {
         var resultingHtml = html;
-        var result = new Result(resultingHtml);
+        var result = new HtmlProcessorResult(resultingHtml);
 
         foreach (Match? match in Regex.Matches(html, "<img src=\"(.*?)\"", RegexOptions.IgnoreCase))
         {

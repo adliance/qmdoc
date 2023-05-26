@@ -1,14 +1,14 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace Adliance.QmDoc.AfterConversionToHtml;
+namespace Adliance.QmDoc.Processors.HtmlProcessors;
 
-public class IconLists : IAfterConversionToHtmlStep
+public class IconLists : IHtmlProcessor
 {
-    public Result Apply(string html)
+    public HtmlProcessorResult Apply(string html)
     {
         html = Regex.Replace(html, @"<li> *\{?\{\W*\?\W*\}\}? *", "<li><i class=\"fad fa-question-circle\"></i>", RegexOptions.IgnoreCase);
         html = Regex.Replace(html, @"<li> *\{?\{\W*!!\W*\}\}? *", "<li><i class=\"fad fa-exclamation-circle\"></i>", RegexOptions.IgnoreCase);
         html = Regex.Replace(html, @"<li> *\{?\{\W*!\W*\}\}? *", "<li><i class=\"fad fa-info-circle\"></i>", RegexOptions.IgnoreCase);
-        return new Result(html);
+        return new HtmlProcessorResult(html);
     }
 }

@@ -1,8 +1,8 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace Adliance.QmDoc.BeforeConversionToHtml;
+namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
-public class ImagesMustNotContainSpaces : IBeforeConversionToHtmlStep
+public class ImagesMustNotContainSpaces : IMarkdownProcessor
 {
     private readonly string _sourceFilePath;
 
@@ -11,9 +11,9 @@ public class ImagesMustNotContainSpaces : IBeforeConversionToHtmlStep
         _sourceFilePath = sourceFilePath;
     }
 
-    public Result Apply(string markdown, Context context)
+    public MarkdownProcessorResult Apply(string markdown, MarkdownProcessorContext markdownProcessorContext)
     {
-        var result = new Result(markdown, context);
+        var result = new MarkdownProcessorResult(markdown, markdownProcessorContext);
         foreach (Match? m in Regex.Matches(markdown, "\\!\\[.*?\\]\\((.* .*)\\)", RegexOptions.IgnoreCase))
         {
             if (m == null) continue;

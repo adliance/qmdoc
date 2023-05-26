@@ -1,10 +1,10 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace Adliance.QmDoc.AfterConversionToHtml;
+namespace Adliance.QmDoc.Processors.HtmlProcessors;
 
-public class AuthorLine : IAfterConversionToHtmlStep
+public class AuthorLine : IHtmlProcessor
 {
-    public Result Apply(string html)
+    public HtmlProcessorResult Apply(string html)
     {
         var result = html;
 
@@ -19,6 +19,6 @@ public class AuthorLine : IAfterConversionToHtmlStep
             result = result.Replace(match.Value, authorSnippet);
         }
 
-        return new Result(result);
+        return new HtmlProcessorResult(result);
     }
 }

@@ -1,8 +1,8 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace Adliance.QmDoc.AfterConversionToHtml;
+namespace Adliance.QmDoc.Processors.HtmlProcessors;
 
-public class BodyPlaceholder : IAfterConversionToHtmlStep
+public class BodyPlaceholder : IHtmlProcessor
 {
     private readonly string _body;
 
@@ -11,9 +11,9 @@ public class BodyPlaceholder : IAfterConversionToHtmlStep
         _body = body;
     }
 
-    public Result Apply(string html)
+    public HtmlProcessorResult Apply(string html)
     {
         var result = Regex.Replace(html, @"\{\{\W*BODY\W*\}\}", _body, RegexOptions.IgnoreCase);
-        return new Result(result);
+        return new HtmlProcessorResult(result);
     }
 }

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace Adliance.QmDoc.AfterConversionToHtml;
+namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
-public class GitDateAndVersionPlaceholder : IAfterConversionToHtmlStep
+public class GitDateAndVersionPlaceholder : IMarkdownProcessor
 {
     private readonly string _sourceFilePath;
     private readonly DateTime? _ignoreGitCommitsSince;
@@ -19,11 +19,11 @@ public class GitDateAndVersionPlaceholder : IAfterConversionToHtmlStep
         _ignoreCommits = ignoreCommits;
         _ignoreCommitsWithout = ignoreCommitsWithout;
     }
-
-    public Result Apply(string html)
+    
+    public MarkdownProcessorResult Apply(string markdown, MarkdownProcessorContext markdownProcessorContext)
     {
         var latestVersion = GitService.GetLatestVersion(_sourceFilePath, _ignoreGitCommitsSince, _ignoreCommits, _ignoreCommitsWithout);
-        var result = html;
+        var result = markdown;
         if (latestVersion != null)
         {
             result = Regex.Replace(result, @"\{{1,2}\W*GIT_DATE_VERSION\W*\}{1,2}", $"Version {latestVersion.ShaShort}, {latestVersion.Date.ToString("dd. MMMM yyyy", new CultureInfo("de-DE"))}", RegexOptions.IgnoreCase);
@@ -33,6 +33,6 @@ public class GitDateAndVersionPlaceholder : IAfterConversionToHtmlStep
             result = Regex.Replace(result, @"\{{1,2}\W*GIT_DATE_VERSION\W*\}{1,2}", "", RegexOptions.IgnoreCase);
         }
 
-        return new Result(result);
+        return new MarkdownProcessorResult(result, markdownProcessorContext);
     }
 }

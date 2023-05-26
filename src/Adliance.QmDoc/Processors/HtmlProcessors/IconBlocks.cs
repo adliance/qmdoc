@@ -1,14 +1,14 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace Adliance.QmDoc.AfterConversionToHtml;
+namespace Adliance.QmDoc.Processors.HtmlProcessors;
 
-public class IconBlocks : IAfterConversionToHtmlStep
+public class IconBlocks : IHtmlProcessor
 {
-    public Result Apply(string html)
+    public HtmlProcessorResult Apply(string html)
     {
         html = Regex.Replace(html, @"<p>\{?\{\W*\?\W*\}\}? (.*?)</p>", "<p class=\"block-question\"><i class=\"fad fa-question-circle\"></i>$1<i style=\"clear:both; display:block;\"></i></p>", RegexOptions.IgnoreCase);
         html = Regex.Replace(html, @"<p>\{?\{\W*!!\W*\}\}? (.*?)</p>", "<p class=\"block-danger\"><i class=\"fad fa-exclamation-circle\"></i>$1</p>", RegexOptions.IgnoreCase);
         html = Regex.Replace(html, @"<p>\{?\{\W*!\W*\}\}? (.*?)</p>", "<p class=\"block-alert\"><i class=\"fad fa-info-circle\"></i>$1</p>", RegexOptions.IgnoreCase);
-        return new Result(html);
+        return new HtmlProcessorResult(html);
     }
 }

@@ -3,9 +3,9 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Adliance.QmDoc.Extensions;
 
-namespace Adliance.QmDoc.AfterConversionToHtml;
+namespace Adliance.QmDoc.Processors.HtmlProcessors;
 
-public class SetCorrectChaptersLinkTitle : IAfterConversionToHtmlStep
+public class SetCorrectChaptersLinkTitle : IHtmlProcessor
 {
     private readonly string _filePath;
 
@@ -14,7 +14,7 @@ public class SetCorrectChaptersLinkTitle : IAfterConversionToHtmlStep
         _filePath = filePath;
     }
 
-    public Result Apply(string html)
+    public HtmlProcessorResult Apply(string html)
     {
         var resultingHtml = html;
 
@@ -28,7 +28,7 @@ public class SetCorrectChaptersLinkTitle : IAfterConversionToHtmlStep
             resultingHtml = Regex.Replace(resultingHtml, $"<a href=\"#{id}\">{id}</a>", $"<a href=\"#{id}\">{(title ?? "").RemoveMultipleNbsp().Trim()}</a>");
         }
 
-        var result = new Result(resultingHtml);
+        var result = new HtmlProcessorResult(resultingHtml);
 
 
         // also check for links to non-existing chapters
