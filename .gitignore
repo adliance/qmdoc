@@ -7,3 +7,4 @@ obj
 test/*.html
 test/*.pdf
 .DS_Store
+.editorconfig

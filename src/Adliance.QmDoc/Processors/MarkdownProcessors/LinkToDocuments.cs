@@ -77,8 +77,8 @@ public class LinkToDocuments : IMarkdownProcessor
 
             var linkedFileName = m.Groups[1].Value;
             linkedFileName = linkedFileName.Replace("%20", " ");
-            if (linkedFileName.Contains("@")) continue;
-           
+            if (linkedFileName.Contains('@', StringComparison.OrdinalIgnoreCase)) continue;
+
             var matchingFile = new FileInfo(Path.Combine(Path.GetDirectoryName(_filePath)!, linkedFileName));
 
             if (!matchingFile.Exists)

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -138,7 +139,7 @@ public abstract class Converter
         return content;
     }
 
-    private void EnsureTargetDirectory(ConverterFile file)
+    private static void EnsureTargetDirectory(ConverterFile file)
     {
         var targetDirectory = new DirectoryInfo(Path.GetDirectoryName(file.TargetAbsolutePath)!);
         if (!targetDirectory.Exists) targetDirectory.Create();
@@ -146,7 +147,7 @@ public abstract class Converter
 
     protected abstract void PrepareAdditionalProcessors(ConverterFile file, IList<IMarkdownProcessor> markdownProcessors);
 
-    private IList<ConverterFile> BuildFilesList(string source, string targetBaseDirectory, TargetExtension targetExtension)
+    private static IList<ConverterFile> BuildFilesList(string source, string targetBaseDirectory, TargetExtension targetExtension)
     {
         var result = new List<ConverterFile>();
 
@@ -167,9 +168,9 @@ public abstract class Converter
         return result;
     }
 
-    private string FormatBytes(int bytes)
+    private static string FormatBytes(int bytes)
     {
-        return Math.Ceiling(bytes / 1024d).ToString("N0") + " kB";
+        return Math.Ceiling(bytes / 1024d).ToString("N0", CultureInfo.CurrentCulture) + " kB";
     }
 }
 

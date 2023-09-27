@@ -19,12 +19,9 @@ public class LinkToChapters : IMarkdownProcessor
         return new MarkdownProcessorResult(result, markdownProcessorContext);
     }
 
-    private string GetChapterId(string chapterName)
+    private static string GetChapterId(string chapterName)
     {
-        if (string.IsNullOrWhiteSpace(chapterName))
-        {
-            throw new ArgumentException(nameof(chapterName));
-        }
+        if (string.IsNullOrWhiteSpace(chapterName)) throw new ArgumentException(null, nameof(chapterName));
 
         var result = chapterName.Trim();
         result = result.Replace(" ", "-");
@@ -38,7 +35,7 @@ public class LinkToChapters : IMarkdownProcessor
         result = result.Replace("ß", "");
         result = result.Replace("---", "-");
         result = result.Replace("--", "-");
-            
+
         return result;
     }
 }
