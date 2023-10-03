@@ -7,7 +7,7 @@
 QmDoc is used by Adliance GmbH to automatically convert Markdown files to nicely formatted PDF files including corporate design guidelines.
 
 ## Installation
-QmDoc is a .NET Core global tool. You'll need .NET Core 3.1 installed in order to install and use QmDoc. 
+QmDoc is a .NET Core global tool. You'll need .NET 7 installed in order to install and use QmDoc. 
 
 Open your commandline and call
 
@@ -41,7 +41,7 @@ For example
 
     qmdoc set-theme --theme Adliance
     
-to switch the the `Adliance` theme. Themes are automatically downloaded from the [GitHub repository](https://github.com/adliance/qmdoc/tree/master/themes) and cached locally in the `USERPROFILE\.qmdoc\themes` directory. Please note that it may take a few minutes until changes of the theme on GitHub are picked up by your local installation of QmDoc.
+to switch to the `Adliance` theme. Themes are automatically downloaded from the [GitHub repository](https://github.com/adliance/qmdoc/tree/master/themes) and cached locally in the `USERPROFILE\.qmdoc\themes` directory. Please note that it may take a few minutes until changes of the theme on GitHub are picked up by your local installation of QmDoc.
 
 You can also set the theme for a single conversion by using the `--theme` parameter. For example
 

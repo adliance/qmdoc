@@ -58,7 +58,7 @@ public abstract class Converter
 
     private string LoadMarkdown(ConverterFile file)
     {
-        var markdown = File.ReadAllText(file.SourceAbsolutePath);
+        var markdown = File.ReadAllText(file.SourceAbsolutePath).Replace("\r\n", "\n");
 
         markdown = ApplyCommonPlaceholders(file, markdown);
         var markdownProcessors = new List<IMarkdownProcessor>
