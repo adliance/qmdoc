@@ -33,7 +33,7 @@ public class GitVersionsPlaceholder : IMarkdownProcessor
             string replacement;
             if (changes.Any())
             {
-                replacement = "| Datum | Person | Version | Änderung" + Environment.NewLine + "|-|-|-|-|";
+                replacement = "| Datum | Person | Version | Änderung | \n|-|-|-|-|";
 
                 for (var i = 0; i < changes.Count; i++)
                 {
@@ -44,10 +44,10 @@ public class GitVersionsPlaceholder : IMarkdownProcessor
                         continue;
                     }
 
-                    replacement += Environment.NewLine + $"| {change.Date.ToString("dd. MM. yyyy", new CultureInfo("de-DE")).Replace(" ", "&nbsp;")} |" +
+                    replacement += $"\n| {change.Date.ToString("dd. MM. yyyy", new CultureInfo("de-DE")).Replace(" ", "&nbsp;")} |" +
                                    $" {change.Author.Replace(" ", "&nbsp;")} |" +
                                    $" {change.ShaShort} |" +
-                                   $" {change.MessageShort} {(string.IsNullOrWhiteSpace(change.Message) ? "" : $"<span class=\"git-version-details\"><br />{change.Message.Substring(change.MessageShort.Length).Replace("\r", "").Replace("\n", "").Trim()}")}</span>";
+                                   $" {change.MessageShort} {(string.IsNullOrWhiteSpace(change.Message) ? "" : $"<span class=\"git-version-details\"> {change.Message.Substring(change.MessageShort.Length).Replace("\r", "").Replace("\n", "").Trim()}")}</span> |";
                 }
             }
             else

@@ -20,7 +20,7 @@ public class LinkedDocumentsPlaceholder : IMarkdownProcessor
 
         if (Regex.IsMatch(markdown, pattern, RegexOptions.IgnoreCase))
         {
-            var replacement = markdownProcessorContext.LinkedDocuments.Distinct().OrderBy(x => x.NiceName).Aggregate("", (current, d) => current + $"{Environment.NewLine}* <span class=\"link-to-document\"><i></i>[{d.NiceName}]({d.FileName})</span>");
+            var replacement = markdownProcessorContext.LinkedDocuments.Distinct().OrderBy(x => x.NiceName).Aggregate("", (current, d) => current + $"\n* <span class=\"link-to-document\"><i></i>[{d.NiceName}]({d.FileName})</span>");
             result = Regex.Replace(result, pattern, replacement.Trim(), RegexOptions.IgnoreCase);
         }
 
