@@ -1,15 +1,18 @@
-﻿$adliance-colors: (
-        "white": #fafafa,
-        "dark-blue": rgb(2, 30, 69),
-        "medium-blue": rgb(19, 64, 148),
-        "light-blue": rgb(16, 168, 229),
-        "turquoise": rgb(0, 199, 199),
-        "green": rgb(140, 185, 24),
-        "medium-orange": rgb(244, 125, 9),
-        "dark-orange": rgb(237, 70, 34),
-        "pink": rgb(229, 0, 125),
-        "green-blue": linear-gradient(165deg, #134094, #10a8e5, #00c7c7, #8cb918),
-        "orange-red": linear-gradient(165deg, #f47d09, #ed4622, #e5007d)
+﻿@font-face {
+  font-family: UniSans;
+  font-weight: 400;
+  src: url("https://www.madx.com/fonts/UniSansRegular.ttf");
+}
+
+@font-face {
+  font-family: UniSans;
+  font-weight: 600;
+  src: url("https://www.madx.com/fonts/UniSansSemiBold.ttf");
+}
+
+$colors: (
+  "primary": #b9b24d,
+  "black": #586066
 );
 $font-size: 20px;
 $margin-base: .5em;
@@ -21,18 +24,18 @@ $margin-base: .5em;
 }
 
 body {
-  font-family: 'Ubuntu', sans-serif;
+  font-family: 'UniSans', sans-serif;
   font-weight: 400;
   padding: 0 20mm 0 20mm;
   width: 100%;
   font-size: $font-size;
-  color: map_get($adliance-colors, "dark-blue");
+  color: map_get($colors, "black");
   line-height: 1.5em;
 }
 
 code, pre {
   font-size: 85%;
-  font-family: Ubuntu Mono, monospace;
+  font-family: monospace;
 }
 
 pre {
@@ -49,11 +52,11 @@ div.line {
 }
 
 b, strong {
-  font-weight: 700;
+  font-weight: 600;
 }
 
 a {
-  color: map_get($adliance-colors, "dark-blue");
+  color: map_get($colors, "primary");
   text-decoration: none;
 }
 
@@ -62,7 +65,7 @@ div.document-title {
   font-size: 2.5em;
   padding-top: 2.5em;
   margin-bottom: 2.5em;
-  color: map_get($adliance-colors, "medium-blue");
+  color: map_get($colors, "primary");
   font-weight: 700;
   line-height: 1.5em;
 
@@ -80,10 +83,10 @@ div.document-author {
   font-size: 1em;
   margin-bottom: 2.5em * 2.5;
   font-weight: 700;
-  color: map_get($adliance-colors, "medium-blue");
+  color: map_get($colors, "primary");
 
   span, a {
-    color: map_get($adliance-colors, "medium-blue");
+    color: map_get($colors, "primary");
 
     &.name, &.company {
       font-weight: 700;
@@ -92,7 +95,7 @@ div.document-author {
 }
 
 h1, h2, h3, h4, h5 {
-  color: map_get($adliance-colors, "green");
+  color: map_get($colors, "primary");
   font-weight: 700;
   page-break-after: avoid;
 
@@ -166,7 +169,7 @@ ul {
   li::before {
     content: "•";
     padding-right: 9px;
-    color: map_get($adliance-colors, "medium-blue");
+    color: map_get($colors, "primary");
   }
 }
 
@@ -196,9 +199,9 @@ table {
     font-size: $font-size * 0.8;
     text-align: left;
     padding: $margin-base;
-    border-bottom: 2px solid map_get($adliance-colors, "medium-blue");;
+    border-bottom: 2px solid map_get($colors, "primary");;
     vertical-align: bottom;
-    color: map_get($adliance-colors, "dark-blue");
+    color: map_get($colors, "primary");
   }
 
   tbody {
@@ -208,7 +211,7 @@ table {
 
     tr td {
       padding: $margin-base;
-      border-bottom: 1px solid map_get($adliance-colors, "medium-blue");;
+      border-bottom: 1px solid map_get($colors, "primary");;
       vertical-align: top;
     }
   }
@@ -235,18 +238,18 @@ img {
 }
 
 .block-alert {
-  border: 1px solid map_get($adliance-colors, "medium-orange");
-  background-color: lighten(map_get($adliance-colors, "medium-orange"), 40%);
+  border: 1px solid map_get($colors, "primary");
+  background-color: lighten(map_get($colors, "primary"), 40%);
 }
 
 .block-question {
-  border: 1px solid map_get($adliance-colors, "light-blue");
-  background-color: lighten(map_get($adliance-colors, "light-blue"), 40%);
+  border: 1px solid map_get($colors, "primary");
+  background-color: lighten(map_get($colors, "primary"), 40%);
 }
 
 .block-danger {
-  border: 1px solid map_get($adliance-colors, "dark-orange");
-  background-color: lighten(map_get($adliance-colors, "dark-orange"), 40%);
+  border: 1px solid map_get($colors, "primary");
+  background-color: lighten(map_get($colors, "primary"), 40%);
 }
 
 i.fad.fa-question-circle {
@@ -268,13 +271,13 @@ i.fad.fa-exclamation-circle {
 
   hr {
     border: 0;
-    border-top: 1px solid map_get($adliance-colors, "medium-blue");
+    border-top: 1px solid map_get($colors, "primary");
   }
 }
 
 .footnote-ref {
   sup {
-    color: map_get($adliance-colors, "medium-blue");
+    color: map_get($colors, "primary");
   }
 }
 
@@ -289,7 +292,7 @@ span.link-to-document, span.link-to-chapter {
   white-space: nowrap;
 
   a {
-    color: map_get($adliance-colors, "medium-blue") !important;
+    color: map_get($colors, "primary") !important;
   }
 }
 
