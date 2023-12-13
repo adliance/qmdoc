@@ -39,10 +39,10 @@ public class GitVersionsPlaceholder : IMarkdownProcessor
                 {
                     var change = changes[i];
                     // if we have the same message multiple times in a row, just use the latest commit
-                    if (i > 0 && (changes[i - 1].Message ?? "").Equals(change.Message, StringComparison.OrdinalIgnoreCase))
+                    /*if (i > 0 && (changes[i - 1].Message ?? "").Equals(change.Message, StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
-                    }
+                    }*/
 
                     replacement += $"\n| {change.Date.ToString("dd. MM. yyyy", new CultureInfo("de-DE")).Replace(" ", "&nbsp;")} |" +
                                    $" {change.Author.Replace(" ", "&nbsp;")} |" +
