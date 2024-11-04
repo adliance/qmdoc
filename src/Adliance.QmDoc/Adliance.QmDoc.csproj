@@ -22,13 +22,13 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Adliance.AspNetCore.Buddy.Pdf" Version="6.0.16" />
-    <PackageReference Include="Adliance.Buddy.CodeStyle" Version="7.0.0.4" />
+    <PackageReference Include="Adliance.AspNetCore.Buddy.Pdf" Version="8.0.0.6" />
+    <PackageReference Include="Adliance.Buddy.CodeStyle" Version="8.0.0.8" />
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
-    <PackageReference Include="LibGit2Sharp" Version="0.27.2" />
-    <PackageReference Include="Markdig" Version="0.33.0" />
-    <PackageReference Include="Morincer.Markdig.Renderers.Docx" Version="1.0.0" />
-    <PackageReference Include="SharpScss" Version="2.0.0" />
+    <PackageReference Include="LibGit2Sharp" Version="0.30.0" />
+    <PackageReference Include="Markdig" Version="0.38.0" />
+    <PackageReference Include="Morincer.Markdig.Renderers.Docx" Version="1.0.1" />
+    <PackageReference Include="SharpScss" Version="3.0.0" />
   </ItemGroup>
 
   <ItemGroup>
