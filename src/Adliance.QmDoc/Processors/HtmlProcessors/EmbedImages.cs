@@ -4,17 +4,8 @@ using System.Text.RegularExpressions;
 
 namespace Adliance.QmDoc.Processors.HtmlProcessors;
 
-public class EmbedImages : IHtmlProcessor
+public class EmbedImages(string sourceFilePath) : IHtmlProcessor
 {
-    private readonly string _sourceFilePath;
-
-
-    public EmbedImages(string sourceFilePath)
-    {
-        _sourceFilePath = sourceFilePath;
-
-    }
-
     public HtmlProcessorResult Apply(string html)
     {
         var resultingHtml = html;
@@ -27,7 +18,7 @@ public class EmbedImages : IHtmlProcessor
             var imageUrl = match.Groups[1].Value;
             imageUrl = imageUrl.Replace("%20", " ");
 
-            var fullFilePath = Path.Combine(Path.GetDirectoryName(_sourceFilePath) ?? "", imageUrl);
+            var fullFilePath = Path.Combine(Path.GetDirectoryName(sourceFilePath) ?? "", imageUrl);
             if (File.Exists(fullFilePath))
             {
                 // we have a local file
@@ -48,7 +39,7 @@ public class EmbedImages : IHtmlProcessor
             }
             else
             {
-                result.Errors.Add(new ProcessorError(_sourceFilePath, $"Unable to find image '{imageUrl}'.", false));
+                result.Errors.Add(new ProcessorError(sourceFilePath, $"Unable to find image '{imageUrl}'.", false));
             }
         }
 

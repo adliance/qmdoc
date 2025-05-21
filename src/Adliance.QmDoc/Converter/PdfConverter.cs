@@ -11,20 +11,13 @@ using Markdig;
 
 namespace Adliance.QmDoc.Converter;
 
-public class PdfConverter : Converter
+public class PdfConverter(PdfParameters parameters, Options.Options options) : Converter(TargetExtension.Pdf, parameters, options)
 {
-    private readonly PdfParameters _parameters;
-    private readonly Options.Options _options;
-
-    public PdfConverter(PdfParameters parameters, Options.Options options) : base(TargetExtension.Pdf, parameters, options)
-    {
-        _parameters = parameters;
-        _options = options;
-    }
+    private readonly Options.Options _options = options;
 
     protected override byte[] Convert(ConverterFile file, string markdown)
     {
-        var theme = string.IsNullOrWhiteSpace(_parameters.Theme) ? _options.Theme : _parameters.Theme;
+        var theme = string.IsNullOrWhiteSpace(parameters.Theme) ? _options.Theme : parameters.Theme;
         var html = LoadHtml(file, markdown);
         
         var settings = ThemeProvider.GetOptions(theme);

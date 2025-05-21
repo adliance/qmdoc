@@ -14,23 +14,12 @@ using TitlePlaceholder = Adliance.QmDoc.Processors.MarkdownProcessors.TitlePlace
 
 namespace Adliance.QmDoc.Converter;
 
-public abstract class Converter
+public abstract class Converter(TargetExtension targetExtension, CommonConversionParameters parameters, Options.Options options)
 {
-    private readonly TargetExtension _targetExtension;
-    private readonly CommonConversionParameters _parameters;
-    private readonly Options.Options _options;
-
-    protected Converter(TargetExtension targetExtension, CommonConversionParameters parameters, Options.Options options)
-    {
-        _targetExtension = targetExtension;
-        _parameters = parameters;
-        _options = options;
-    }
-
     public void Run()
     {
-        var files = BuildFilesList(_parameters.Source, _parameters.Target, _targetExtension);
-        if (files.Count <= 0) Program.Exit(-3, $"No files found in {_parameters.Source}.");
+        var files = BuildFilesList(parameters.Source, parameters.Target, targetExtension);
+        if (files.Count <= 0) Program.Exit(-3, $"No files found in {parameters.Source}.");
 
         foreach (var f in files)
         {
@@ -40,7 +29,7 @@ public abstract class Converter
 
             EnsureTargetDirectory(f);
 
-            if (_parameters.IncludeHtml)
+            if (parameters.IncludeHtml)
             {
                 var html = LoadHtml(f, markdown);
                 var targetPathForHtmlFile = f.TargetAbsolutePath[..^Path.GetExtension(f.TargetAbsolutePath).Length] + ".html";
@@ -49,7 +38,7 @@ public abstract class Converter
             }
 
             var resultingBytes = Convert(f, markdown);
-            Program.WriteLine($"\t {_targetExtension.ToString().ToUpper()} ({FormatBytes(resultingBytes.Length)}) -> {f.TargetAbsolutePath}");
+            Program.WriteLine($"\t {targetExtension.ToString().ToUpper()} ({FormatBytes(resultingBytes.Length)}) -> {f.TargetAbsolutePath}");
             File.WriteAllBytes(f.TargetAbsolutePath, resultingBytes);
         }
     }
@@ -83,8 +72,8 @@ public abstract class Converter
         var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
         var html = Markdown.ToHtml(markdown, pipeline);
 
-        var theme = _options.Theme;
-        if (_parameters is PdfParameters pdfParameters && !string.IsNullOrWhiteSpace(pdfParameters.Theme)) theme = pdfParameters.Theme;
+        var theme = options.Theme;
+        if (parameters is PdfParameters pdfParameters && !string.IsNullOrWhiteSpace(pdfParameters.Theme)) theme = pdfParameters.Theme;
         var layout = ApplyCommonPlaceholders(file, ThemeProvider.GetContent(theme));
 
         IHtmlProcessor[] steps =
@@ -95,7 +84,7 @@ public abstract class Converter
             new IconLists(),
             new SetCorrectChaptersLinkTitle(file.SourceAbsolutePath),
             new EmbedImages(file.SourceAbsolutePath),
-            new ConfigurablePlaceholders(file.SourceAbsolutePath, _parameters.PlaceholdersFile)
+            new ConfigurablePlaceholders(file.SourceAbsolutePath, parameters.PlaceholdersFile)
         };
 
         var result = layout;
@@ -112,20 +101,20 @@ public abstract class Converter
 
     protected string ApplyCommonPlaceholders(ConverterFile file, string content)
     {
-        var title = string.IsNullOrWhiteSpace(_parameters.Title) ? Path.GetFileNameWithoutExtension(file.SourceAbsolutePath) : _parameters.Title;
-        var theme = _options.Theme;
-        if (_parameters is PdfParameters pdfParameters && !string.IsNullOrWhiteSpace(pdfParameters.Theme)) theme = pdfParameters.Theme;
+        var title = string.IsNullOrWhiteSpace(parameters.Title) ? Path.GetFileNameWithoutExtension(file.SourceAbsolutePath) : parameters.Title;
+        var theme = options.Theme;
+        if (parameters is PdfParameters pdfParameters && !string.IsNullOrWhiteSpace(pdfParameters.Theme)) theme = pdfParameters.Theme;
 
         var processors = new List<IMarkdownProcessor>
         {
             new TitlePlaceholder(title),
             new DatePlaceholder(),
-            new GitVersionsPlaceholder(file.SourceAbsolutePath, _parameters.IgnoreGitCommitsSince, _parameters.IgnoreGitCommits.SplitCleanOrder(), _parameters.IgnoreGitCommitsWithout.SplitCleanOrder()),
-            new GitVersionPlaceholder(file.SourceAbsolutePath, _parameters.IgnoreGitCommitsSince, _parameters.IgnoreGitCommits.SplitCleanOrder(), _parameters.IgnoreGitCommitsWithout.SplitCleanOrder()),
-            new GitDatePlaceholder(file.SourceAbsolutePath, _parameters.IgnoreGitCommitsSince, _parameters.IgnoreGitCommits.SplitCleanOrder(), _parameters.IgnoreGitCommitsWithout.SplitCleanOrder()),
-            new GitDateAndVersionPlaceholder(file.SourceAbsolutePath, _parameters.IgnoreGitCommitsSince, _parameters.IgnoreGitCommits.SplitCleanOrder(), _parameters.IgnoreGitCommitsWithout.SplitCleanOrder()),
+            new GitVersionsPlaceholder(file.SourceAbsolutePath, parameters.IgnoreGitCommitsSince, parameters.IgnoreGitCommits.SplitCleanOrder(), parameters.IgnoreGitCommitsWithout.SplitCleanOrder()),
+            new GitVersionPlaceholder(file.SourceAbsolutePath, parameters.IgnoreGitCommitsSince, parameters.IgnoreGitCommits.SplitCleanOrder(), parameters.IgnoreGitCommitsWithout.SplitCleanOrder()),
+            new GitDatePlaceholder(file.SourceAbsolutePath, parameters.IgnoreGitCommitsSince, parameters.IgnoreGitCommits.SplitCleanOrder(), parameters.IgnoreGitCommitsWithout.SplitCleanOrder()),
+            new GitDateAndVersionPlaceholder(file.SourceAbsolutePath, parameters.IgnoreGitCommitsSince, parameters.IgnoreGitCommits.SplitCleanOrder(), parameters.IgnoreGitCommitsWithout.SplitCleanOrder()),
             new CssPlaceholder(theme),
-            new HeaderNumbering(!_parameters.DisableHeaderNumbering)
+            new HeaderNumbering(!parameters.DisableHeaderNumbering)
         };
 
         var context = new MarkdownProcessorContext();

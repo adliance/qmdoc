@@ -3,20 +3,12 @@ using System.IO;
 
 namespace Adliance.QmDoc;
 
-public class ProcessorError
+public class ProcessorError(string filePath, string errorMessage, bool isWarningOnly = false)
 {
-    public ProcessorError(string filePath, string errorMessage, bool isWarningOnly = false)
-    {
-        FilePath = filePath;
-        FileName = Path.GetFileName(filePath);
-        ErrorMessage = errorMessage;
-        IsWarningOnly = isWarningOnly;
-    }
-
-    public string FileName { get; }
-    public string FilePath { get; }
-    public string ErrorMessage { get; }
-    public bool IsWarningOnly { get; }
+    public string FileName { get; } = Path.GetFileName(filePath);
+    public string FilePath { get; } = filePath;
+    public string ErrorMessage { get; } = errorMessage;
+    public bool IsWarningOnly { get; } = isWarningOnly;
 
     public override bool Equals(object? obj)
     {

@@ -8,17 +8,11 @@ public interface IMarkdownProcessor
     MarkdownProcessorResult Apply(string markdown, MarkdownProcessorContext markdownProcessorContext);
 }
 
-public class MarkdownProcessorResult
+public class MarkdownProcessorResult(string resultingMarkdown, MarkdownProcessorContext markdownProcessorContext)
 {
-    public MarkdownProcessorResult(string resultingMarkdown, MarkdownProcessorContext markdownProcessorContext)
-    {
-        MarkdownProcessorContext = markdownProcessorContext;
-        ResultingMarkdown = resultingMarkdown;
-    }
-
-    public string ResultingMarkdown { get; set; }
+    public string ResultingMarkdown { get; set; } = resultingMarkdown;
     public IList<ProcessorError> Errors { get; set; } = new List<ProcessorError>();
-    public MarkdownProcessorContext MarkdownProcessorContext { get; set; }
+    public MarkdownProcessorContext MarkdownProcessorContext { get; set; } = markdownProcessorContext;
 }
 
 public class MarkdownProcessorContext
@@ -26,16 +20,10 @@ public class MarkdownProcessorContext
     public IList<LinkedDocument> LinkedDocuments { get; set; } = new List<LinkedDocument>();
 }
 
-public class LinkedDocument
+public class LinkedDocument(string fileName, string niceName)
 {
-    public LinkedDocument(string fileName, string niceName)
-    {
-        FileName = fileName;
-        NiceName = niceName;
-    }
-
-    public string FileName { get; set; }
-    public string NiceName { get; set; }
+    public string FileName { get; set; } = fileName;
+    public string NiceName { get; set; } = niceName;
 
     public override bool Equals(object? obj)
     {

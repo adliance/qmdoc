@@ -1,4 +1,4 @@
-name: 2.2.$(Rev:r)
+name: 2.3.$(Rev:r)
 
 resources:
 - repo: self

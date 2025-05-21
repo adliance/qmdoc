@@ -6,21 +6,9 @@ using System.Text.RegularExpressions;
 
 namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
-public class GitVersionsPlaceholder : IMarkdownProcessor
+public class GitVersionsPlaceholder(string sourceFilePath, DateTime? ignoreGitCommitsSince, IList<string> ignoreCommits, IList<string> ignoreCommitsWithout)
+    : IMarkdownProcessor
 {
-    private readonly string _sourceFilePath;
-    private readonly DateTime? _ignoreGitCommitsSince;
-    private readonly IList<string> _ignoreCommits;
-    private readonly IList<string> _ignoreCommitsWithout;
-
-    public GitVersionsPlaceholder(string sourceFilePath, DateTime? ignoreGitCommitsSince, IList<string> ignoreCommits, IList<string> ignoreCommitsWithout)
-    {
-        _sourceFilePath = sourceFilePath;
-        _ignoreGitCommitsSince = ignoreGitCommitsSince;
-        _ignoreCommits = ignoreCommits;
-        _ignoreCommitsWithout = ignoreCommitsWithout;
-    }
-
     public MarkdownProcessorResult Apply(string markdown, MarkdownProcessorContext markdownProcessorContext)
     {
         var pattern = @"\{\{\W*GIT_VERSIONS\W*\}\}";
@@ -28,7 +16,7 @@ public class GitVersionsPlaceholder : IMarkdownProcessor
 
         if (Regex.IsMatch(markdown, pattern, RegexOptions.IgnoreCase))
         {
-            var changes = GitService.GetVersions(_sourceFilePath, _ignoreGitCommitsSince, _ignoreCommits, _ignoreCommitsWithout).ToList();
+            var changes = GitService.GetVersions(sourceFilePath, ignoreGitCommitsSince, ignoreCommits, ignoreCommitsWithout).ToList();
 
             string replacement;
             if (changes.Any())

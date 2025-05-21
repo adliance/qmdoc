@@ -4,14 +4,9 @@ using System.Text.RegularExpressions;
 
 namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
-public class LinkedDocumentsPlaceholder : IMarkdownProcessor
+public class LinkedDocumentsPlaceholder(string sourceFilePath) : IMarkdownProcessor
 {
-    private readonly string _sourceFilePath;
-
-    public LinkedDocumentsPlaceholder(string sourceFilePath)
-    {
-        _sourceFilePath = sourceFilePath;
-    }
+    private readonly string _sourceFilePath = sourceFilePath;
 
     public MarkdownProcessorResult Apply(string markdown, MarkdownProcessorContext markdownProcessorContext)
     {

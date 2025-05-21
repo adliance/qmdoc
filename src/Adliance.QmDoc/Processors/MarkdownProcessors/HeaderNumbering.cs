@@ -6,19 +6,11 @@ using Adliance.QmDoc.Processors.HtmlProcessors;
 
 namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
-public class HeaderNumbering : IMarkdownProcessor
+public class HeaderNumbering(bool enable) : IMarkdownProcessor
 {
-    private readonly bool _enable;
-
-    public HeaderNumbering(bool enable)
-    {
-        _enable = enable;
-    }
-
-
     public MarkdownProcessorResult Apply(string markdown, MarkdownProcessorContext markdownProcessorContext)
     {
-        if (!_enable) return new MarkdownProcessorResult(markdown, markdownProcessorContext);
+        if (!enable) return new MarkdownProcessorResult(markdown, markdownProcessorContext);
 
         var h1 = 0;
         var h2 = 0;

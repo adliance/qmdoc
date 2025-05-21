@@ -5,37 +5,29 @@ using Adliance.QmDoc.Extensions;
 
 namespace Adliance.QmDoc.Processors.HtmlProcessors;
 
-public class SetCorrectChaptersLinkTitle : IHtmlProcessor
+public class SetCorrectChaptersLinkTitle(string filePath) : IHtmlProcessor
 {
-    private readonly string _filePath;
-
-    public SetCorrectChaptersLinkTitle(string filePath)
-    {
-        _filePath = filePath;
-    }
-
     public HtmlProcessorResult Apply(string html)
     {
         var resultingHtml = html;
 
         foreach (Match? m in Regex.Matches(html, "<h\\d id=\"(.*?)\">(.*?)</"))
         {
-            if (m==null) continue;
-                
+            if (m == null) continue;
+
             var id = m.Groups[1].Value;
             var title = m.Groups[2].Value;
-                
+
             resultingHtml = Regex.Replace(resultingHtml, $"<a href=\"#{id}\">{id}</a>", $"<a href=\"#{id}\">{(title ?? "").RemoveMultipleNbsp().Trim()}</a>");
         }
 
         var result = new HtmlProcessorResult(resultingHtml);
 
-
         // also check for links to non-existing chapters
         foreach (Match? m in Regex.Matches(html, "href=\"#(.*?)\"", RegexOptions.IgnoreCase))
         {
-            if (m==null) continue;
-                
+            if (m == null) continue;
+
             var id = m.Groups[1].Value;
             var hasMatchingId = Regex.IsMatch(html, $" id=\"{id}\"", RegexOptions.IgnoreCase);
 
@@ -51,7 +43,8 @@ public class SetCorrectChaptersLinkTitle : IHtmlProcessor
                         errorMessage += $"{Environment.NewLine}  - {idMatch}";
                     }
                 }
-                result.Errors.Add(new ProcessorError(_filePath, errorMessage));
+
+                result.Errors.Add(new ProcessorError(filePath, errorMessage));
             }
         }
 

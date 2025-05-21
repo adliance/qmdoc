@@ -7,12 +7,8 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Adliance.QmDoc.Converter;
 
-public class DocxConverter : Converter
+public class DocxConverter(DocxParameters parameters, Options.Options options) : Converter(TargetExtension.Docx, parameters, options)
 {
-    public DocxConverter(DocxParameters parameters, Options.Options options) : base(TargetExtension.Docx, parameters, options)
-    {
-    }
-
     protected override byte[] Convert(ConverterFile file, string markdown)
     {
         var document = DocxTemplateHelper.Standard;

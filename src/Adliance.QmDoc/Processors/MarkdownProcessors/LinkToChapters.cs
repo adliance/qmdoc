@@ -26,6 +26,7 @@ public class LinkToChapters : IMarkdownProcessor
         var result = chapterName.Trim();
         result = result.Replace(" ", "-");
         result = result.Replace(",", "");
+        result = result.Replace(":", "");
         result = result.ToLower();
         result = result.Replace("ä", "a");
         result = result.Replace("ö", "o");

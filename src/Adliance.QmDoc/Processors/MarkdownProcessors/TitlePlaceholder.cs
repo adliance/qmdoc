@@ -2,18 +2,11 @@
 
 namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
-public class TitlePlaceholder : IMarkdownProcessor
+public class TitlePlaceholder(string title) : IMarkdownProcessor
 {
-    private readonly string _title;
-
-    public TitlePlaceholder(string title)
-    {
-        _title = title;
-    }
-
     public MarkdownProcessorResult Apply(string markdown, MarkdownProcessorContext markdownProcessorContext)
     {
-        var result = Regex.Replace(markdown, @"\{\{\W*TITLE\W*\}\}", _title, RegexOptions.IgnoreCase);
+        var result = Regex.Replace(markdown, @"\{\{\W*TITLE\W*\}\}", title, RegexOptions.IgnoreCase);
         return new MarkdownProcessorResult(result, markdownProcessorContext);
     }
 }

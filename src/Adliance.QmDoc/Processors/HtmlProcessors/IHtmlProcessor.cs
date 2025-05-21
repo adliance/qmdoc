@@ -7,13 +7,8 @@ internal interface IHtmlProcessor
     HtmlProcessorResult Apply(string html);
 }
 
-public class HtmlProcessorResult
+public class HtmlProcessorResult(string resultingHtml)
 {
-    public HtmlProcessorResult(string resultingHtml)
-    {
-        ResultingHtml = resultingHtml;
-    }
-
-    public string ResultingHtml { get; set; }
+    public string ResultingHtml { get; set; } = resultingHtml;
     public IList<ProcessorError> Errors { get; set; } = new List<ProcessorError>();
 }

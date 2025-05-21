@@ -6,17 +6,8 @@ using System.Text.RegularExpressions;
 
 namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
-public class LinkToDocuments : IMarkdownProcessor
+public class LinkToDocuments(string baseDirectory, string filePath) : IMarkdownProcessor
 {
-    private readonly string _baseDirectory;
-    private readonly string _filePath;
-
-    public LinkToDocuments(string baseDirectory, string filePath)
-    {
-        _baseDirectory = baseDirectory;
-        _filePath = filePath;
-    }
-
     public MarkdownProcessorResult Apply(string markdown, MarkdownProcessorContext markdownProcessorContext)
     {
         var result = new MarkdownProcessorResult(markdown, markdownProcessorContext);
@@ -39,23 +30,23 @@ public class LinkToDocuments : IMarkdownProcessor
 
             var code = m.Groups[1].Value;
 
-            var allFiles = Directory.GetFiles(_baseDirectory, "*.md", SearchOption.AllDirectories).ToList();
+            var allFiles = Directory.GetFiles(baseDirectory, "*.md", SearchOption.AllDirectories).ToList();
             var linkedFilePath = allFiles.FirstOrDefault(x => Path.GetFileName(x).StartsWith(code, true, CultureInfo.InvariantCulture));
 
             // we prefer *.md files ... but if we can't find a matching one, we just take whatever
             if (linkedFilePath == null)
             {
-                allFiles = Directory.GetFiles(_baseDirectory, "*.*", SearchOption.AllDirectories).ToList();
+                allFiles = Directory.GetFiles(baseDirectory, "*.*", SearchOption.AllDirectories).ToList();
                 linkedFilePath = allFiles.FirstOrDefault(x => Path.GetFileName(x).StartsWith(code, true, CultureInfo.InvariantCulture));
             }
 
             if (linkedFilePath == null)
             {
-                markdownProcessorResult.Errors.Add(new ProcessorError(_filePath, $"Unable to find a document \"{code}\", but there's a referenced document number to it."));
+                markdownProcessorResult.Errors.Add(new ProcessorError(filePath, $"Unable to find a document \"{code}\", but there's a referenced document number to it."));
             }
             else
             {
-                var relativeFilePath = Path.GetRelativePath(Path.GetDirectoryName(_filePath)!, linkedFilePath).Replace("\\", "/");
+                var relativeFilePath = Path.GetRelativePath(Path.GetDirectoryName(filePath)!, linkedFilePath).Replace("\\", "/");
                 var targetFilePath = relativeFilePath.Replace(" ", "%20").Replace(".md", ".html");
                 var linkedDocument = new LinkedDocument(targetFilePath, Path.GetFileNameWithoutExtension(relativeFilePath));
                 markdownProcessorContext.LinkedDocuments.Add(linkedDocument);
@@ -79,18 +70,18 @@ public class LinkToDocuments : IMarkdownProcessor
             linkedFileName = linkedFileName.Replace("%20", " ");
             if (linkedFileName.Contains('@', StringComparison.OrdinalIgnoreCase)) continue;
 
-            var matchingFile = new FileInfo(Path.Combine(Path.GetDirectoryName(_filePath)!, linkedFileName));
+            var matchingFile = new FileInfo(Path.Combine(Path.GetDirectoryName(filePath)!, linkedFileName));
 
             if (!matchingFile.Exists)
             {
-                var allFiles = Directory.GetFiles(Path.GetDirectoryName(_baseDirectory) ?? "", "*.md", SearchOption.AllDirectories).ToList();
+                var allFiles = Directory.GetFiles(Path.GetDirectoryName(baseDirectory) ?? "", "*.md", SearchOption.AllDirectories).ToList();
                 var matchingFiles = allFiles.Where(x => Path.GetFileName(x).Equals(linkedFileName, StringComparison.OrdinalIgnoreCase)).ToList();
                 if (matchingFiles.Any()) matchingFile = new FileInfo(matchingFiles.First());
             }
 
             if (!matchingFile.Exists)
             {
-                markdownProcessorResult.Errors.Add(new ProcessorError(_filePath, $"Unable to find a document \"{linkedFileName}\", but there's a reference to it."));
+                markdownProcessorResult.Errors.Add(new ProcessorError(filePath, $"Unable to find a document \"{linkedFileName}\", but there's a reference to it."));
             }
             else
             {

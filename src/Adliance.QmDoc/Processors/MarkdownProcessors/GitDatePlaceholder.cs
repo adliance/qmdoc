@@ -6,24 +6,12 @@ using Adliance.QmDoc.Processors.HtmlProcessors;
 
 namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
-public class GitDatePlaceholder : IMarkdownProcessor
+public class GitDatePlaceholder(string sourceFilePath, DateTime? ignoreGitCommitsSince, IList<string> ignoreCommits, IList<string> ignoreCommitsWithout)
+    : IMarkdownProcessor
 {
-    private readonly string _sourceFilePath;
-    private readonly DateTime? _ignoreGitCommitsSince;
-    private readonly IList<string> _ignoreCommits;
-    private readonly IList<string> _ignoreCommitsWithout;
-
-    public GitDatePlaceholder(string sourceFilePath, DateTime? ignoreGitCommitsSince, IList<string> ignoreCommits, IList<string> ignoreCommitsWithout)
-    {
-        _sourceFilePath = sourceFilePath;
-        _ignoreGitCommitsSince = ignoreGitCommitsSince;
-        _ignoreCommits = ignoreCommits;
-        _ignoreCommitsWithout = ignoreCommitsWithout;
-    }
-    
     public MarkdownProcessorResult Apply(string markdown, MarkdownProcessorContext markdownProcessorContext)
     {
-        var latestVersion = GitService.GetLatestVersion(_sourceFilePath, _ignoreGitCommitsSince, _ignoreCommits, _ignoreCommitsWithout);
+        var latestVersion = GitService.GetLatestVersion(sourceFilePath, ignoreGitCommitsSince, ignoreCommits, ignoreCommitsWithout);
         var result = markdown;
         if (latestVersion != null)
         {
