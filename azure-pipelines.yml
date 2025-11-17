@@ -12,7 +12,7 @@ trigger:
     - src/*
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'ubuntu-latest'
   
 steps:
 - checkout: self
@@ -50,22 +50,25 @@ steps:
     arguments: '--configuration Release'
 
 - task: DotNetCoreCLI@2
-  displayName: DotNet Pack
+  displayName: Pack
   inputs:
     command: pack
-    packagesToPack: './src/Adliance.QmDoc/Adliance.QmDoc.csproj'
+    packagesToPack: './src/Adliance.QmDoc/*.csproj'
+    arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)'
     versioningScheme: byBuildNumber
-
+    
 - task: PublishBuildArtifacts@1
   displayName: Publish Artifact
   inputs:
-    PathtoPublish: '$(build.artifactstagingdirectory)'
-
-- task: NuGetCommand@2
-  displayName: NuGet Push
+    PathToPublish: '$(Build.ArtifactStagingDirectory)'    
+        
+- task: DotNetCoreCLI@2
+  displayName: Push
   inputs:
-    command: push
-    nuGetFeedType: external
-    publishFeedCredentials: 'Public NuGet'
-
+    command: 'custom'
+    custom: 'nuget'
+    arguments: >
+      push "$(Build.ArtifactStagingDirectory)/*.nupkg"
+      --source "https://api.nuget.org/v3/index.json"
+      --api-key "$(NUGET_API_KEY)"
 
