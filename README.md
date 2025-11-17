@@ -7,7 +7,7 @@
 QmDoc is used by Adliance GmbH to automatically convert Markdown files to nicely formatted PDF files including corporate design guidelines.
 
 ## Installation
-QmDoc is a .NET Core global tool. You'll need .NET 7 installed in order to install and use QmDoc. 
+QmDoc is a .NET Core global tool. You'll need .NET 10 installed in order to install and use QmDoc. 
 
 Open your commandline and call
 

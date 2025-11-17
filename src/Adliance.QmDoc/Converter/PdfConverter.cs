@@ -19,7 +19,7 @@ public class PdfConverter(PdfParameters parameters, Options.Options options) : C
     {
         var theme = string.IsNullOrWhiteSpace(parameters.Theme) ? _options.Theme : parameters.Theme;
         var html = LoadHtml(file, markdown);
-        
+
         var settings = ThemeProvider.GetOptions(theme);
         var pdfOptions = new PdfOptions
         {
@@ -32,13 +32,13 @@ public class PdfConverter(PdfParameters parameters, Options.Options options) : C
         var pdf = pdfer.HtmlToPdf(html, pdfOptions).GetAwaiter().GetResult();
         return pdf;
     }
-    
+
     protected override void PrepareAdditionalProcessors(ConverterFile file, IList<IMarkdownProcessor> markdownProcessors)
     {
         markdownProcessors.Add(new LinkToChapters());
         markdownProcessors.Add(new PageBreak());
         markdownProcessors.Add(new LinkToDocuments(file.SourceBaseDirectory, file.SourceAbsolutePath));
-        markdownProcessors.Add(new LinkedDocumentsPlaceholder(file.SourceAbsolutePath)); // add after the "LinkToDocuments" step, because that one fills the context with the linked documents 
+        markdownProcessors.Add(new LinkedDocumentsPlaceholder()); // add after the "LinkToDocuments" step, because that one fills the context with the linked documents
     }
 }
 

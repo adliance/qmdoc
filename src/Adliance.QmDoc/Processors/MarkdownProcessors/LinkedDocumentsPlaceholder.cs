@@ -1,13 +1,10 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
-public class LinkedDocumentsPlaceholder(string sourceFilePath) : IMarkdownProcessor
+public class LinkedDocumentsPlaceholder : IMarkdownProcessor
 {
-    private readonly string _sourceFilePath = sourceFilePath;
-
     public MarkdownProcessorResult Apply(string markdown, MarkdownProcessorContext markdownProcessorContext)
     {
         var pattern = @"\{\{\W*LINKED_DOCUMENTS\W*\}\}";
