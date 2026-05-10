@@ -24,10 +24,10 @@ public class HeaderNumbering(bool enable) : IMarkdownProcessor
             var lineClosure = line;
             lineNumber++;
 
-            var h1Match = Regex.Match(line, "^# (.*)$", RegexOptions.IgnoreCase);
-            var h2Match = Regex.Match(line, "^## (.*)$", RegexOptions.IgnoreCase);
-            var h3Match = Regex.Match(line, "^### (.*)$", RegexOptions.IgnoreCase);
-            var h4Match = Regex.Match(line, "^#### (.*)$", RegexOptions.IgnoreCase);
+            var h1Match = Regex.Match(line, @"^#[ \t]+(.*)$", RegexOptions.IgnoreCase);
+            var h2Match = Regex.Match(line, @"^##[ \t]+(.*)$", RegexOptions.IgnoreCase);
+            var h3Match = Regex.Match(line, @"^###[ \t]+(.*)$", RegexOptions.IgnoreCase);
+            var h4Match = Regex.Match(line, @"^####[ \t]+(.*)$", RegexOptions.IgnoreCase);
 
             if (lineNumber == 1 && h4Match.Success)
             {
