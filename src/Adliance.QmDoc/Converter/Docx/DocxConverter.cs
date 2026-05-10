@@ -21,6 +21,7 @@ public class DocxConverter(DocxParameters parameters, Options.Options options) :
             renderer.ObjectRenderers.Add(new PageBreakRenderer());
         var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
         Markdown.Convert(markdown, renderer, pipeline);
+        IconBlocksProcessor.Apply(document);
 
         var tempPath = System.IO.Path.GetTempFileName();
         document.SaveAs(tempPath).Close();
