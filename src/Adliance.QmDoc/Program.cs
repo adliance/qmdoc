@@ -1,11 +1,11 @@
-﻿using CommandLine;
-using CommandLine.Text;
 using System;
 using System.Threading.Tasks;
 using Adliance.QmDoc.Converter;
 using Adliance.QmDoc.Options;
 using Adliance.QmDoc.Parameters;
 using Adliance.QmDoc.Themes;
+using CommandLine;
+using CommandLine.Text;
 
 namespace Adliance.QmDoc;
 
@@ -88,7 +88,7 @@ public class Program
     {
         Console.WriteLine(message);
     }
-    
+
     public static void Write(string? message)
     {
         Console.Write(message);
@@ -100,7 +100,7 @@ public class Program
         await UpdateTheme(options, parameters.Theme);
         Console.WriteLine($"Changed theme to \"{parameters.Theme}\". All conversions will use this theme from now on.");
     }
-    
+
     private static async Task UpdateTheme(Options.Options options, string theme)
     {
         if (string.IsNullOrWhiteSpace(theme))

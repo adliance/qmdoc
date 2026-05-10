@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
@@ -14,9 +14,9 @@ public class ConfigurablePlaceholders : IHtmlProcessor
     {
         if (string.IsNullOrWhiteSpace(pathToJsonFile)) return;
         if (!Path.IsPathRooted(pathToJsonFile)) pathToJsonFile = Path.Combine(Path.GetDirectoryName(sourceFileName)!, pathToJsonFile);
-            
+
         var file = new FileInfo(pathToJsonFile);
-         
+
         if (file.Exists)
         {
             try

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 
 namespace Adliance.QmDoc;
@@ -16,7 +16,7 @@ public class UpdateService
             UseShellExecute = true,
             CreateNoWindow = false
         };
-            
+
         var process = Process.Start(pi);
         if (process == null)
         {

@@ -1,7 +1,6 @@
-﻿using System.IO;
+using System.IO;
 using System.Text.Json;
 using Adliance.QmDoc.Options;
-using Microsoft.AspNetCore.Routing;
 
 namespace Adliance.QmDoc.Themes;
 

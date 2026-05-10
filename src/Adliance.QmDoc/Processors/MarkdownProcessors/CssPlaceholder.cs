@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 using Adliance.QmDoc.Themes;
 
 namespace Adliance.QmDoc.Processors.MarkdownProcessors;

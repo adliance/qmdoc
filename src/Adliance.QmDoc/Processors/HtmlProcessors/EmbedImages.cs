@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Text.RegularExpressions;
 
@@ -13,8 +13,8 @@ public class EmbedImages(string sourceFilePath) : IHtmlProcessor
 
         foreach (Match? match in Regex.Matches(html, "<img src=\"(.*?)\"", RegexOptions.IgnoreCase))
         {
-            if (match==null) continue;
-                
+            if (match == null) continue;
+
             var imageUrl = match.Groups[1].Value;
             imageUrl = imageUrl.Replace("%20", " ");
 

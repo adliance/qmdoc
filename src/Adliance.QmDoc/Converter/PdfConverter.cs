@@ -1,13 +1,8 @@
 using System.Collections.Generic;
-using System.Runtime.InteropServices.ComTypes;
-using System.Text.RegularExpressions;
 using Adliance.AspNetCore.Buddy.Pdf.V2;
-using Adliance.QmDoc.Extensions;
 using Adliance.QmDoc.Parameters;
-using Adliance.QmDoc.Processors.HtmlProcessors;
 using Adliance.QmDoc.Processors.MarkdownProcessors;
 using Adliance.QmDoc.Themes;
-using Markdig;
 
 namespace Adliance.QmDoc.Converter;
 
@@ -45,4 +40,6 @@ public class PdfConverter(PdfParameters parameters, Options.Options options) : C
 public class AdliancePdferSettings : IPdferConfiguration
 {
     public string ServerUrl => "https://pdf2.adliance.dev";
+    public string? ApiKeyPdf => null;
+    public string? ApiKeyTemplate => null;
 }

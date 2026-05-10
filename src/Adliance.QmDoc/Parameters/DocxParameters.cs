@@ -1,4 +1,3 @@
-﻿using System;
 using CommandLine;
 
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global

@@ -1,4 +1,4 @@
-﻿using CommandLine;
+using CommandLine;
 
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 // ReSharper disable ClassNeverInstantiated.Global

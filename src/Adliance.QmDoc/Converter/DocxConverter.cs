@@ -14,6 +14,7 @@ public class DocxConverter(DocxParameters parameters, Options.Options options) :
         var document = DocxTemplateHelper.Standard;
         var styles = new DocumentStyles();
         var renderer = new DocxDocumentRenderer(document, styles, NullLogger<DocxDocumentRenderer>.Instance);
+        renderer.ObjectRenderers.Add(new TableRenderer());
         var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
         Markdown.Convert(markdown, renderer, pipeline);
 
