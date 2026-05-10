@@ -22,7 +22,10 @@ public class DocxConverter(DocxParameters parameters, Options.Options options) :
         var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
         Markdown.Convert(markdown, renderer, pipeline);
         IconBlocksProcessor.Apply(document);
-        FooterProcessor.Apply(document, ApplyCommonPlaceholders(file, "{{TITLE}}"), ApplyCommonPlaceholders(file, "{{GIT_DATE_VERSION}}"));
+        AuthorLineProcessor.Apply(document);
+        var title = ApplyCommonPlaceholders(file, "{{TITLE}}");
+        TitleBlockProcessor.Apply(document, title);
+        FooterProcessor.Apply(document, title, ApplyCommonPlaceholders(file, "{{GIT_DATE_VERSION}}"));
 
         var tempPath = System.IO.Path.GetTempFileName();
         document.SaveAs(tempPath).Close();
