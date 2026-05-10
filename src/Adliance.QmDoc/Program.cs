@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Adliance.QmDoc.Converter;
+using Adliance.QmDoc.Converter.Docx;
 using Adliance.QmDoc.Options;
 using Adliance.QmDoc.Parameters;
 using Adliance.QmDoc.Themes;

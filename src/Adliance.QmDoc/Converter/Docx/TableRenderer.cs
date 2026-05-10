@@ -9,7 +9,7 @@ using OxTable = DocumentFormat.OpenXml.Wordprocessing.Table;
 using OxTableCell = DocumentFormat.OpenXml.Wordprocessing.TableCell;
 using OxTableRow = DocumentFormat.OpenXml.Wordprocessing.TableRow;
 
-namespace Adliance.QmDoc.Converter;
+namespace Adliance.QmDoc.Converter.Docx;
 
 public class TableRenderer : MarkdownObjectRenderer<DocxDocumentRenderer, Markdig.Extensions.Tables.Table>
 {
