@@ -59,7 +59,7 @@ public class Program
             {
                 try
                 {
-                    new UpdateService().Run();
+                    new UpdateService().Run().GetAwaiter().GetResult();
                     Exit(0);
                 }
                 catch (Exception ex)

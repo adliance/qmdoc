@@ -1,12 +1,13 @@
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Adliance.QmDoc;
 
 public class UpdateService
 {
 
-    public void Run()
+    public async Task Run()
     {
         var pi = new ProcessStartInfo
         {
@@ -22,5 +23,7 @@ public class UpdateService
         {
             throw new Exception("Process is null.");
         }
+
+        await process.WaitForExitAsync();
     }
 }
