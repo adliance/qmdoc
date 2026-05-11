@@ -24,12 +24,12 @@ public static class ThemeProvider
 
     public static string? GetScss(string theme)
     {
-        return GetContent(theme, "style.scss") ?? GetEmbeddedContent(theme, "style.scss");
+        return GetContent(theme, "style.scss") ?? GetEmbeddedContent(theme, "style.scss", false);
     }
 
     public static string? GetCss(string theme)
     {
-        return GetContent(theme, "style.css") ?? GetEmbeddedContent(theme, "style.css");
+        return GetContent(theme, "style.css") ?? GetEmbeddedContent(theme, "style.css", false);
     }
 
     public static ThemeOptions GetOptions(string theme)
@@ -45,7 +45,7 @@ public static class ThemeProvider
 
 
     private static string? _themeErrorLastTheme = "";
-    private static string? GetEmbeddedContent(string theme, string fileName)
+    private static string? GetEmbeddedContent(string theme, string fileName, bool printWarning = true)
     {
         if (Regex.IsMatch(theme, "^\\d")) theme = "_" + theme; // if the theme name starts with a digit, the resource name starts with a _ automatically
 
@@ -54,7 +54,7 @@ public static class ThemeProvider
 
         if (stream == null)
         {
-            if (_themeErrorLastTheme != theme)
+            if (printWarning && _themeErrorLastTheme != theme)
             {
                 Program.WriteLine($"\tTheme \"{theme}\" not found. Falling back to default theme");
                 _themeErrorLastTheme = theme;
