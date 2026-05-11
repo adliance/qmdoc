@@ -18,8 +18,8 @@ public class PdfConverter(PdfParameters parameters, Options.Options options) : C
         var settings = ThemeProvider.GetOptions(theme);
         var pdfOptions = new PdfOptions
         {
-            FooterHtml = ApplyCommonPlaceholders(file, ThemeProvider.GetFooter(theme)),
-            HeaderHtml = ApplyCommonPlaceholders(file, ThemeProvider.GetHeader(theme)),
+            FooterHtml = ApplyCommonPlaceholders(file, ThemeProvider.GetFooter(GetTheme())),
+            HeaderHtml = ApplyCommonPlaceholders(file, ThemeProvider.GetHeader(GetTheme())),
             FooterHeight = settings.Pdf.FooterHeight,
             HeaderHeight = settings.Pdf.HeaderHeight
         };

@@ -125,7 +125,7 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
         return content;
     }
 
-    private string GetTitle(ConverterFile file)
+    protected string GetTitle(ConverterFile file)
     {
         var result = Path.GetFileNameWithoutExtension(file.SourceAbsolutePath);
         if (!string.IsNullOrWhiteSpace(_frontmatter.Title)) result = _frontmatter.Title;
@@ -133,7 +133,7 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
         return result;
     }
 
-    private string GetTheme()
+    protected string GetTheme()
     {
         var result = options.Theme;
         if (!string.IsNullOrWhiteSpace(_frontmatter.Theme)) result = _frontmatter.Theme;

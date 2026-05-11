@@ -7,9 +7,14 @@ public class CssPlaceholder(string? theme) : IMarkdownProcessor
 {
     private string GetTranspiledCss()
     {
-        var scss = ThemeProvider.GetScss(theme ?? "");
-        var css = SharpScss.Scss.ConvertToCss(scss);
-        return css.Css;
+        var css = ThemeProvider.GetCss(theme ?? "");
+        if (css == null)
+        {
+            var scss = ThemeProvider.GetScss(theme ?? "") ?? "";
+            css = SharpScss.Scss.ConvertToCss(scss).Css;
+        }
+
+        return css;
     }
 
     public MarkdownProcessorResult Apply(string markdown, MarkdownProcessorContext markdownProcessorContext)

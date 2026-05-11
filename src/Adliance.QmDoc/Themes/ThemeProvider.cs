@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Adliance.QmDoc.Options;
 
 namespace Adliance.QmDoc.Themes;
@@ -21,9 +22,14 @@ public static class ThemeProvider
         return GetContent(theme, "index.html") ?? GetEmbeddedContent(theme, "index.html") ?? "";
     }
 
-    public static string GetScss(string theme)
+    public static string? GetScss(string theme)
     {
-        return GetContent(theme, "style.scss") ?? GetEmbeddedContent(theme, "style.scss") ?? "";
+        return GetContent(theme, "style.scss") ?? GetEmbeddedContent(theme, "style.scss");
+    }
+
+    public static string? GetCss(string theme)
+    {
+        return GetContent(theme, "style.css") ?? GetEmbeddedContent(theme, "style.css");
     }
 
     public static ThemeOptions GetOptions(string theme)
@@ -41,6 +47,8 @@ public static class ThemeProvider
     private static string? _themeErrorLastTheme = "";
     private static string? GetEmbeddedContent(string theme, string fileName)
     {
+        if (Regex.IsMatch(theme, "^\\d")) theme = "_" + theme; // if the theme name starts with a digit, the resource name starts with a _ automatically
+
         var name = "Adliance.QmDoc.Themes." + theme + "." + fileName;
         var stream = typeof(ThemeProvider).Assembly.GetManifestResourceStream(name);
 
