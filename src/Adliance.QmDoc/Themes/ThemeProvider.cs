@@ -37,6 +37,8 @@ public static class ThemeProvider
         return new ThemeOptions();
     }
 
+
+    private static string? _themeErrorLastTheme = "";
     private static string? GetEmbeddedContent(string theme, string fileName)
     {
         var name = "Adliance.QmDoc.Themes." + theme + "." + fileName;
@@ -44,6 +46,12 @@ public static class ThemeProvider
 
         if (stream == null)
         {
+            if (_themeErrorLastTheme != theme)
+            {
+                Program.WriteLine($"\tTheme \"{theme}\" not found. Falling back to default theme");
+                _themeErrorLastTheme = theme;
+            }
+
             name = "Adliance.QmDoc.Themes.Default." + fileName;
             stream = typeof(ThemeProvider).Assembly.GetManifestResourceStream(name);
         }

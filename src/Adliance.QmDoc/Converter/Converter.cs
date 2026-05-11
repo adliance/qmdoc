@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Adliance.QmDoc.Extensions;
 using Adliance.QmDoc.Parameters;
+using Adliance.QmDoc.Processors;
 using Adliance.QmDoc.Processors.HtmlProcessors;
 using Adliance.QmDoc.Processors.MarkdownProcessors;
 using Adliance.QmDoc.Themes;
@@ -16,6 +17,8 @@ namespace Adliance.QmDoc.Converter;
 
 public abstract class Converter(TargetExtension targetExtension, CommonConversionParameters parameters, Options.Options options)
 {
+    private Frontmatter _frontmatter = new();
+
     public void Run()
     {
         var files = BuildFilesList(parameters.Source, parameters.Target, targetExtension);
@@ -25,7 +28,7 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
         {
             Program.WriteLine(f.SourceRelativePath + " ...");
             var markdown = LoadMarkdown(f);
-            Program.WriteLine($"\t Markdown ({FormatBytes(markdown.Length)})");
+            Program.WriteLine($"\tMarkdown ({FormatBytes(markdown.Length)})");
 
             EnsureTargetDirectory(f);
 
@@ -33,12 +36,12 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
             {
                 var html = LoadHtml(f, markdown);
                 var targetPathForHtmlFile = f.TargetAbsolutePath[..^Path.GetExtension(f.TargetAbsolutePath).Length] + ".html";
-                Program.WriteLine($"\t HTML ({FormatBytes(html.Length)}) -> {targetPathForHtmlFile}");
+                Program.WriteLine($"\tHTML ({FormatBytes(html.Length)}) -> {targetPathForHtmlFile}");
                 File.WriteAllText(targetPathForHtmlFile, html);
             }
 
             var resultingBytes = Convert(f, markdown);
-            Program.WriteLine($"\t {targetExtension.ToString().ToUpper()} ({FormatBytes(resultingBytes.Length)}) -> {f.TargetAbsolutePath}");
+            Program.WriteLine($"\t{targetExtension.ToString().ToUpper()} ({FormatBytes(resultingBytes.Length)}) -> {f.TargetAbsolutePath}");
             File.WriteAllBytes(f.TargetAbsolutePath, resultingBytes);
         }
     }
@@ -48,8 +51,8 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
     private string LoadMarkdown(ConverterFile file)
     {
         var markdown = File.ReadAllText(file.SourceAbsolutePath).Replace("\r\n", "\n");
-
-        markdown = ApplyCommonPlaceholders(file, markdown);
+        _frontmatter = FrontmatterParser.Parse(markdown);
+        markdown = ApplyCommonPlaceholders(file, _frontmatter.MarkdownWithoutFrontmatter);
         var markdownProcessors = new List<IMarkdownProcessor>
         {
             new ImagesMustNotContainSpaces(file.SourceAbsolutePath)
@@ -69,15 +72,12 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
 
     protected string LoadHtml(ConverterFile file, string markdown)
     {
-        var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
+        var pipeline = new MarkdownPipelineBuilder().UseYamlFrontMatter().UseAdvancedExtensions().Build();
         var html = Markdown.ToHtml(markdown, pipeline);
-
-        var theme = options.Theme;
-        if (parameters is PdfParameters pdfParameters && !string.IsNullOrWhiteSpace(pdfParameters.Theme)) theme = pdfParameters.Theme;
-        var layout = ApplyCommonPlaceholders(file, ThemeProvider.GetContent(theme));
+        var layout = ApplyCommonPlaceholders(file, ThemeProvider.GetContent(GetTheme()));
 
         IHtmlProcessor[] steps =
-        {
+        [
             new BodyPlaceholder(html), // should be the first step
             new AuthorLine(),
             new IconBlocks(),
@@ -85,7 +85,7 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
             new SetCorrectChaptersLinkTitle(file.SourceAbsolutePath),
             new EmbedImages(file.SourceAbsolutePath),
             new ConfigurablePlaceholders(file.SourceAbsolutePath, parameters.PlaceholdersFile)
-        };
+        ];
 
         var result = layout;
         foreach (var step in steps)
@@ -101,19 +101,16 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
 
     protected string ApplyCommonPlaceholders(ConverterFile file, string content)
     {
-        var title = string.IsNullOrWhiteSpace(parameters.Title) ? Path.GetFileNameWithoutExtension(file.SourceAbsolutePath) : parameters.Title;
-        var theme = options.Theme;
-        if (parameters is PdfParameters pdfParameters && !string.IsNullOrWhiteSpace(pdfParameters.Theme)) theme = pdfParameters.Theme;
-
         var processors = new List<IMarkdownProcessor>
         {
-            new TitlePlaceholder(title),
+            new TitlePlaceholder(GetTitle(file)),
             new DatePlaceholder(),
             new GitVersionsPlaceholder(file.SourceAbsolutePath, parameters.IgnoreGitCommitsSince, parameters.IgnoreGitCommits.SplitCleanOrder(), parameters.IgnoreGitCommitsWithout.SplitCleanOrder()),
             new GitVersionPlaceholder(file.SourceAbsolutePath, parameters.IgnoreGitCommitsSince, parameters.IgnoreGitCommits.SplitCleanOrder(), parameters.IgnoreGitCommitsWithout.SplitCleanOrder()),
             new GitDatePlaceholder(file.SourceAbsolutePath, parameters.IgnoreGitCommitsSince, parameters.IgnoreGitCommits.SplitCleanOrder(), parameters.IgnoreGitCommitsWithout.SplitCleanOrder()),
-            new GitDateAndVersionPlaceholder(file.SourceAbsolutePath, parameters.IgnoreGitCommitsSince, parameters.IgnoreGitCommits.SplitCleanOrder(), parameters.IgnoreGitCommitsWithout.SplitCleanOrder()),
-            new CssPlaceholder(theme),
+            new GitDateAndVersionPlaceholder(file.SourceAbsolutePath, parameters.IgnoreGitCommitsSince, parameters.IgnoreGitCommits.SplitCleanOrder(),
+                parameters.IgnoreGitCommitsWithout.SplitCleanOrder()),
+            new CssPlaceholder(GetTheme()),
             new HeaderNumbering(!parameters.DisableHeaderNumbering)
         };
 
@@ -126,6 +123,22 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
         }
 
         return content;
+    }
+
+    private string GetTitle(ConverterFile file)
+    {
+        var result = Path.GetFileNameWithoutExtension(file.SourceAbsolutePath);
+        if (!string.IsNullOrWhiteSpace(_frontmatter.Title)) result = _frontmatter.Title;
+        if (!string.IsNullOrWhiteSpace(parameters.Title)) result = parameters.Title;
+        return result;
+    }
+
+    private string GetTheme()
+    {
+        var result = options.Theme;
+        if (!string.IsNullOrWhiteSpace(_frontmatter.Theme)) result = _frontmatter.Theme;
+        if (parameters is PdfParameters pdfParameters && !string.IsNullOrWhiteSpace(pdfParameters.Theme)) result = pdfParameters.Theme;
+        return result;
     }
 
     private static void EnsureTargetDirectory(ConverterFile file)

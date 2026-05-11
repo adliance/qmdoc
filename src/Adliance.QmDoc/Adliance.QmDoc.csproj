@@ -29,6 +29,7 @@
     <PackageReference Include="Markdig" Version="1.1.3" />
     <PackageReference Include="Morincer.Markdig.Renderers.Docx" Version="1.0.1" />
     <PackageReference Include="SharpScss" Version="3.0.0" />
+    <PackageReference Include="YamlDotNet" Version="17.1.0" />
   </ItemGroup>
 
   <ItemGroup>
