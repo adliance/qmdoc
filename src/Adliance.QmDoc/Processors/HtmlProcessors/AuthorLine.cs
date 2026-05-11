@@ -2,10 +2,17 @@ using System.Text.RegularExpressions;
 
 namespace Adliance.QmDoc.Processors.HtmlProcessors;
 
-public class AuthorLine : IHtmlProcessor
+public class AuthorLine(string? author) : IHtmlProcessor
 {
     public HtmlProcessorResult Apply(string html)
     {
+        if (!string.IsNullOrWhiteSpace(author))
+        {
+            var authorSnippet = $"<div class=\"document-author\"><span class=\"name\">{author}</span>, Adliance GmbH</div>";
+            html = authorSnippet + html;
+            return new HtmlProcessorResult(html);
+        }
+
         var result = html;
 
         foreach (Match? match in Regex.Matches(html, @"<h4.*?>(.*?) \| (.*?) \| (.*?)</h4>", RegexOptions.Multiline | RegexOptions.IgnoreCase))

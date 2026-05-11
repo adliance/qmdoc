@@ -11,6 +11,7 @@ public class Frontmatter
 {
     public string? Title { get; set; }
     public string? Theme { get; set; }
+    public string? Author { get; set; }
     public string MarkdownWithoutFrontmatter = "";
 }
 
@@ -47,6 +48,7 @@ public static class FrontmatterParser
                            {"\t"}Frontmatter configuration found:
                            {"\t\t"}Title: {result.Title}
                            {"\t\t"}Theme: {result.Theme}
+                           {"\t\t"}Author: {result.Author}
                            """);
 
         return result;

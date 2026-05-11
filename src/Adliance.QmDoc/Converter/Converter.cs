@@ -78,8 +78,7 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
 
         IHtmlProcessor[] steps =
         [
-            new BodyPlaceholder(html), // should be the first step
-            new AuthorLine(),
+            new AuthorLine(_frontmatter.Author), // should be the first step
             new IconBlocks(),
             new IconLists(),
             new SetCorrectChaptersLinkTitle(file.SourceAbsolutePath),
@@ -87,7 +86,7 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
             new ConfigurablePlaceholders(file.SourceAbsolutePath, parameters.PlaceholdersFile)
         ];
 
-        var result = layout;
+        var result = html;
         foreach (var step in steps)
         {
             var stepResult = step.Apply(result);
@@ -95,6 +94,7 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
             result = stepResult.ResultingHtml;
         }
 
+        result = new BodyPlaceholder(result).Apply(layout).ResultingHtml;
         result = Regex.Replace(result, " href=\"(.*?)\\.html\"", " href=\"$1.pdf\"", RegexOptions.IgnoreCase);
         return result;
     }
