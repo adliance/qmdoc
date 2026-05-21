@@ -1,84 +1,72 @@
-using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using Markdig;
+using Markdig.Syntax;
 
 namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
 public class HeaderNumbering(bool enable) : IMarkdownProcessor
 {
+    private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder().Build();
+
     public MarkdownProcessorResult Apply(string markdown, MarkdownProcessorContext markdownProcessorContext)
     {
         if (!enable) return new MarkdownProcessorResult(markdown, markdownProcessorContext);
+        var document = Markdown.Parse(markdown, Pipeline);
 
         var h1 = 0;
         var h2 = 0;
         var h3 = 0;
         var h4 = 0;
 
-        var titlesToReplace = new List<Tuple<string, string>>();
-        var sb = new StringBuilder();
-        var lineNumber = 0;
-        foreach (var line in markdown.Split('\n'))
+        var titlesToReplace = new List<(string OldTitle, string NewTitle)>();
+        var spanReplacements = new List<(int Start, int Length, string NewHeading)>();
+
+        foreach (var heading in document.Descendants<HeadingBlock>())
         {
-            var lineClosure = line;
-            lineNumber++;
+            if (heading.Level > 4) continue;
+            if (heading is { Line: 0, Level: 4 }) continue; // document author — leave unnumbered
 
-            var h1Match = Regex.Match(line, @"^#[ \t]+(.*)$", RegexOptions.IgnoreCase);
-            var h2Match = Regex.Match(line, @"^##[ \t]+(.*)$", RegexOptions.IgnoreCase);
-            var h3Match = Regex.Match(line, @"^###[ \t]+(.*)$", RegexOptions.IgnoreCase);
-            var h4Match = Regex.Match(line, @"^####[ \t]+(.*)$", RegexOptions.IgnoreCase);
+            var text = markdown[heading.Span.Start..(heading.Span.End + 1)].TrimStart('#').Trim();
 
-            if (lineNumber == 1 && h4Match.Success)
+            string newTitle;
+            switch (heading.Level)
             {
-                sb.AppendLine(lineClosure);
-                continue;
+                case 1:
+                    newTitle = ++h1 + " " + text;
+                    h2 = 0;
+                    h3 = 0;
+                    h4 = 0;
+                    break;
+                case 2:
+                    newTitle = h1 + "." + ++h2 + " " + text;
+                    h3 = 0;
+                    h4 = 0;
+                    break;
+                case 3:
+                    newTitle = h1 + "." + h2 + "." + ++h3 + " " + text;
+                    h4 = 0;
+                    break;
+                default:
+                    newTitle = h1 + "." + h2 + "." + h3 + "." + ++h4 + " " + text;
+                    break;
             }
 
-            if (h1Match.Success)
-            {
-                var newTitle = $"{++h1} {h1Match.Groups[1].Value}";
-                titlesToReplace.Add(new Tuple<string, string>(h1Match.Groups[1].Value, newTitle));
-
-                lineClosure = line.Replace(h1Match.Value, $"# {newTitle}");
-                h2 = 0;
-                h3 = 0;
-                h4 = 0;
-            }
-            else if (h2Match.Success)
-            {
-                var newTitle = $"{h1}.{++h2} {h2Match.Groups[1].Value}";
-                titlesToReplace.Add(new Tuple<string, string>(h2Match.Groups[1].Value, newTitle));
-
-                lineClosure = line.Replace(h2Match.Value, $"## {newTitle}");
-                h3 = 0;
-                h4 = 0;
-            }
-            else if (h3Match.Success)
-            {
-                var newTitle = $"{h1}.{h2}.{++h3} {h3Match.Groups[1].Value}";
-                titlesToReplace.Add(new Tuple<string, string>(h3Match.Groups[1].Value, newTitle));
-
-                lineClosure = line.Replace(h3Match.Value, $"### {newTitle}");
-                h4 = 0;
-            }
-            else if (h4Match.Success)
-            {
-                var newTitle = $"{h1}.{h2}.{h3}.{++h4} {h4Match.Groups[1].Value}";
-                titlesToReplace.Add(new Tuple<string, string>(h4Match.Groups[1].Value, newTitle));
-
-                lineClosure = line.Replace(h4Match.Value, $"#### {newTitle}");
-            }
-
-            sb.AppendLine(lineClosure);
+            titlesToReplace.Add((text, newTitle));
+            spanReplacements.Add((heading.Span.Start, heading.Span.Length, new string('#', heading.Level) + " " + newTitle));
         }
+
+        // Apply back-to-front so earlier spans stay valid after each replacement
+        spanReplacements.Sort((a, b) => b.Start.CompareTo(a.Start));
+        var sb = new StringBuilder(markdown);
+        foreach (var (start, length, newHeading) in spanReplacements)
+            sb.Remove(start, length).Insert(start, newHeading);
 
         var result = sb.ToString();
 
-        foreach (var title in titlesToReplace)
-        {
-            result = Regex.Replace(result, $"(<a.*?)>{title.Item1}</a>", $"$1>{title.Item2.Replace("   ", " ")}</a>");
-        }
+        foreach (var (oldTitle, newTitle) in titlesToReplace)
+            result = Regex.Replace(result, "(<a.*?)>" + oldTitle + "</a>", "$1>" + newTitle.Replace("   ", " ") + "</a>");
 
         return new MarkdownProcessorResult(result, markdownProcessorContext);
     }
