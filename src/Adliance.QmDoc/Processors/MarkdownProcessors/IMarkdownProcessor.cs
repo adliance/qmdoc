@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Markdig;
 
 namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
@@ -17,6 +18,7 @@ public class MarkdownProcessorResult(string resultingMarkdown, MarkdownProcessor
 
 public class MarkdownProcessorContext
 {
+    public readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder().UseYamlFrontMatter().Build();
     public IList<LinkedDocument> LinkedDocuments { get; set; } = new List<LinkedDocument>();
 }
 
@@ -37,6 +39,8 @@ public class LinkedDocument(string fileName, string niceName)
 
     public override int GetHashCode()
     {
+        // ReSharper disable NonReadonlyMemberInGetHashCode
         return (FileName + NiceName).ToLower().GetHashCode();
+        // ReSharper restore NonReadonlyMemberInGetHashCode
     }
 }

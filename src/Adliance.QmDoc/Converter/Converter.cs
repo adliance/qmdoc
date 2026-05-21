@@ -50,8 +50,10 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
 
     private string LoadMarkdown(ConverterFile file)
     {
+        var context = new MarkdownProcessorContext();
+
         var markdown = File.ReadAllText(file.SourceAbsolutePath).Replace("\r\n", "\n");
-        _frontmatter = FrontmatterParser.Parse(markdown);
+        _frontmatter = FrontmatterParser.Parse(context.Pipeline, markdown);
         markdown = ApplyCommonPlaceholders(file, _frontmatter.MarkdownWithoutFrontmatter);
         var markdownProcessors = new List<IMarkdownProcessor>
         {
@@ -59,7 +61,6 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
         };
         PrepareAdditionalProcessors(file, markdownProcessors);
 
-        var context = new MarkdownProcessorContext();
         foreach (var p in markdownProcessors)
         {
             var stepResult = p.Apply(markdown, context);
@@ -111,7 +112,8 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
             new GitDateAndVersionPlaceholder(file.SourceAbsolutePath, parameters.IgnoreGitCommitsSince, parameters.IgnoreGitCommits.SplitCleanOrder(),
                 parameters.IgnoreGitCommitsWithout.SplitCleanOrder()),
             new CssPlaceholder(GetTheme()),
-            new HeaderNumbering(!parameters.DisableHeaderNumbering)
+            new HeaderNumbering(!parameters.DisableHeaderNumbering),
+            new TableOfContentsPlaceholder()
         };
 
         var context = new MarkdownProcessorContext();

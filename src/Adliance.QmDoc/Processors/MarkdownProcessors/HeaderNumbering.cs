@@ -8,12 +8,10 @@ namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
 public class HeaderNumbering(bool enable) : IMarkdownProcessor
 {
-    private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder().Build();
-
-    public MarkdownProcessorResult Apply(string markdown, MarkdownProcessorContext markdownProcessorContext)
+    public MarkdownProcessorResult Apply(string markdown, MarkdownProcessorContext context)
     {
-        if (!enable) return new MarkdownProcessorResult(markdown, markdownProcessorContext);
-        var document = Markdown.Parse(markdown, Pipeline);
+        if (!enable) return new MarkdownProcessorResult(markdown, context);
+        var document = Markdown.Parse(markdown, context.Pipeline);
 
         var h1 = 0;
         var h2 = 0;
@@ -68,6 +66,6 @@ public class HeaderNumbering(bool enable) : IMarkdownProcessor
         foreach (var (oldTitle, newTitle) in titlesToReplace)
             result = Regex.Replace(result, "(<a.*?)>" + oldTitle + "</a>", "$1>" + newTitle.Replace("   ", " ") + "</a>");
 
-        return new MarkdownProcessorResult(result, markdownProcessorContext);
+        return new MarkdownProcessorResult(result, context);
     }
 }

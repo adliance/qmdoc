@@ -17,16 +17,14 @@ public class Frontmatter
 
 public static class FrontmatterParser
 {
-    private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder().UseYamlFrontMatter().Build();
-
     private static readonly IDeserializer Deserializer = new DeserializerBuilder()
         .WithNamingConvention(CamelCaseNamingConvention.Instance)
         .IgnoreUnmatchedProperties()
         .Build();
 
-    public static Frontmatter Parse(string markdown)
+    public static Frontmatter Parse(MarkdownPipeline pipeline, string markdown)
     {
-        var document = Markdown.Parse(markdown, Pipeline);
+        var document = Markdown.Parse(markdown, pipeline);
         var block = document.OfType<YamlFrontMatterBlock>().FirstOrDefault();
 
         if (block == null)

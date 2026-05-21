@@ -39,7 +39,7 @@ public class PdfConverter(PdfParameters parameters, Options.Options options) : C
 
 public class AdliancePdferSettings : IPdferConfiguration
 {
-    public string ServerUrl => "https://pdf2.adliance.dev";
+    public string ServerUrl => "http://localhost:8080";
     public string? ApiKeyPdf => null;
     public string? ApiKeyTemplate => null;
 }
