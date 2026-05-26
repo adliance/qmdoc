@@ -18,7 +18,7 @@ public class SetCorrectChaptersLinkTitle(string filePath) : IHtmlProcessor
             var id = m.Groups[1].Value;
             var title = m.Groups[2].Value;
 
-            resultingHtml = Regex.Replace(resultingHtml, $"<a href=\"#{id}\">{id}</a>", $"<a href=\"#{id}\">{(title ?? "").RemoveMultipleNbsp().Trim()}</a>");
+            resultingHtml = Regex.Replace(resultingHtml, $"<a href=\"#{id}\">.*?</a>", $"<a href=\"#{id}\">{(title ?? "").RemoveMultipleNbsp().Trim()}</a>");
         }
 
         var result = new HtmlProcessorResult(resultingHtml);

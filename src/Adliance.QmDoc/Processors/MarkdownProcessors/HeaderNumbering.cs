@@ -32,22 +32,22 @@ public class HeaderNumbering(bool enable) : IMarkdownProcessor
             switch (heading.Level)
             {
                 case 1:
-                    newTitle = ++h1 + " " + text;
+                    newTitle = ++h1 + ". " + text;
                     h2 = 0;
                     h3 = 0;
                     h4 = 0;
                     break;
                 case 2:
-                    newTitle = h1 + "." + ++h2 + " " + text;
+                    newTitle = h1 + "." + ++h2 + ". " + text;
                     h3 = 0;
                     h4 = 0;
                     break;
                 case 3:
-                    newTitle = h1 + "." + h2 + "." + ++h3 + " " + text;
+                    newTitle = h1 + "." + h2 + "." + ++h3 + ". " + text;
                     h4 = 0;
                     break;
                 default:
-                    newTitle = h1 + "." + h2 + "." + h3 + "." + ++h4 + " " + text;
+                    newTitle = h1 + "." + h2 + "." + h3 + "." + ++h4 + ". " + text;
                     break;
             }
 
