@@ -4,15 +4,14 @@ namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
 public class ImagesMustNotContainSpaces(string sourceFilePath) : IMarkdownProcessor
 {
-    public MarkdownProcessorResult Apply(string markdown, MarkdownProcessorContext markdownProcessorContext)
+    public MarkdownProcessorContext Apply(MarkdownProcessorContext markdownContext)
     {
-        var result = new MarkdownProcessorResult(markdown, markdownProcessorContext);
-        foreach (Match? m in Regex.Matches(markdown, "\\!\\[.*?\\]\\((.* .*)\\)", RegexOptions.IgnoreCase))
+        foreach (Match? m in Regex.Matches(markdownContext.Markdown, "\\!\\[.*?\\]\\((.* .*)\\)", RegexOptions.IgnoreCase))
         {
             if (m == null) continue;
-            result.Errors.Add(new ProcessorError(sourceFilePath, $"'{m.Groups[1].Value}' contains spaces, but image URLs must not contain spaces."));
+            markdownContext.Errors.Add(new ProcessorError(sourceFilePath, $"'{m.Groups[1].Value}' contains spaces, but image URLs must not contain spaces."));
         }
 
-        return result;
+        return markdownContext;
     }
 }

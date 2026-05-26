@@ -8,10 +8,10 @@ namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
 public class HeaderNumbering(bool enable) : IMarkdownProcessor
 {
-    public MarkdownProcessorResult Apply(string markdown, MarkdownProcessorContext context)
+    public MarkdownProcessorContext Apply(MarkdownProcessorContext markdownContext)
     {
-        if (!enable) return new MarkdownProcessorResult(markdown, context);
-        var document = Markdown.Parse(markdown, context.Pipeline);
+        if (!enable) return markdownContext;
+        var document = Markdown.Parse(markdownContext.Markdown, markdownContext.Pipeline);
 
         var h1 = 0;
         var h2 = 0;
@@ -26,7 +26,7 @@ public class HeaderNumbering(bool enable) : IMarkdownProcessor
             if (heading.Level > 4) continue;
             if (heading is { Line: 0, Level: 4 }) continue; // document author — leave unnumbered
 
-            var text = markdown[heading.Span.Start..(heading.Span.End + 1)].TrimStart('#').Trim();
+            var text = markdownContext.Markdown[heading.Span.Start..(heading.Span.End + 1)].TrimStart('#').Trim();
 
             string newTitle;
             switch (heading.Level)
@@ -57,7 +57,7 @@ public class HeaderNumbering(bool enable) : IMarkdownProcessor
 
         // Apply back-to-front so earlier spans stay valid after each replacement
         spanReplacements.Sort((a, b) => b.Start.CompareTo(a.Start));
-        var sb = new StringBuilder(markdown);
+        var sb = new StringBuilder(markdownContext.Markdown);
         foreach (var (start, length, newHeading) in spanReplacements)
             sb.Remove(start, length).Insert(start, newHeading);
 
@@ -66,6 +66,7 @@ public class HeaderNumbering(bool enable) : IMarkdownProcessor
         foreach (var (oldTitle, newTitle) in titlesToReplace)
             result = Regex.Replace(result, "(<a.*?)>" + oldTitle + "</a>", "$1>" + newTitle.Replace("   ", " ") + "</a>");
 
-        return new MarkdownProcessorResult(result, context);
+        markdownContext.Markdown = result;
+        return markdownContext;
     }
 }

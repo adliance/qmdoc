@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Adliance.QmDoc.Parameters;
 using Adliance.QmDoc.Processors.MarkdownProcessors;
 using Markdig;
@@ -9,28 +10,28 @@ namespace Adliance.QmDoc.Converter.Docx;
 
 public class DocxConverter(DocxParameters parameters, Options.Options options) : Converter(TargetExtension.Docx, parameters, options)
 {
-    protected override byte[] Convert(ConverterFile file, string markdown)
+    protected override async Task<byte[]> Convert(ConverterFile file, MarkdownProcessorContext markdownContext)
     {
         var document = DocxTemplateHelper.Standard;
         var styles = new DocumentStyles();
         var renderer = new DocxDocumentRenderer(document, styles, NullLogger<DocxDocumentRenderer>.Instance);
         renderer.ObjectRenderers.Add(new TableRenderer());
-        if (renderer.ObjectRenderers is System.Collections.Generic.IList<Markdig.Renderers.IMarkdownObjectRenderer> list)
+        if (renderer.ObjectRenderers is IList<Markdig.Renderers.IMarkdownObjectRenderer> list)
             list.Insert(0, new PageBreakRenderer());
         else
             renderer.ObjectRenderers.Add(new PageBreakRenderer());
-        var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
-        Markdown.Convert(markdown, renderer, pipeline);
+
+        Markdown.Convert(markdownContext.Markdown, renderer, markdownContext.Pipeline);
         IconBlocksProcessor.Apply(document);
         AuthorLineProcessor.Apply(document);
-        var title = ApplyCommonPlaceholders(file, "{{TITLE}}");
+        var title = ApplyCommonPlaceholders(file, "{{ TITLE }}", markdownContext);
         TitleBlockProcessor.Apply(document, title);
-        FooterProcessor.Apply(document, title, ApplyCommonPlaceholders(file, "{{GIT_DATE_VERSION}}"));
+        FooterProcessor.Apply(document, title, ApplyCommonPlaceholders(file, "{{ GIT_DATE_VERSION }}", markdownContext));
 
         var tempPath = System.IO.Path.GetTempFileName();
         document.SaveAs(tempPath).Close();
 
-        var bytes = System.IO.File.ReadAllBytes(tempPath);
+        var bytes = await System.IO.File.ReadAllBytesAsync(tempPath);
         System.IO.File.Delete(tempPath);
         return bytes;
     }

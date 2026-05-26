@@ -5,18 +5,16 @@ namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
 public class LinkToChapters : IMarkdownProcessor
 {
-    public MarkdownProcessorResult Apply(string markdown, MarkdownProcessorContext markdownProcessorContext)
+    public MarkdownProcessorContext Apply(MarkdownProcessorContext markdownContext)
     {
-        var result = markdown;
-
-        var matches = Regex.Matches(markdown, @"\[#(.*?)\]");
+        var matches = Regex.Matches(markdownContext.Markdown, @"\[#(.*?)\]");
         foreach (Match? m in matches)
         {
             if (m == null) continue;
-            result = result.Replace(m.Value, $"<span class=\"link-to-chapter\"><i></i>[{(m.Groups[1].Value ?? "").Trim()}](#{GetChapterId(m.Groups[1].Value)})</span>");
+            markdownContext.Markdown = markdownContext.Markdown.Replace(m.Value, $"<span class=\"link-to-chapter\"><i></i>[{(m.Groups[1].Value).Trim()}](#{GetChapterId(m.Groups[1].Value)})</span>");
         }
 
-        return new MarkdownProcessorResult(result, markdownProcessorContext);
+        return markdownContext;
     }
 
     public static string GetChapterId(string chapterName)

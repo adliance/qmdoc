@@ -1,21 +1,13 @@
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
 public class LinkedDocumentsPlaceholder : IMarkdownProcessor
 {
-    public MarkdownProcessorResult Apply(string markdown, MarkdownProcessorContext markdownProcessorContext)
+    public MarkdownProcessorContext Apply(MarkdownProcessorContext markdownContext)
     {
-        var pattern = @"\{\{\W*LINKED_DOCUMENTS\W*\}\}";
-        var result = markdown;
-
-        if (Regex.IsMatch(markdown, pattern, RegexOptions.IgnoreCase))
-        {
-            var replacement = markdownProcessorContext.LinkedDocuments.Distinct().OrderBy(x => x.NiceName).Aggregate("", (current, d) => current + $"\n* <span class=\"link-to-document\"><i></i>[{d.NiceName}]({d.FileName})</span>");
-            result = Regex.Replace(result, pattern, replacement.Trim(), RegexOptions.IgnoreCase);
-        }
-
-        return new MarkdownProcessorResult(result, markdownProcessorContext);
+        var replacement = markdownContext.LinkedDocuments.Distinct().OrderBy(x => x.NiceName).Aggregate("", (current, d) => current + $"\n* <span class=\"link-to-document\"><i></i>[{d.NiceName}]({d.FileName})</span>");
+        markdownContext.ReplacePlaceholder("LINKED_DOCUMENTS", replacement.Trim());
+        return markdownContext;
     }
 }

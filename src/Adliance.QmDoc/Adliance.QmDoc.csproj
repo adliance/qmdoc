@@ -30,6 +30,7 @@
     <PackageReference Include="Morincer.Markdig.Renderers.Docx" Version="1.0.1" />
     <PackageReference Include="SharpScss" Version="3.0.0" />
     <PackageReference Include="YamlDotNet" Version="17.1.0" />
+    <PackageReference Include="Humanizer" Version="3.0.10" />
   </ItemGroup>
 
   <ItemGroup>

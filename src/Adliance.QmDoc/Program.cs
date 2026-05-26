@@ -22,7 +22,7 @@ public class Program
                 try
                 {
                     var options = OptionsProvider.LoadOptions();
-                    new PdfConverter(p, options).Run();
+                    new PdfConverter(p, options).Run().GetAwaiter().GetResult();
                     Exit(0);
                 }
                 catch (Exception ex)
@@ -35,7 +35,7 @@ public class Program
                 try
                 {
                     var options = OptionsProvider.LoadOptions();
-                    new DocxConverter(p, options).Run();
+                    new DocxConverter(p, options).Run().GetAwaiter().GetResult();
                     Exit(0);
                 }
                 catch (Exception ex)

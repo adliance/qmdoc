@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
+using Adliance.AspNetCore.Buddy.Pdf;
 using Markdig;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
@@ -10,21 +10,20 @@ namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
 public class TableOfContentsPlaceholder : IMarkdownProcessor
 {
-    public MarkdownProcessorResult Apply(string markdown, MarkdownProcessorContext context)
+    public static bool ContainsTocPlaceholder(MarkdownProcessorContext markdownContext)
     {
-        const string placeholderPattern = @"\{{1,2}\W*TOC\W*\}{1,2}";
-
-        if (!Regex.IsMatch(markdown, placeholderPattern, RegexOptions.IgnoreCase)) return new MarkdownProcessorResult(markdown, context);
-
-        var toc = BuildToc(markdown, context);
-        var result = Regex.Replace(markdown, placeholderPattern, toc, RegexOptions.IgnoreCase);
-
-        return new MarkdownProcessorResult(result, context);
+        return markdownContext.ContainsPlaceholderInSource("TOC");
     }
 
-    private static string BuildToc(string markdown, MarkdownProcessorContext context)
+    public MarkdownProcessorContext Apply(MarkdownProcessorContext markdownContext)
     {
-        var document = Markdown.Parse(markdown, context.Pipeline);
+        markdownContext.ReplacePlaceholder("TOC", BuildToc(markdownContext));
+        return markdownContext;
+    }
+
+    private static string BuildToc(MarkdownProcessorContext context)
+    {
+        var document = Markdown.Parse(context.Markdown, context.Pipeline);
         var sb = new StringBuilder();
 
         sb.AppendLine("<div class=\"toc\">");
@@ -38,14 +37,43 @@ public class TableOfContentsPlaceholder : IMarkdownProcessor
             var text = ExtractText(heading);
             if (string.IsNullOrWhiteSpace(text)) continue;
 
-            var indent = "";
-            if (heading.Level > 1) indent = string.Concat(Enumerable.Repeat("&nbsp;", (heading.Level - 1) * 5));
-            sb.AppendLine(CultureInfo.InvariantCulture, $"| {indent}[{text}](#{LinkToChapters.GetChapterId(text)}) |  |");
+            var indentText = "";
+            if (heading.Level > 1) indentText = string.Concat(Enumerable.Repeat("&nbsp;", (heading.Level - 1) * 5));
+            var pageText = "";
+            var page = GetPageNumber(text, context.PdfMetadata);
+            if (page.HasValue) pageText = page.Value.ToString(CultureInfo.InvariantCulture);
+            sb.AppendLine(CultureInfo.InvariantCulture, $"| {indentText}[{text}](#{LinkToChapters.GetChapterId(text)}) | {pageText} |");
         }
+
         sb.AppendLine("");
         sb.AppendLine("</div>");
 
         return sb.ToString();
+    }
+
+    private static int? GetPageNumber(string chapterTitle, PdfMetadata? pdfMetadata)
+    {
+        if (pdfMetadata == null) return null;
+
+        foreach (var o in pdfMetadata.Outline)
+        {
+            var page = GetPageNumber(chapterTitle, o);
+            if (page != null) return page;
+        }
+
+        return null;
+    }
+
+    private static int? GetPageNumber(string chapterTitle, PdfMetadata.OutlineData outline)
+    {
+        if (outline.Title == chapterTitle) return outline.Page;
+        foreach (var o in outline.Children)
+        {
+            var page = GetPageNumber(chapterTitle, o);
+            if (page != null) return page;
+        }
+
+        return null;
     }
 
     private static string ExtractText(HeadingBlock heading)

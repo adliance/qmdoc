@@ -8,21 +8,16 @@ namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
 public class LinkToDocuments(string baseDirectory, string filePath) : IMarkdownProcessor
 {
-    public MarkdownProcessorResult Apply(string markdown, MarkdownProcessorContext markdownProcessorContext)
+    public MarkdownProcessorContext Apply(MarkdownProcessorContext markdownContext)
     {
-        var result = new MarkdownProcessorResult(markdown, markdownProcessorContext);
-
-        var resultingMarkdown = ReplaceDocumentsByFileExtension(result, markdown, markdownProcessorContext);
-        resultingMarkdown = ReplaceDocumentsByCode(result, resultingMarkdown, markdownProcessorContext);
-
-        result.ResultingMarkdown = resultingMarkdown;
-        return result;
+        ReplaceDocumentsByFileExtension(markdownContext);
+        ReplaceDocumentsByCode(markdownContext);
+        return markdownContext;
     }
 
-    private string ReplaceDocumentsByCode(MarkdownProcessorResult markdownProcessorResult, string markdown, MarkdownProcessorContext markdownProcessorContext)
+    private void ReplaceDocumentsByCode(MarkdownProcessorContext markdownContext)
     {
-        var resultingMarkdown = markdown;
-        var matches = Regex.Matches(markdown, @"\[(\w\w\w\-\d\d\d)\]");
+        var matches = Regex.Matches(markdownContext.Markdown, @"\[(\w\w\w\-\d\d\d)\]");
 
         foreach (Match? m in matches)
         {
@@ -42,25 +37,22 @@ public class LinkToDocuments(string baseDirectory, string filePath) : IMarkdownP
 
             if (linkedFilePath == null)
             {
-                markdownProcessorResult.Errors.Add(new ProcessorError(filePath, $"Unable to find a document \"{code}\", but there's a referenced document number to it."));
+                markdownContext.Errors.Add(new ProcessorError(filePath, $"Unable to find a document \"{code}\", but there's a referenced document number to it."));
             }
             else
             {
                 var relativeFilePath = Path.GetRelativePath(Path.GetDirectoryName(filePath)!, linkedFilePath).Replace("\\", "/");
                 var targetFilePath = relativeFilePath.Replace(" ", "%20").Replace(".md", ".html");
                 var linkedDocument = new LinkedDocument(targetFilePath, Path.GetFileNameWithoutExtension(relativeFilePath));
-                markdownProcessorContext.LinkedDocuments.Add(linkedDocument);
-                resultingMarkdown = resultingMarkdown.Replace($"[{code}]", $"<span class=\"link-to-document\"><i></i>[{linkedDocument.NiceName}]({linkedDocument.FileName})</span>");
+                markdownContext.LinkedDocuments.Add(linkedDocument);
+                markdownContext.Markdown = markdownContext.Markdown.Replace($"[{code}]", $"<span class=\"link-to-document\"><i></i>[{linkedDocument.NiceName}]({linkedDocument.FileName})</span>");
             }
         }
-
-        return resultingMarkdown;
     }
 
-    private string ReplaceDocumentsByFileExtension(MarkdownProcessorResult markdownProcessorResult, string markdown, MarkdownProcessorContext markdownProcessorContext)
+    private void ReplaceDocumentsByFileExtension(MarkdownProcessorContext markdownContext)
     {
-        var resultingMarkdown = markdown;
-        var matches = Regex.Matches(markdown, @"\[([^\]]*?\.\w{1,4})\]");
+        var matches = Regex.Matches(markdownContext.Markdown, @"\[([^\]]*?\.\w{1,4})\]");
 
         foreach (Match? m in matches)
         {
@@ -81,7 +73,7 @@ public class LinkToDocuments(string baseDirectory, string filePath) : IMarkdownP
 
             if (!matchingFile.Exists)
             {
-                markdownProcessorResult.Errors.Add(new ProcessorError(filePath, $"Unable to find a document \"{linkedFileName}\", but there's a reference to it."));
+                markdownContext.Errors.Add(new ProcessorError(filePath, $"Unable to find a document \"{linkedFileName}\", but there's a reference to it."));
             }
             else
             {
@@ -93,11 +85,9 @@ public class LinkToDocuments(string baseDirectory, string filePath) : IMarkdownP
                 }
 
                 var linkedDocument = new LinkedDocument(fileName.Replace(" ", "%20"), Path.GetFileNameWithoutExtension(fileName.Replace("%20", " ")));
-                markdownProcessorContext.LinkedDocuments.Add(linkedDocument);
-                resultingMarkdown = resultingMarkdown.Replace($"[{linkedFileName}]", $"<span class=\"link-to-document\"><i></i>[{linkedDocument.NiceName}]({linkedDocument.FileName})</span>");
+                markdownContext.LinkedDocuments.Add(linkedDocument);
+                markdownContext.Markdown = markdownContext.Markdown.Replace($"[{linkedFileName}]", $"<span class=\"link-to-document\"><i></i>[{linkedDocument.NiceName}]({linkedDocument.FileName})</span>");
             }
         }
-
-        return resultingMarkdown;
     }
 }

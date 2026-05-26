@@ -1,4 +1,7 @@
 using System.Collections.Generic;
+using System.IO;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Adliance.AspNetCore.Buddy.Pdf.V2;
 using Adliance.QmDoc.Parameters;
 using Adliance.QmDoc.Processors.MarkdownProcessors;
@@ -10,21 +13,33 @@ public class PdfConverter(PdfParameters parameters, Options.Options options) : C
 {
     private readonly Options.Options _options = options;
 
-    protected override byte[] Convert(ConverterFile file, string markdown)
+    protected override async Task<byte[]> Convert(ConverterFile file, MarkdownProcessorContext markdownContext)
     {
         var theme = string.IsNullOrWhiteSpace(parameters.Theme) ? _options.Theme : parameters.Theme;
-        var html = LoadHtml(file, markdown);
-
         var settings = ThemeProvider.GetOptions(theme);
         var pdfOptions = new PdfOptions
         {
-            FooterHtml = ApplyCommonPlaceholders(file, ThemeProvider.GetFooter(GetTheme())),
-            HeaderHtml = ApplyCommonPlaceholders(file, ThemeProvider.GetHeader(GetTheme())),
+            FooterHtml = ApplyCommonPlaceholders(file, ThemeProvider.GetFooter(GetTheme(markdownContext)), markdownContext),
+            HeaderHtml = ApplyCommonPlaceholders(file, ThemeProvider.GetHeader(GetTheme(markdownContext)), markdownContext),
             FooterHeight = settings.Pdf.FooterHeight,
-            HeaderHeight = settings.Pdf.HeaderHeight
+            HeaderHeight = settings.Pdf.HeaderHeight,
+            Outline = true
         };
+
         var pdfer = new AdliancePdfer(new AdliancePdferSettings());
-        var pdf = pdfer.HtmlToPdf(html, pdfOptions).GetAwaiter().GetResult();
+
+        if (TableOfContentsPlaceholder.ContainsTocPlaceholder(markdownContext))
+        {
+            Program.WriteLine("\tTOC detected, second pass required");
+            var firstPassHtml = RunHtmlProcessors(file, markdownContext);
+            var firstPassPdf = await pdfer.HtmlToPdf(firstPassHtml, pdfOptions);
+            var firstPassMetadata = await pdfer.GetPdfMetadata(firstPassPdf);
+            markdownContext.ResetForSecondPass(firstPassMetadata);
+            markdownContext = RunMarkdownProcessors(file, markdownContext);
+        }
+
+        var html = RunHtmlProcessors(file, markdownContext);
+        var pdf = await pdfer.HtmlToPdf(html, pdfOptions);
         return pdf;
     }
 
@@ -39,7 +54,7 @@ public class PdfConverter(PdfParameters parameters, Options.Options options) : C
 
 public class AdliancePdferSettings : IPdferConfiguration
 {
-    public string ServerUrl => "http://localhost:8080";
+    public string ServerUrl => "https://pdf2.adliance.dev";
     public string? ApiKeyPdf => null;
     public string? ApiKeyTemplate => null;
 }

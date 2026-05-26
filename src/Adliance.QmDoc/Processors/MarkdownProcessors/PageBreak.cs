@@ -4,11 +4,10 @@ namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
 public class PageBreak : IMarkdownProcessor
 {
-    public MarkdownProcessorResult Apply(string markdown, MarkdownProcessorContext markdownProcessorContext)
+    public MarkdownProcessorContext Apply(MarkdownProcessorContext markdownContext)
     {
-        var pageBreakHtml = "<div style=\"page-break-after: always;\"></div>";
-
-        markdown = Regex.Replace(markdown, "^---", pageBreakHtml, RegexOptions.Multiline);
-        return new MarkdownProcessorResult(markdown, markdownProcessorContext);
+        const string pageBreakHtml = "<div style=\"page-break-after: always;\"></div>";
+        markdownContext.Markdown = Regex.Replace(markdownContext.Markdown, "^---", pageBreakHtml, RegexOptions.Multiline);
+        return markdownContext;
     }
 }

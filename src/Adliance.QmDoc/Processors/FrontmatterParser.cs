@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Text;
+using Adliance.QmDoc.Processors.MarkdownProcessors;
 using Markdig;
 using Markdig.Extensions.Yaml;
 using YamlDotNet.Serialization;
@@ -22,9 +23,10 @@ public static class FrontmatterParser
         .IgnoreUnmatchedProperties()
         .Build();
 
-    public static Frontmatter Parse(MarkdownPipeline pipeline, string markdown)
+    public static Frontmatter Parse(MarkdownProcessorContext markdownContext)
     {
-        var document = Markdown.Parse(markdown, pipeline);
+        var markdown = markdownContext.SourceMarkdown;
+        var document = Markdown.Parse(markdown, markdownContext.Pipeline);
         var block = document.OfType<YamlFrontMatterBlock>().FirstOrDefault();
 
         if (block == null)

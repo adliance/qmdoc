@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Adliance.QmDoc.Themes;
+using DocumentFormat.OpenXml.Office.Word;
 
 namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
@@ -17,10 +18,10 @@ public class CssPlaceholder(string? theme) : IMarkdownProcessor
         return css;
     }
 
-    public MarkdownProcessorResult Apply(string markdown, MarkdownProcessorContext markdownProcessorContext)
+    public MarkdownProcessorContext Apply(MarkdownProcessorContext markdownContext)
     {
-        if (string.IsNullOrWhiteSpace(theme)) return new MarkdownProcessorResult(markdown, markdownProcessorContext);
-        var result = Regex.Replace(markdown, @"\{\{\W*CSS\W*\}\}", "<style>" + GetTranspiledCss() + "</style>", RegexOptions.IgnoreCase);
-        return new MarkdownProcessorResult(result, markdownProcessorContext);
+        if (string.IsNullOrWhiteSpace(theme)) return markdownContext;
+        markdownContext.ReplacePlaceholder("CSS", "<style>" + GetTranspiledCss() + "</style>");
+        return markdownContext;
     }
 }

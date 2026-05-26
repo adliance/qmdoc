@@ -1,15 +1,15 @@
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Adliance.QmDoc.Extensions;
 using Adliance.QmDoc.Parameters;
-using Adliance.QmDoc.Processors;
 using Adliance.QmDoc.Processors.HtmlProcessors;
 using Adliance.QmDoc.Processors.MarkdownProcessors;
 using Adliance.QmDoc.Themes;
+using Humanizer;
 using Markdig;
 using TitlePlaceholder = Adliance.QmDoc.Processors.MarkdownProcessors.TitlePlaceholder;
 
@@ -17,9 +17,7 @@ namespace Adliance.QmDoc.Converter;
 
 public abstract class Converter(TargetExtension targetExtension, CommonConversionParameters parameters, Options.Options options)
 {
-    private Frontmatter _frontmatter = new();
-
-    public void Run()
+    public async Task Run()
     {
         var files = BuildFilesList(parameters.Source, parameters.Target, targetExtension);
         if (files.Count <= 0) Program.Exit(-3, $"No files found in {parameters.Source}.");
@@ -27,59 +25,59 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
         foreach (var f in files)
         {
             Program.WriteLine(f.SourceRelativePath + " ...");
-            var markdown = LoadMarkdown(f);
-            Program.WriteLine($"\tMarkdown ({FormatBytes(markdown.Length)})");
+            var markdownContext = InitFromSourceFile(f);
+            markdownContext = RunMarkdownProcessors(f, markdownContext);
+            Program.WriteLine($"\tMarkdown ({markdownContext.Markdown.Length.Bytes().Humanize(CultureInfo.CurrentCulture)})");
 
             EnsureTargetDirectory(f);
 
             if (parameters.IncludeHtml)
             {
-                var html = LoadHtml(f, markdown);
+                var html = RunHtmlProcessors(f, markdownContext);
                 var targetPathForHtmlFile = f.TargetAbsolutePath[..^Path.GetExtension(f.TargetAbsolutePath).Length] + ".html";
-                Program.WriteLine($"\tHTML ({FormatBytes(html.Length)}) -> {targetPathForHtmlFile}");
-                File.WriteAllText(targetPathForHtmlFile, html);
+                Program.WriteLine($"\tHTML (Theme: {markdownContext.Theme}, {html.Length.Bytes().Humanize(CultureInfo.CurrentCulture)}) -> {targetPathForHtmlFile}");
+                await File.WriteAllTextAsync(targetPathForHtmlFile, html);
             }
 
-            var resultingBytes = Convert(f, markdown);
-            Program.WriteLine($"\t{targetExtension.ToString().ToUpper()} ({FormatBytes(resultingBytes.Length)}) -> {f.TargetAbsolutePath}");
-            File.WriteAllBytes(f.TargetAbsolutePath, resultingBytes);
+            var resultingBytes = await Convert(f, markdownContext);
+            Program.WriteLine($"\t{targetExtension.ToString().ToUpper()} ({resultingBytes.Length.Bytes().Humanize(CultureInfo.CurrentCulture)}) -> {f.TargetAbsolutePath}");
+            await File.WriteAllBytesAsync(f.TargetAbsolutePath, resultingBytes);
         }
     }
 
-    protected abstract byte[] Convert(ConverterFile file, string markdown);
+    protected abstract Task<byte[]> Convert(ConverterFile file, MarkdownProcessorContext markdownContext);
 
-    private string LoadMarkdown(ConverterFile file)
+    private static MarkdownProcessorContext InitFromSourceFile(ConverterFile file)
     {
-        var context = new MarkdownProcessorContext();
+        var sourceMarkdown = File.ReadAllText(file.SourceAbsolutePath).Replace("\r\n", "\n");
+        var markdownContext = new MarkdownProcessorContext(sourceMarkdown);
+        return markdownContext;
+    }
 
-        var markdown = File.ReadAllText(file.SourceAbsolutePath).Replace("\r\n", "\n");
-        _frontmatter = FrontmatterParser.Parse(context.Pipeline, markdown);
-        markdown = ApplyCommonPlaceholders(file, _frontmatter.MarkdownWithoutFrontmatter);
+    protected MarkdownProcessorContext RunMarkdownProcessors(ConverterFile file, MarkdownProcessorContext markdownContext)
+    {
+        markdownContext = ApplyCommonPlaceholders(file, markdownContext);
         var markdownProcessors = new List<IMarkdownProcessor>
         {
             new ImagesMustNotContainSpaces(file.SourceAbsolutePath)
         };
         PrepareAdditionalProcessors(file, markdownProcessors);
 
-        foreach (var p in markdownProcessors)
-        {
-            var stepResult = p.Apply(markdown, context);
-            foreach (var e in stepResult.Errors) Program.WriteLine($"\t\t {e.ErrorMessage}");
-            markdown = stepResult.ResultingMarkdown;
-        }
-
-        return markdown;
+        foreach (var p in markdownProcessors) markdownContext = p.Apply(markdownContext);
+        foreach (var e in markdownContext.Errors) Program.WriteLine($"\t\t {e.ErrorMessage}");
+        return markdownContext;
     }
 
-    protected string LoadHtml(ConverterFile file, string markdown)
+    protected string RunHtmlProcessors(ConverterFile file, MarkdownProcessorContext markdownContext)
     {
-        var pipeline = new MarkdownPipelineBuilder().UseYamlFrontMatter().UseAdvancedExtensions().Build();
-        var html = Markdown.ToHtml(markdown, pipeline);
-        var layout = ApplyCommonPlaceholders(file, ThemeProvider.GetContent(GetTheme()));
+        var html = Markdown.ToHtml(markdownContext.Markdown, markdownContext.Pipeline);
+
+        var theme = GetTheme(markdownContext);
+        var layout = ApplyCommonPlaceholders(file, ThemeProvider.GetContent(theme), markdownContext);
 
         IHtmlProcessor[] steps =
         [
-            new AuthorLine(_frontmatter.Author), // should be the first step
+            new AuthorLine(markdownContext.Frontmatter.Author), // should be the first step
             new IconBlocks(),
             new IconLists(),
             new SetCorrectChaptersLinkTitle(file.SourceAbsolutePath),
@@ -100,47 +98,58 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
         return result;
     }
 
-    protected string ApplyCommonPlaceholders(ConverterFile file, string content)
+    private MarkdownProcessorContext ApplyCommonPlaceholders(ConverterFile file, MarkdownProcessorContext context)
     {
         var processors = new List<IMarkdownProcessor>
         {
-            new TitlePlaceholder(GetTitle(file)),
+            new TitlePlaceholder(GetTitle(file, context)),
             new DatePlaceholder(),
             new GitVersionsPlaceholder(file.SourceAbsolutePath, parameters.IgnoreGitCommitsSince, parameters.IgnoreGitCommits.SplitCleanOrder(), parameters.IgnoreGitCommitsWithout.SplitCleanOrder()),
             new GitVersionPlaceholder(file.SourceAbsolutePath, parameters.IgnoreGitCommitsSince, parameters.IgnoreGitCommits.SplitCleanOrder(), parameters.IgnoreGitCommitsWithout.SplitCleanOrder()),
             new GitDatePlaceholder(file.SourceAbsolutePath, parameters.IgnoreGitCommitsSince, parameters.IgnoreGitCommits.SplitCleanOrder(), parameters.IgnoreGitCommitsWithout.SplitCleanOrder()),
             new GitDateAndVersionPlaceholder(file.SourceAbsolutePath, parameters.IgnoreGitCommitsSince, parameters.IgnoreGitCommits.SplitCleanOrder(),
                 parameters.IgnoreGitCommitsWithout.SplitCleanOrder()),
-            new CssPlaceholder(GetTheme()),
+            new CssPlaceholder(GetTheme(context)),
             new HeaderNumbering(!parameters.DisableHeaderNumbering),
             new TableOfContentsPlaceholder()
         };
 
-        var context = new MarkdownProcessorContext();
-        foreach (var p in processors)
-        {
-            var stepResult = p.Apply(content, context);
-            foreach (var e in stepResult.Errors) Program.WriteLine($"\t\t {e.ErrorMessage}");
-            content = stepResult.ResultingMarkdown;
-        }
-
-        return content;
+        foreach (var p in processors) context = p.Apply(context);
+        return context;
     }
 
-    protected string GetTitle(ConverterFile file)
+    protected string ApplyCommonPlaceholders(ConverterFile file, string applyPlaceholdersTo, MarkdownProcessorContext markdownContext)
+    {
+        var previousMarkdown = markdownContext.Markdown;
+        markdownContext.Markdown = applyPlaceholdersTo;
+        var result = ApplyCommonPlaceholders(file, markdownContext).Markdown;
+        markdownContext.Markdown = previousMarkdown;
+        return result;
+    }
+
+    private string GetTitle(ConverterFile file, MarkdownProcessorContext context)
     {
         var result = Path.GetFileNameWithoutExtension(file.SourceAbsolutePath);
-        if (!string.IsNullOrWhiteSpace(_frontmatter.Title)) result = _frontmatter.Title;
+        if (!string.IsNullOrWhiteSpace(context.Frontmatter.Title)) result = context.Frontmatter.Title;
         if (!string.IsNullOrWhiteSpace(parameters.Title)) result = parameters.Title;
         return result;
     }
 
-    protected string GetTheme()
+    protected string GetTheme(MarkdownProcessorContext context)
     {
-        var result = options.Theme;
-        if (!string.IsNullOrWhiteSpace(_frontmatter.Theme)) result = _frontmatter.Theme;
-        if (parameters is PdfParameters pdfParameters && !string.IsNullOrWhiteSpace(pdfParameters.Theme)) result = pdfParameters.Theme;
-        return result;
+        if (!string.IsNullOrWhiteSpace(context.Theme)) return context.Theme;
+
+        context.Theme = options.Theme;
+        if (!string.IsNullOrWhiteSpace(context.Frontmatter.Theme))
+        {
+            context.Theme = context.Frontmatter.Theme;
+        }
+        else if (parameters is PdfParameters pdfParameters && !string.IsNullOrWhiteSpace(pdfParameters.Theme))
+        {
+            context.Theme = pdfParameters.Theme;
+        }
+
+        return context.Theme;
     }
 
     private static void EnsureTargetDirectory(ConverterFile file)
@@ -170,11 +179,6 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
         }
 
         return result;
-    }
-
-    private static string FormatBytes(int bytes)
-    {
-        return Math.Ceiling(bytes / 1024d).ToString("N0", CultureInfo.CurrentCulture) + " kB";
     }
 }
 
