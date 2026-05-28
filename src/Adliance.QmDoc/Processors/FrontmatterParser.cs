@@ -34,7 +34,7 @@ public static class FrontmatterParser
             return new Frontmatter
             {
                 MarkdownWithoutFrontmatter = markdown,
-                Theme = "Default"
+                Theme = null
             };
         }
 

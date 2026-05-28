@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using System.IO;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Adliance.AspNetCore.Buddy.Pdf.V2;
 using Adliance.QmDoc.Parameters;

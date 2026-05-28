@@ -40,7 +40,15 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
             }
 
             var resultingBytes = await Convert(f, markdownContext);
-            Program.WriteLine($"\t{targetExtension.ToString().ToUpper()} ({resultingBytes.Length.Bytes().Humanize(CultureInfo.CurrentCulture)}) -> {f.TargetAbsolutePath}");
+            if (targetExtension == TargetExtension.Pdf)
+            {
+                Program.WriteLine($"\tPDF (Theme: {markdownContext.Theme}, {resultingBytes.Length.Bytes().Humanize(CultureInfo.CurrentCulture)}) -> {f.TargetAbsolutePath}");
+            }
+            else
+            {
+                Program.WriteLine($"\t{targetExtension.ToString().ToUpper()} ({resultingBytes.Length.Bytes().Humanize(CultureInfo.CurrentCulture)}) -> {f.TargetAbsolutePath}");
+            }
+
             await File.WriteAllBytesAsync(f.TargetAbsolutePath, resultingBytes);
         }
     }
@@ -140,15 +148,10 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
         if (!string.IsNullOrWhiteSpace(context.Theme)) return context.Theme;
 
         context.Theme = options.Theme;
-        if (!string.IsNullOrWhiteSpace(context.Frontmatter.Theme))
-        {
-            context.Theme = context.Frontmatter.Theme;
-        }
-        else if (parameters is PdfParameters pdfParameters && !string.IsNullOrWhiteSpace(pdfParameters.Theme))
-        {
-            context.Theme = pdfParameters.Theme;
-        }
+        if (!string.IsNullOrWhiteSpace(context.Frontmatter.Theme)) context.Theme = context.Frontmatter.Theme;
+        else if (parameters is PdfParameters pdfParameters && !string.IsNullOrWhiteSpace(pdfParameters.Theme)) context.Theme = pdfParameters.Theme;
 
+        if (string.IsNullOrWhiteSpace(context.Theme)) context.Theme = "Default";
         return context.Theme;
     }
 

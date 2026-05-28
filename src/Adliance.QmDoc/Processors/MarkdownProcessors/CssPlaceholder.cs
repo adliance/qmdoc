@@ -1,6 +1,4 @@
-using System.Text.RegularExpressions;
 using Adliance.QmDoc.Themes;
-using DocumentFormat.OpenXml.Office.Word;
 
 namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
