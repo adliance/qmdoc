@@ -310,4 +310,9 @@ div.toc table {
 
 pre.mermaid {
     background: none !important;
+
+    svg {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
 }

@@ -15,13 +15,17 @@ public class PdfConverter(PdfParameters parameters, Options.Options options) : C
     {
         var theme = string.IsNullOrWhiteSpace(parameters.Theme) ? _options.Theme : parameters.Theme;
         var settings = ThemeProvider.GetOptions(theme);
+
         var pdfOptions = new PdfOptions
         {
-            FooterHtml = ApplyCommonPlaceholders(file, ThemeProvider.GetFooter(GetTheme(markdownContext)), markdownContext),
-            HeaderHtml = ApplyCommonPlaceholders(file, ThemeProvider.GetHeader(GetTheme(markdownContext)), markdownContext),
+            FooterHtml = markdownContext.Frontmatter.EnableFooter == false ? null : ApplyCommonPlaceholders(file, ThemeProvider.GetFooter(GetTheme(markdownContext)), markdownContext),
+            HeaderHtml =  markdownContext.Frontmatter.EnableHeader == false ? null : ApplyCommonPlaceholders(file, ThemeProvider.GetHeader(GetTheme(markdownContext)), markdownContext),
             FooterHeight = settings.Pdf.FooterHeight,
             HeaderHeight = settings.Pdf.HeaderHeight,
-            Outline = true
+            Outline = true,
+            PaperHeight = markdownContext.Frontmatter.PdfHeight,
+            PaperWidth = markdownContext.Frontmatter.PdfWidth,
+            Scale = markdownContext.Frontmatter.PdfScale
         };
 
         var pdfer = new AdliancePdfer(new AdliancePdferSettings());

@@ -13,6 +13,12 @@ public class Frontmatter
     public string? Title { get; set; }
     public string? Theme { get; set; }
     public string? Author { get; set; }
+    public int? PdfWidth { get; set; }
+    public int? PdfHeight { get; set; }
+    public double? PdfScale { get; set; }
+    public bool? EnableHeader { get; set; }
+    public bool? EnableFooter { get; set; }
+
     public string MarkdownWithoutFrontmatter = "";
 }
 
