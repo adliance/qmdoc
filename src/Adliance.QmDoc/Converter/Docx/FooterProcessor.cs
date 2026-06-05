@@ -52,9 +52,9 @@ internal static class FooterProcessor
         para.AppendChild(TabRun());
         para.AppendChild(TextRun(centerText));
 
-        // Right: Seite <PAGE> | <NUMPAGES>
+        // Right: <PAGE> | <NUMPAGES>
         para.AppendChild(TabRun());
-        para.AppendChild(TextRun("Seite "));
+        para.AppendChild(TextRun(" "));
         AppendField(para, " PAGE ");
         para.AppendChild(TextRun(" | "));
         AppendField(para, " NUMPAGES ");
