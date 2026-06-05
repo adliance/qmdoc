@@ -11,7 +11,8 @@ public class SetCorrectChaptersLinkTitle(string filePath) : IHtmlProcessor
     {
         var resultingHtml = html;
 
-        foreach (Match? m in Regex.Matches(html, "<h\\d id=\"(.*?)\">(.*?)</"))
+        var hMatches = Regex.Matches(html, "<h\\d id=\"(.*?)\">(.*?)</");
+        foreach (Match? m in hMatches)
         {
             if (m == null) continue;
 
@@ -23,8 +24,9 @@ public class SetCorrectChaptersLinkTitle(string filePath) : IHtmlProcessor
 
         var result = new HtmlProcessorResult(resultingHtml);
 
+        var hrefMatches = Regex.Matches(html, "href=\"#(.*?)\"", RegexOptions.IgnoreCase);
         // also check for links to non-existing chapters
-        foreach (Match? m in Regex.Matches(html, "href=\"#(.*?)\"", RegexOptions.IgnoreCase))
+        foreach (Match? m in hrefMatches)
         {
             if (m == null) continue;
 

@@ -307,3 +307,7 @@ div.toc table {
         padding: 5px 10px;
     }
 }
+
+pre.mermaid {
+    background: none !important;
+}
