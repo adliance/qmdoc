@@ -64,7 +64,9 @@ public class HeaderNumbering(bool enable) : IMarkdownProcessor
         var result = sb.ToString();
 
         foreach (var (oldTitle, newTitle) in titlesToReplace)
-            result = Regex.Replace(result, "(<a.*?)>" + oldTitle + "</a>", "$1>" + newTitle.Replace("   ", " ") + "</a>");
+        {
+            result = Regex.Replace(result, "(<a.*?)>" + Regex.Escape(oldTitle) + "</a>", "$1>" + newTitle.Replace("   ", " ") + "</a>");
+        }
 
         markdownContext.Markdown = result;
         return markdownContext;

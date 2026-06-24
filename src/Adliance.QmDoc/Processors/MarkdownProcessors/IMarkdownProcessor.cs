@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Adliance.AspNetCore.Buddy.Pdf;
 using Markdig;
@@ -54,6 +55,11 @@ public class MarkdownProcessorContext
     public bool ContainsPlaceholderInSource(string placeholder)
     {
         return Regex.IsMatch(SourceMarkdown, @"\{\{\W*" + placeholder + @"\W*\}\}", RegexOptions.IgnoreCase);
+    }
+
+    public bool ContainsPlaceholderInSource(params string[] placeholder)
+    {
+        return placeholder.Any(ContainsPlaceholderInSource);
     }
 
     public void ReplacePlaceholder(string placeholder, string replaceWith)

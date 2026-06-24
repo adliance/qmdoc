@@ -1,16 +1,12 @@
-using System;
-using System.Collections.Generic;
-
 namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
-public class GitVersionPlaceholder(string sourceFilePath, DateTime? ignoreGitCommitsSince, IList<string> ignoreCommits, IList<string> ignoreCommitsWithout)
-    : IMarkdownProcessor
+public class GitVersionPlaceholder(GitService.Change? latestVersion) : IMarkdownProcessor
 {
+    public const string Placeholder = "GIT_VERSION";
+
     public MarkdownProcessorContext Apply(MarkdownProcessorContext markdownContext)
     {
-        var latestVersion = GitService.GetLatestVersion(sourceFilePath, ignoreGitCommitsSince, ignoreCommits, ignoreCommitsWithout);
-
-        markdownContext.ReplacePlaceholder("GIT_VERSION",
+        markdownContext.ReplacePlaceholder(Placeholder,
             latestVersion != null
                 ? latestVersion.ShaShort
                 : "");

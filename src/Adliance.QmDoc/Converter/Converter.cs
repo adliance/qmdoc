@@ -108,15 +108,28 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
 
     private MarkdownProcessorContext ApplyCommonPlaceholders(ConverterFile file, MarkdownProcessorContext context)
     {
+        var gitChanges = new List<GitService.Change>();
+
+        // loading the Git history can be slow on large repositories, only load when really necessary
+        if (context.ContainsPlaceholderInSource(GitDateAndVersionPlaceholder.Placeholder, GitDatePlaceholder.Placeholder, GitVersionPlaceholder.Placeholder, GitVersionsPlaceholder.Placeholder)) {
+            Program.WriteLine("\tLoading git versions ...");
+            gitChanges = GitService.GetVersions(
+                file.SourceAbsolutePath,
+                parameters.IgnoreGitCommitsSince,
+                parameters.IgnoreGitCommits.SplitCleanOrder(),
+                parameters.IgnoreGitCommitsWithout.SplitCleanOrder()).ToList();
+        }
+
+        var gitLatestChange = gitChanges.FirstOrDefault();
+
         var processors = new List<IMarkdownProcessor>
         {
             new TitlePlaceholder(GetTitle(file, context)),
             new DatePlaceholder(),
-            new GitVersionsPlaceholder(file.SourceAbsolutePath, parameters.IgnoreGitCommitsSince, parameters.IgnoreGitCommits.SplitCleanOrder(), parameters.IgnoreGitCommitsWithout.SplitCleanOrder()),
-            new GitVersionPlaceholder(file.SourceAbsolutePath, parameters.IgnoreGitCommitsSince, parameters.IgnoreGitCommits.SplitCleanOrder(), parameters.IgnoreGitCommitsWithout.SplitCleanOrder()),
-            new GitDatePlaceholder(file.SourceAbsolutePath, parameters.IgnoreGitCommitsSince, parameters.IgnoreGitCommits.SplitCleanOrder(), parameters.IgnoreGitCommitsWithout.SplitCleanOrder()),
-            new GitDateAndVersionPlaceholder(file.SourceAbsolutePath, parameters.IgnoreGitCommitsSince, parameters.IgnoreGitCommits.SplitCleanOrder(),
-                parameters.IgnoreGitCommitsWithout.SplitCleanOrder()),
+            new GitVersionsPlaceholder(gitChanges),
+            new GitVersionPlaceholder(gitLatestChange),
+            new GitDatePlaceholder(gitLatestChange),
+            new GitDateAndVersionPlaceholder(gitLatestChange),
             new CssPlaceholder(GetTheme(context)),
             new HeaderNumbering(!parameters.DisableHeaderNumbering),
             new TableOfContentsPlaceholder()

@@ -29,28 +29,32 @@ public static class GitService
 
         using (var repo = new Repository(repoPath))
         {
-            var filter = new CommitFilter { SortBy = CommitSortStrategies.Topological | CommitSortStrategies.Time };
-
-            foreach (var commit in repo.Commits.QueryBy(filter))
+            var filter = new CommitFilter
             {
-                foreach (var parent in commit.Parents.Take(1))
-                {
-                    foreach (var change in repo.Diff.Compare<TreeChanges>(parent.Tree, commit.Tree))
-                    {
-                        if (ignoreCommitsWithout.Any() && !ignoreCommitsWithout.Any(x => commit.Message != null && commit.Message.Contains(x, StringComparison.OrdinalIgnoreCase))) continue;
-                        if (ignoreCommits.Any() && ignoreCommits.Any(x => commit.Sha.Contains(x, StringComparison.OrdinalIgnoreCase))) continue;
+                SortBy = CommitSortStrategies.Topological | CommitSortStrategies.Time
+            };
+            var commits = repo.Commits.QueryBy(filter).ToList();
 
-                        if (change.Path.Replace('/', Path.DirectorySeparatorChar).Equals(relativeFilePath, StringComparison.OrdinalIgnoreCase))
+            foreach (var commit in commits)
+            {
+                if (ignoreCommitsWithout.Any() && !ignoreCommitsWithout.Any(x => commit.Message != null && commit.Message.Contains(x, StringComparison.OrdinalIgnoreCase))) continue;
+                if (ignoreCommits.Any() && ignoreCommits.Any(x => commit.Sha.Contains(x, StringComparison.OrdinalIgnoreCase))) continue;
+
+                var parent = commit.Parents.FirstOrDefault();
+                if (parent == null) continue;
+
+                foreach (var change in repo.Diff.Compare<TreeChanges>(parent.Tree, commit.Tree))
+                {
+                    if (change.Path.Replace('/', Path.DirectorySeparatorChar).Equals(relativeFilePath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        result.Add(new Change
                         {
-                            result.Add(new Change
-                            {
-                                Author = commit.Committer.Name,
-                                Date = commit.Committer.When,
-                                Message = (commit.Message ?? "").Trim(),
-                                MessageShort = (commit.MessageShort ?? "").Trim(),
-                                Sha = commit.Sha
-                            });
-                        }
+                            Author = commit.Committer.Name,
+                            Date = commit.Committer.When,
+                            Message = (commit.Message ?? "").Trim(),
+                            MessageShort = (commit.MessageShort ?? "").Trim(),
+                            Sha = commit.Sha
+                        });
                     }
                 }
             }
