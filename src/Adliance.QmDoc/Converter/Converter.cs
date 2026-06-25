@@ -11,7 +11,6 @@ using Adliance.QmDoc.Processors.MarkdownProcessors;
 using Adliance.QmDoc.Themes;
 using Humanizer;
 using Markdig;
-using TitlePlaceholder = Adliance.QmDoc.Processors.MarkdownProcessors.TitlePlaceholder;
 
 namespace Adliance.QmDoc.Converter;
 

@@ -357,7 +357,8 @@ It is built by calling <code>qmdoc pdf --include-html --source &quot;./examples/
 <ul>
 <li>The 2026 theme uses automatic hyphenation via CSS (<code>hyphens: auto;</code>).</li>
 <li>Headers are automatically numbered.</li>
-<li>PDF contain the outline metadata. Internally, this is also used to render the <span class="link-to-chapter"><i></i><a href="#table-of-content">4.1. Table of Content</a></span>.</li>
+<li>PDF contain the outline metadata. Internally, this is also used to render the <span class="link-to-chapter"><i></i><a href="#table-of-content">5.1. Table of Content</a></span>.</li>
+<li>Footer is added automatically for PDF, with document title, git version/date (if any) and page numbering.</li>
 </ul>
 <h1 id="standard-markdown-features">2. Standard Markdown features</h1>
 <ul>
@@ -375,8 +376,13 @@ Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod 
 At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd <sup>gubergren</sup>, no sea takimata sanctus est Lorem ipsum dolor sit amet.
 Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
 At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
-<h1 id="callouts-alert-blocks">3. Callouts (Alert Blocks)</h1>
-<h2 id="custom-qmdoc-syntax">3.1. Custom QMDoc Syntax</h2>
+<h2 id="footnotes">2.1. Footnotes</h2>
+<p>Footnotes<a id="fnref:1" href="#fn:1" class="footnote-ref"><sup>1</sup></a> are supported<a id="fnref:2" href="#fn:2" class="footnote-ref"><sup>2</sup></a>. They are rendered at the end of the document and can be clicked.</p>
+<h1 id="chapter-linking">3. Chapter Linking</h1>
+<p>Links to chapters (to the anchor of the heading) are supported: <span class="link-to-chapter"><i></i><a href="#general-qmdoc-features">1. General QMDoc features</a></span>. They will automatically include the heading numbering as well.</p>
+<p>QMDoc writes a warning if a link to a chapter is detected, but no matching heading.</p>
+<h1 id="callouts-alert-blocks">4. Callouts (Alert Blocks)</h1>
+<h2 id="custom-qmdoc-syntax">4.1. Custom QMDoc Syntax</h2>
 <div class="block block-alert">This will be rendered as a warning/info block.</div>
 <div class="block block-danger">This will be rendered as a danger block.</div>
 <div class="block block-question">This will be rendered as a question block.</div>
@@ -385,7 +391,7 @@ At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergr
 <li><i class="fad fa-question-circle"></i>support for smaller callout icons</li>
 <li><i class="fad fa-exclamation-circle"></i>inside a list, to put an emphasis on specific list items.</li>
 </ul>
-<h2 id="standard-markdown-syntax">3.2. Standard Markdown Syntax</h2>
+<h2 id="standard-markdown-syntax">4.2. Standard Markdown Syntax</h2>
 <p>QMDoc also supports the GitHub style callouts. There's different flavors of this, but QMDoc supports the Markdig way and the theme just adds proper styling.</p>
 <div class="markdown-alert markdown-alert-note">
 <p class="markdown-alert-title"><svg viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>Note</p>
@@ -407,11 +413,14 @@ At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergr
 <p class="markdown-alert-title"><svg viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>Caution</p>
 <p>Advises about risks or negative outcomes of certain actions.</p>
 </div>
-<h1 id="custom-qmdoc-placeholders">4. Custom QMDoc Placeholders</h1>
+<h1 id="custom-qmdoc-placeholders">5. Custom QMDoc Placeholders</h1>
 <ul>
 <li>Current Date: 25. Juni 2026</li>
+<li>Document Title: QMDoc feature overview</li>
+<li>A <code>---</code> in it's own line renders as a page break in PDF.</li>
 </ul>
-<h2 id="table-of-content">4.1. Table of Content</h2>
+<div style="page-break-after: always;"></div>
+<h2 id="table-of-content">5.1. Table of Content</h2>
 <p>The table of contents also links to the chapters. Page numbers are only filled in PDF output, not in HTML output.</p>
 <div class="toc">
 <table>
@@ -431,40 +440,86 @@ At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergr
 <td style="text-align: right;"></td>
 </tr>
 <tr>
-<td><a href="#callouts-(alert-blocks)">3. Callouts (Alert Blocks)</a></td>
+<td>     <a href="#footnotes">2.1. Footnotes</a></td>
 <td style="text-align: right;"></td>
 </tr>
 <tr>
-<td>     <a href="#custom-qmdoc-syntax">3.1. Custom QMDoc Syntax</a></td>
+<td><a href="#chapter-linking">3. Chapter Linking</a></td>
 <td style="text-align: right;"></td>
 </tr>
 <tr>
-<td>     <a href="#standard-markdown-syntax">3.2. Standard Markdown Syntax</a></td>
+<td><a href="#callouts-alert-blocks">4. Callouts (Alert Blocks)</a></td>
 <td style="text-align: right;"></td>
 </tr>
 <tr>
-<td><a href="#custom-qmdoc-placeholders">4. Custom QMDoc Placeholders</a></td>
+<td>     <a href="#custom-qmdoc-syntax">4.1. Custom QMDoc Syntax</a></td>
 <td style="text-align: right;"></td>
 </tr>
 <tr>
-<td>     <a href="#table-of-content">4.1. Table of Content</a></td>
+<td>     <a href="#standard-markdown-syntax">4.2. Standard Markdown Syntax</a></td>
 <td style="text-align: right;"></td>
 </tr>
 <tr>
-<td>     <a href="#git">4.2. Git</a></td>
+<td><a href="#custom-qmdoc-placeholders">5. Custom QMDoc Placeholders</a></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr>
+<td>     <a href="#table-of-content">5.1. Table of Content</a></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr>
+<td>     <a href="#git">5.2. Git</a></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr>
+<td><a href="#diagrams-mermaid">6. Diagrams (Mermaid)</a></td>
 <td style="text-align: right;"></td>
 </tr>
 </tbody>
 </table>
 </div>
-<h2 id="git">4.2. Git</h2>
+<h2 id="git">5.2. Git</h2>
 <ul>
-<li>Version:</li>
-<li>Date:</li>
-<li>Date and Version:</li>
+<li>Version: 51e581c</li>
+<li>Date: 25. Juni 2026</li>
+<li>Date and Version: Version 51e581c, 25. Juni 2026</li>
 </ul>
 <p>And a full Git changelog</p>
-<div class="block block-alert">Dieses Dokument befindet sich nicht in Versionskontrolle.</div>
+<table>
+<thead>
+<tr>
+<th>Datum</th>
+<th>Person</th>
+<th>Version</th>
+<th>Änderung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>25. 06. 2026</td>
+<td>Hannes</td>
+<td>51e581c</td>
+<td>Add a markdown file as an example to showcase all QMDoc features. <span class="git-version-details"> </span></td>
+</tr>
+</tbody>
+</table>
+<h1 id="diagrams-mermaid">6. Diagrams (Mermaid)</h1>
+<pre class="mermaid">graph LR
+    A[Parse] --> B[AST]
+    B --> C[Render]
+    C --> D[HTML]
+</pre>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn:1">
+<p>This is the first footnote content.<a href="#fnref:1" class="footnote-back-ref">&#8617;</a></p>
+</li>
+<li id="fn:2">
+<p>Footnotes can have any label, not just numbers.<a href="#fnref:2" class="footnote-back-ref">&#8617;</a></p>
+</li>
+</ol>
+</div>
 
 
 <script type="module">
