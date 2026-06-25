@@ -1,19 +1,21 @@
 ---
-title: QMDoc feature overview
+title: QmDoc feature overview
 theme: 2026
 author: Hannes Sachsenhofer
 ---
 
-This example document is a showcase for all QMDoc features, using the latest 2026 theme. 
+This example document is a showcase for all QmDoc features, using the latest 2026 theme. 
 It is built by calling `qmdoc pdf --include-html --source "./examples/all-features.md"`.
 
-# General QMDoc features
+
+# General QmDoc features
 - The 2026 theme uses automatic hyphenation via CSS (`hyphens: auto;`).
 - Headers are automatically numbered.
 - PDF contain the outline metadata. Internally, this is also used to render the [#Table of Content].
 - Footer is added automatically for PDF, with document title, git version/date (if any) and page numbering.
 
-# Standard Markdown features
+
+# Basic formatting
 
 - Bold **asdf**
 - Italic *asdf*
@@ -30,20 +32,22 @@ At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd ^guberg
 Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. 
 At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
 
-## Footnotes
+
+# Footnotes
 Footnotes[^1] are supported[^note]. They are rendered at the end of the document and can be clicked.
 
 [^1]: This is the first footnote content.
 [^note]: Footnotes can have any label, not just numbers.
 
-# Chapter Linking
-Links to chapters (to the anchor of the heading) are supported: [#General QMDoc features]. They will automatically include the heading numbering as well.
 
-QMDoc writes a warning if a link to a chapter is detected, but no matching heading.
+# Chapter Linking
+Links to chapters (to the anchor of the heading) are supported: [#General QmDoc features]. They will automatically include the heading numbering as well.
+
+QmDoc writes a warning if a link to a chapter is detected, but no matching heading.
+
 
 # Callouts (Alert Blocks)
-
-## Custom QMDoc Syntax
+## Custom QmDoc Syntax
 {{!}} This will be rendered as a warning/info block.
 
 {{!!}} This will be rendered as a danger block.
@@ -55,7 +59,7 @@ QMDoc writes a warning if a link to a chapter is detected, but no matching headi
 - {{!!}} inside a list, to put an emphasis on specific list items.
 
 ## Standard Markdown Syntax
-QMDoc also supports the GitHub style callouts. There's different flavors of this, but QMDoc supports the Markdig way and the theme just adds proper styling.
+QmDoc also supports the GitHub style callouts. There's different flavors of this, but QmDoc supports the Markdig way and the theme just adds proper styling.
 
 > [!NOTE]
 > Useful information that users should know, even when skimming content.
@@ -72,7 +76,8 @@ QMDoc also supports the GitHub style callouts. There's different flavors of this
 > [!CAUTION]
 > Advises about risks or negative outcomes of certain actions.
 
-# Custom QMDoc Placeholders
+
+# Custom QmDoc Placeholders
 - Current Date: {{ DATE }}
 - Document Title: {{ TITLE }}
 - A `---` in it's own line renders as a page break in PDF.
@@ -89,7 +94,7 @@ The table of contents also links to the chapters. Page numbers are only filled i
 - Date: {{ GIT_DATE }}
 - Date and Version: {{ GIT_DATE_VERSION }}
 
-And a full Git changelog
+And a full Git changelog of the current document is also available, formatted as a table:
 
 {{ GIT_VERSIONS }}
 
