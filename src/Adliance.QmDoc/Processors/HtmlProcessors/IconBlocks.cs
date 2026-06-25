@@ -6,9 +6,9 @@ public class IconBlocks : IHtmlProcessor
 {
     public HtmlProcessorResult Apply(string html)
     {
-        html = Regex.Replace(html, @"<p>\{?\{\W*\?\W*\}\}? (.*?)</p>", "<p class=\"block-question\"><i class=\"fad fa-question-circle\"></i>$1<i style=\"clear:both; display:block;\"></i></p>", RegexOptions.IgnoreCase);
-        html = Regex.Replace(html, @"<p>\{?\{\W*!!\W*\}\}? (.*?)</p>", "<p class=\"block-danger\"><i class=\"fad fa-exclamation-circle\"></i>$1</p>", RegexOptions.IgnoreCase);
-        html = Regex.Replace(html, @"<p>\{?\{\W*!\W*\}\}? (.*?)</p>", "<p class=\"block-alert\"><i class=\"fad fa-info-circle\"></i>$1</p>", RegexOptions.IgnoreCase);
+        html = Regex.Replace(html, @"<p>\{?\{\W*\?\W*\}\}? (.*?)</p>", "<div class=\"block block-question\">$1</div>", RegexOptions.IgnoreCase);
+        html = Regex.Replace(html, @"<p>\{?\{\W*!!\W*\}\}? (.*?)</p>", "<div class=\"block block-danger\">$1</div>", RegexOptions.IgnoreCase);
+        html = Regex.Replace(html, @"<p>\{?\{\W*!\W*\}\}? (.*?)</p>", "<div class=\"block block-alert\">$1</div>", RegexOptions.IgnoreCase);
         return new HtmlProcessorResult(html);
     }
 }

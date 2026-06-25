@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/Solution Items/">
     <File Path="azure-pipelines.yml" />
+    <File Path="examples\all-features.md" />
     <File Path="README.md" />
   </Folder>
   <Project Path="src/Adliance.QmDoc/Adliance.QmDoc.csproj" />

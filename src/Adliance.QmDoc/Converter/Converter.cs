@@ -20,7 +20,11 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
     public async Task Run()
     {
         var files = BuildFilesList(parameters.Source, parameters.Target, targetExtension);
-        if (files.Count <= 0) Program.Exit(-3, $"No files found in {parameters.Source}.");
+        if (files.Count <= 0)
+        {
+            var fileInfo = new FileInfo(parameters.Source);
+            Program.Exit(-3, $"No files found in {fileInfo.FullName}.");
+        }
 
         foreach (var f in files)
         {
@@ -112,7 +116,6 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
 
         // loading the Git history can be slow on large repositories, only load when really necessary
         if (context.ContainsPlaceholderInSource(GitDateAndVersionPlaceholder.Placeholder, GitDatePlaceholder.Placeholder, GitVersionPlaceholder.Placeholder, GitVersionsPlaceholder.Placeholder)) {
-            Program.WriteLine("\tLoading git versions ...");
             gitChanges = GitService.GetVersions(
                 file.SourceAbsolutePath,
                 parameters.IgnoreGitCommitsSince,
@@ -212,7 +215,7 @@ public class ConverterFile
         SourceRelativePath = sourceRelativePath;
         SourceAbsolutePath = sourceAbsolutePath;
         TargetAbsolutePath = Path.Combine(targetBaseDirectory, SourceRelativePath);
-        TargetAbsolutePath = TargetAbsolutePath[..^Path.GetExtension(SourceRelativePath).Length] + "." + targetExtension.ToString().ToLower();
+        TargetAbsolutePath = new FileInfo(TargetAbsolutePath[..^Path.GetExtension(SourceRelativePath).Length] + "." + targetExtension.ToString().ToLower()).FullName;
     }
 
     public string SourceBaseDirectory { get; }
