@@ -33,6 +33,9 @@ Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod 
 At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
 
 
+## Citations
+""There's a proper way to format citations as well.""
+
 # Footnotes
 Footnotes[^1] are supported[^note]. They are rendered at the end of the document and can be clicked.
 
@@ -97,6 +100,29 @@ The table of contents also links to the chapters. Page numbers are only filled i
 And a full Git changelog of the current document is also available, formatted as a table:
 
 {{ GIT_VERSIONS }}
+
+# Images
+Images are automatically centered. Wide images are resized to fit the space, 
+while small images keep their original size,
+
+![Small Image](test-small.jpg)
+
+![Large Image](test-large.jpg)
+
+## Image captions
+^^^
+![Small Image](test-small.jpg)
+^^^ This is an image caption
+
+## Inline images
+![Large Image](test-large.jpg){.left} There's a way to render images in-line on either the left or the right side. 
+This even works with captions. 
+
+^^^
+![Small Image](test-small.jpg)
+^^^ This is an image caption {.right}
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
+At vero eos et accusam et justo duo dolores et ea rebum.
 
 # Diagrams (Mermaid)
 ```mermaid

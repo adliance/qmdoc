@@ -1,6 +1,7 @@
 ﻿{
   "pdf": {
     "header_height": 100,
-    "footer_height": 80
+    "footer_height": 80,
+    "scale": 0.85
   }
 }

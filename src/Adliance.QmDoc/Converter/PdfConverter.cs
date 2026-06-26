@@ -25,7 +25,7 @@ public class PdfConverter(PdfParameters parameters, Options.Options options) : C
             Outline = true,
             PaperHeight = markdownContext.Frontmatter.PdfHeight,
             PaperWidth = markdownContext.Frontmatter.PdfWidth,
-            Scale = markdownContext.Frontmatter.PdfScale
+            Scale = markdownContext.Frontmatter.PdfScale ?? settings.Pdf.Scale
         };
 
         var pdfer = new AdliancePdfer(new AdliancePdferSettings());
