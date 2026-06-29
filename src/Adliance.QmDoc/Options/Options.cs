@@ -5,6 +5,6 @@ namespace Adliance.QmDoc.Options;
 
 public class Options
 {
-    [JsonPropertyName("theme")] public string Theme { get; set; } = "Default";
+    [JsonPropertyName("theme")] public string Theme { get; set; } = "2026";
     [JsonPropertyName("theme_refreshed")] public DateTime ThemeRefreshedUtc { get; set; }
 }

@@ -1,4 +1,6 @@
 using System.IO;
+using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Adliance.QmDoc.Options;
@@ -22,14 +24,46 @@ public static class ThemeProvider
         return GetContent(theme, "index.html") ?? GetEmbeddedContent(theme, "index.html") ?? "";
     }
 
-    public static string? GetScss(string theme)
-    {
-        return GetContent(theme, "style.scss") ?? GetEmbeddedContent(theme, "style.scss", false);
-    }
-
     public static string? GetCss(string theme)
     {
-        return GetContent(theme, "style.css") ?? GetEmbeddedContent(theme, "style.css", false);
+        return GetAllCssFromFilesystem(theme) ?? GetAllEmbeddedCss(theme);
+    }
+
+    private static string? GetAllCssFromFilesystem(string theme)
+    {
+        var themeDir = Path.Combine(OptionsProvider.DataDirectory, "themes", theme);
+        if (!Directory.Exists(themeDir)) return null;
+
+        var cssFiles = Directory.GetFiles(themeDir, "*.css")
+            .OrderBy(Path.GetFileName)
+            .ToList();
+
+        if (cssFiles.Count == 0) return null;
+        return string.Concat(cssFiles.Select(File.ReadAllText));
+    }
+
+    private static string? GetAllEmbeddedCss(string theme)
+    {
+        var embeddedTheme = Regex.IsMatch(theme, "^\\d") ? "_" + theme : theme;
+        var prefix = "Adliance.QmDoc.Themes." + embeddedTheme + ".";
+
+        var cssResources = typeof(ThemeProvider).Assembly.GetManifestResourceNames()
+            .Where(n => n.StartsWith(prefix) && n.EndsWith(".css"))
+            .Order()
+            .ToList();
+
+        if (cssResources.Count == 0) return null;
+
+        var sb = new StringBuilder();
+        foreach (var resourceName in cssResources)
+        {
+            var stream = typeof(ThemeProvider).Assembly.GetManifestResourceStream(resourceName);
+            if (stream == null) continue;
+            using var sr = new StreamReader(stream);
+            sb.Append(sr.ReadToEnd());
+        }
+
+        return sb.Length > 0 ? sb.ToString() : null;
     }
 
     public static ThemeOptions GetOptions(string theme)

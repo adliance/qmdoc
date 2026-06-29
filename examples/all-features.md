@@ -1,6 +1,5 @@
 ---
 title: QmDoc feature overview
-theme: 2026
 author: Hannes Sachsenhofer
 ---
 

@@ -1,1 +1,0 @@
-This is the QmDoc default theme that will be used when no other theme is configured or available.
