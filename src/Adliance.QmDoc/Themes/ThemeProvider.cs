@@ -9,25 +9,39 @@ namespace Adliance.QmDoc.Themes;
 
 public static class ThemeProvider
 {
-    public static string GetHeader(string theme)
-    {
-        return GetContent(theme, "header.html") ?? GetEmbeddedContent(theme, "header.html") ?? "";
-    }
+    public static string GetHeader(string theme) =>
+        GetSingleContent(theme, "header.html") ?? "";
 
-    public static string GetFooter(string theme)
-    {
-        return GetContent(theme, "footer.html") ?? GetEmbeddedContent(theme, "footer.html") ?? "";
-    }
+    public static string GetFooter(string theme) =>
+        GetSingleContent(theme, "footer.html") ?? "";
 
-    public static string GetContent(string theme)
-    {
-        return GetContent(theme, "index.html") ?? GetEmbeddedContent(theme, "index.html") ?? "";
-    }
+    public static string GetContent(string theme) =>
+        GetSingleContent(theme, "index.html") ?? "";
 
     public static string? GetCss(string theme)
     {
-        return GetAllCssFromFilesystem(theme) ?? GetAllEmbeddedCss(theme);
+        var sharedCss = GetAllCssFromFilesystem("_shared") ?? GetAllEmbeddedCss("_shared") ?? "";
+        var themeCss = GetAllCssFromFilesystem(theme) ?? GetAllEmbeddedCss(theme) ?? "";
+        var combined = sharedCss + themeCss;
+        return combined.Length > 0 ? combined : null;
     }
+
+    public static ThemeOptions GetOptions(string theme)
+    {
+        var json = GetSingleContent(theme, "options.json");
+        if (!string.IsNullOrWhiteSpace(json))
+        {
+            return JsonSerializer.Deserialize<ThemeOptions>(json) ?? new ThemeOptions();
+        }
+
+        return new ThemeOptions();
+    }
+
+    private static string? GetSingleContent(string theme, string fileName) =>
+        GetFileContent(theme, fileName)
+        ?? GetEmbeddedContentExact(theme, fileName)
+        ?? GetFileContent("_shared", fileName)
+        ?? GetEmbeddedContentExact("_shared", fileName);
 
     private static string? GetAllCssFromFilesystem(string theme)
     {
@@ -66,44 +80,17 @@ public static class ThemeProvider
         return sb.Length > 0 ? sb.ToString() : null;
     }
 
-    public static ThemeOptions GetOptions(string theme)
+    private static string? GetEmbeddedContentExact(string theme, string fileName)
     {
-        var json = GetContent(theme, "options.json") ?? GetEmbeddedContent(theme, "options.json");
-        if (!string.IsNullOrWhiteSpace(json))
-        {
-            return JsonSerializer.Deserialize<ThemeOptions>(json) ?? new ThemeOptions();
-        }
-
-        return new ThemeOptions();
-    }
-
-
-    private static string? _themeErrorLastTheme = "";
-    private static string? GetEmbeddedContent(string theme, string fileName, bool printWarning = true)
-    {
-        if (Regex.IsMatch(theme, "^\\d")) theme = "_" + theme; // if the theme name starts with a digit, the resource name starts with a _ automatically
-
+        if (Regex.IsMatch(theme, "^\\d")) theme = "_" + theme;
         var name = "Adliance.QmDoc.Themes." + theme + "." + fileName;
         var stream = typeof(ThemeProvider).Assembly.GetManifestResourceStream(name);
-
-        if (stream == null)
-        {
-            if (printWarning && _themeErrorLastTheme != theme)
-            {
-                Program.WriteLine($"\tTheme \"{theme}\" not found. Falling back to default theme");
-                _themeErrorLastTheme = theme;
-            }
-
-            name = "Adliance.QmDoc.Themes.Default." + fileName;
-            stream = typeof(ThemeProvider).Assembly.GetManifestResourceStream(name);
-        }
-
         if (stream == null) return null;
         using var sr = new StreamReader(stream);
         return sr.ReadToEnd();
     }
 
-    private static string? GetContent(string theme, string fileName)
+    private static string? GetFileContent(string theme, string fileName)
     {
         var filePath = Path.Combine(OptionsProvider.DataDirectory, "themes", theme, fileName);
         return File.Exists(filePath) ? File.ReadAllText(filePath) : null;

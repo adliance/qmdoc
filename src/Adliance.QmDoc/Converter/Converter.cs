@@ -167,6 +167,12 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
         else if (parameters is PdfParameters pdfParameters && !string.IsNullOrWhiteSpace(pdfParameters.Theme)) context.Theme = pdfParameters.Theme;
 
         if (string.IsNullOrWhiteSpace(context.Theme)) context.Theme = "2026";
+        if (context.Theme.StartsWith("_"))
+        {
+            Program.WriteLine($"\tTheme \"{context.Theme}\" is internal and cannot be used directly. Falling back to default theme.");
+            context.Theme = "2026";
+        }
+
         return context.Theme;
     }
 
