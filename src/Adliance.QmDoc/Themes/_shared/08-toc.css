@@ -1,0 +1,8 @@
+div.toc table {
+    margin-bottom: calc(var(--margin-base) * 4);
+
+    th, td, tr {
+        border: 0;
+        padding: 5px 10px;
+    }
+}

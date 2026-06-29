@@ -1,0 +1,11 @@
+span.link-to-document, span.link-to-chapter {
+    white-space: nowrap;
+
+    a {
+        color: var(--color-green) !important;
+    }
+}
+
+span.git-version-details {
+    font-size: 85%;
+}

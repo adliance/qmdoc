@@ -1,0 +1,30 @@
+div.document-title {
+    text-align: center;
+    font-size: calc(var(--fontSize) * 3);
+    font-family: var(--font-family-heading), sans-serif;
+    padding-top: var(--margin-base);
+    margin-bottom: calc(var(--margin-base) * 9);
+    color: var(--color-medium-blue);
+    font-weight: bold;
+    line-height: 1.4em;
+
+    &:has(+ div.document-author) {
+        margin-bottom: 0;
+    }
+}
+
+div.document-author {
+    text-align: center;
+    font-size: var(--fontSize);
+    font-weight: normal;
+    color: var(--color-medium-blue);
+    margin-bottom: calc(var(--margin-base) * 9);
+
+    span, a {
+        color: var(--color-medium-blue);
+
+        &.name, &.company {
+            font-weight: bold;
+        }
+    }
+}

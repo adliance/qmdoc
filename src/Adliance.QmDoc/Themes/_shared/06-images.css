@@ -1,0 +1,40 @@
+img {
+    display: block;
+    max-width: 100%;
+    margin: calc(var(--margin-base) * 2) auto;
+}
+
+figure {
+    p:last-of-type {
+        margin-bottom: 0;
+
+        img:last-of-type {
+            margin-bottom: 0;
+        }
+    }
+
+    p:first-of-type {
+        img:first-of-type {
+            margin-top: 0;
+        }
+    }
+
+    figcaption {
+        margin-top: 3px !important;
+        font-size: var(--fontSize-figcaption);
+        text-align: center;
+        max-width: 100% !important; /* to override .left/.right width limits */
+    }
+}
+
+.left, figure:has(figcaption.left) {
+    float: left;
+    margin: 0 .5rem .1rem 0;
+    max-width: 40%;
+}
+
+.right, figure:has(figcaption.right) {
+    float: right;
+    margin: 0 0 .1rem .5rem;
+    max-width: 40%;
+}

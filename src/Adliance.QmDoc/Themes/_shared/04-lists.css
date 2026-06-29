@@ -1,0 +1,30 @@
+ul {
+    list-style: none;
+
+    li {
+        text-indent: calc(var(--margin-base) * -2);
+    }
+
+    li::before {
+        content: "•";
+        padding-right: 10px;
+        color: var(--color-medium-blue);
+    }
+}
+
+ol, ul {
+    padding-left: calc(var(--margin-base) * 3);
+
+    li {
+        margin-top: var(--margin-base);
+
+        i.fad {
+            display: inline-block;
+            height: 1.3rem;
+            width: 1.3rem;
+            vertical-align: bottom;
+            margin-right: 5px;
+            margin-bottom: 3px;
+        }
+    }
+}

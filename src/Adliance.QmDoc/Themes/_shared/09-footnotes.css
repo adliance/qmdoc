@@ -1,0 +1,16 @@
+.footnotes {
+    page-break-inside: avoid;
+    padding-top: 4rem;
+    font-size: 85%;
+
+    hr {
+        border: 0;
+        border-top: 1px solid var(--color-medium-blue);
+    }
+}
+
+.footnote-ref {
+    sup {
+        color: var(--color-medium-blue);
+    }
+}
