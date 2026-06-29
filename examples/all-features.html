@@ -36,15 +36,6 @@
     padding: 0;
 }
 
-
-@media print {
-    * {
-        /*--fontSize: 20px;
-        --fontSize-superscript: 12px;
-        --fontSize-figcaption: 16px;*/
-    }
-}
-
 body {
     font-family: var(--font-family), sans-serif;
     width: 100%;
@@ -54,7 +45,7 @@ body {
     text-align: justify;
     max-width: 100%;
     overflow-x: hidden;
-    padding: 0 90px 0 90px;
+    padding: 0 90px 0 95px; /* for some reason, the PDF has a little more margin on the left than on the right, maybe related to scrollbar in PdfService (Chrome) */
     hyphens: auto;
 }
 
@@ -463,7 +454,7 @@ At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergr
 </div>
 <h1 id="custom-qmdoc-placeholders">6. Custom QmDoc Placeholders</h1>
 <ul>
-<li>Current Date: 26. Juni 2026</li>
+<li>Current Date: 29. Juni 2026</li>
 <li>Document Title: QmDoc feature overview</li>
 <li>A <code>---</code> in it's own line renders as a page break in PDF.</li>
 </ul>
@@ -544,9 +535,9 @@ At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergr
 </div>
 <h2 id="git">6.2. Git</h2>
 <ul>
-<li>Version: 25541ad</li>
-<li>Date: 25. Juni 2026</li>
-<li>Date and Version: Version 25541ad, 25. Juni 2026</li>
+<li>Version: 3ca249f</li>
+<li>Date: 26. Juni 2026</li>
+<li>Date and Version: Version 3ca249f, 26. Juni 2026</li>
 </ul>
 <p>And a full Git changelog of the current document is also available, formatted as a table:</p>
 <table>
@@ -559,6 +550,12 @@ At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergr
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>26. 06. 2026</td>
+<td>Hannes</td>
+<td>3ca249f</td>
+<td>Support images and image captions. <span class="git-version-details"> </span></td>
+</tr>
 <tr>
 <td>25. 06. 2026</td>
 <td>Hannes</td>

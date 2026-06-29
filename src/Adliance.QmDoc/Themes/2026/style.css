@@ -27,15 +27,6 @@
     padding: 0;
 }
 
-
-@media print {
-    * {
-        /*--fontSize: 20px;
-        --fontSize-superscript: 12px;
-        --fontSize-figcaption: 16px;*/
-    }
-}
-
 body {
     font-family: var(--font-family), sans-serif;
     width: 100%;
@@ -45,7 +36,7 @@ body {
     text-align: justify;
     max-width: 100%;
     overflow-x: hidden;
-    padding: 0 90px 0 90px;
+    padding: 0 90px 0 95px; /* for some reason, the PDF has a little more margin on the left than on the right, maybe related to scrollbar in PdfService (Chrome) */
     hyphens: auto;
 }
 
