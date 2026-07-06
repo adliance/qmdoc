@@ -20,6 +20,7 @@ pre {
     background-color: var(--color-dark-white);
     padding: 1rem;
     line-height: 0.9rem;
+    white-space: pre-wrap;
 }
 
 b, strong {

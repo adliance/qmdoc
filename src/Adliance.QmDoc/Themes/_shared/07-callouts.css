@@ -6,6 +6,7 @@
     background-position: 20px 20px;
     display: block;
     margin-bottom: calc(var(--margin-base) * 2);
+    page-break-inside: avoid;
 
     p:last-child {
         margin-bottom: 0;
