@@ -23,6 +23,8 @@ public class LinkToChapters : IMarkdownProcessor
 
         var result = chapterName.Trim();
         result = result.Replace(" ", "-");
+        result = result.Replace("&amp;", "");
+        result = result.Replace(".", "");
         result = result.Replace(",", "");
         result = result.Replace(":", "");
         result = result.Replace(";", "");
