@@ -4,13 +4,14 @@ table {
     border-collapse: separate;
 
     thead tr th {
-        font-size: calc(var(--fontSize));
+        font-size: calc(var(--fontSize-th));
         font-family: var(--font-family-heading), sans-serif;
         padding: var(--margin-base);
         border-bottom: 2px solid var(--color-medium-blue);
         vertical-align: bottom;
         color: var(--color-dark-blue);
-        hyphens: manual;
+        hyphens: auto;
+        font-weight: bold
     }
 
     tbody {
@@ -19,6 +20,7 @@ table {
         }
 
         tr td {
+            font-size: calc(var(--fontSize-td));
             padding: var(--margin-base);
             border-bottom: 1px solid var(--color-medium-blue);
             vertical-align: top;

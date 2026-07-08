@@ -24,7 +24,7 @@ public class LinkToChapters : IMarkdownProcessor
         var result = chapterName.Trim();
         result = result.Replace(" ", "-");
         result = result.Replace("&amp;", "");
-        result = result.Replace(".", "");
+        result = result.Replace("&", "");
         result = result.Replace(",", "");
         result = result.Replace(":", "");
         result = result.Replace(";", "");
@@ -39,6 +39,7 @@ public class LinkToChapters : IMarkdownProcessor
         result = result.Replace("ß", "ss");
         result = result.Replace("---", "-");
         result = result.Replace("--", "-");
+        result = result.Replace(".-", ".");
         result = result.TrimStart('1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-');
 
         return result;
