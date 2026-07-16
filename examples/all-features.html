@@ -38,8 +38,12 @@
     --color-footnote-border: var(--color-table-border);
     --color-documentTitle: var(--color-table-border);
     --color-documentTitle-author: var(--color-table-border);
+    --color-figure-background: var(--color-pre-background);
+    --color-figure-border: #f0f0f0;
 
     --transform-heading: none;
+    --padding-figure: 1rem;
+    --borderRadius-figure: 5px;
 
     box-sizing: border-box;
     margin: 0;
@@ -52,10 +56,12 @@ body {
     color: var(--color-text);
     line-height: var(--line-height);
     text-align: justify;
-    max-width: 100%;
+    max-width: 1200px;
     overflow-x: hidden;
     padding: 0 90px 0 95px; /* for some reason, the PDF has a little more margin on the left than on the right, maybe related to scrollbar in PdfService (Chrome) */
     hyphens: auto;
+    margin-right: auto;
+    margin-left: auto;
 }
 
 code, pre {
@@ -206,7 +212,7 @@ table {
         border-bottom: 2px solid var(--color-table-border);
         vertical-align: bottom;
         color: var(--color-text);
-        hyphens: auto;
+        hyphens: manual;
         font-weight: bold
     }
 
@@ -235,6 +241,12 @@ img {
 }
 
 figure {
+    background: var(--color-figure-background);
+    padding: var(--padding-figure);
+    border: 1px solid var(--color-figure-border);
+    border-radius: var(--borderRadius-figure);
+    page-break-inside: avoid;
+
     p:last-of-type {
         margin-bottom: 0;
 
@@ -269,10 +281,10 @@ figure {
     max-width: 40%;
 }
 .block-alert, .block-question, .block-danger, .markdown-alert {
-    padding: calc(var(--margin-base) * 2) calc(var(--margin-base) * 2) calc(var(--margin-base) * 2) 70px;
+    padding: calc(var(--margin-base) * 2) calc(var(--margin-base) * 2) calc(var(--margin-base) * 2) 55px;
     border-radius: 5px;
     background-repeat: no-repeat;
-    background-size: 1.5rem 1.5rem;
+    background-size: 20px;
     background-position: 20px 20px;
     display: block;
     margin-bottom: calc(var(--margin-base) * 2);
@@ -487,6 +499,9 @@ At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergr
 <p>The following heading and paragraph are pulled in from <code>partial-example.md</code>:</p>
 <h2 id="included-partial-heading">6.3. Included Partial Heading</h2>
 <p>This heading and paragraph live in a separate file, <code>partial-example.md</code>, next to the main document. It gets merged into <code>all-features.md</code> at the position of the <code>{{ include }}</code> placeholder, before headers are numbered or the table of content is built - that's why this heading is numbered correctly and appears in the <span class="link-to-chapter"><i></i><a href="#table-of-content">6.4. Table of Content</a></span> below. Placeholders also still work here, for example the current date: 16. Juli 2026.</p>
+<h3 id="multi-language-includes">6.3.1. Multi-language includes</h3>
+<p>Documents can be named <code>&lt;filename&gt;.&lt;language-code&gt;.md</code> (eg. <code>report.de.md</code>). When such a document includes another file, QmDoc first looks for a same-language version of the included file, and only falls back to the plain, non-translated file if no translated version exists. This works for nested includes too - the language of the top-level document is used throughout its entire include tree.</p>
+<p>See <code>multi-language-example.md</code> and its German counterpart <code>multi-language-example.de.md</code> for a working, side-by-side example: both include the exact same <code>multi-language-partial.md</code>, but the German document automatically pulls in <code>multi-language-partial.de.md</code> instead - without any change to the include statement itself.</p>
 <div style="page-break-after: always;"></div>
 <h2 id="table-of-content">6.4. Table of Content</h2>
 <p>The table of contents also links to the chapters. Page numbers are only filled in PDF output, not in HTML output.</p>
@@ -545,6 +560,10 @@ At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergr
 </tr>
 <tr>
 <td>     <a href="#included-partial-heading">6.3. Included Partial Heading</a></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr>
+<td>          <a href="#multi-language-includes">6.3.1. Multi-language includes</a></td>
 <td style="text-align: right;"></td>
 </tr>
 <tr>

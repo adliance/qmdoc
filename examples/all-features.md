@@ -101,7 +101,12 @@ Includes are resolved before any other processing happens, so headings inside an
 
 The following heading and paragraph are pulled in from `partial-example.md`:
 
-{{ include partial-example.md }}
+{{ include ./includes/partial-example.md }}
+
+### Multi-language includes
+Documents can be named `<filename>.<language-code>.md` (eg. `report.de.md`). When such a document includes another file, QmDoc first looks for a same-language version of the included file, and only falls back to the plain, non-translated file if no translated version exists. This works for nested includes too - the language of the top-level document is used throughout its entire include tree.
+
+See `multi-language-example.md` and its German counterpart `multi-language-example.de.md` for a working, side-by-side example: both include the exact same `multi-language-partial.md`, but the German document automatically pulls in `multi-language-partial.de.md` instead - without any change to the include statement itself.
 
 ---
 
