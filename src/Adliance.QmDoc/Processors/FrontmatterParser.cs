@@ -22,6 +22,7 @@ public class Frontmatter
     public bool? EnableHeader { get; set; }
     public bool? EnableFooter { get; set; }
     public bool? EnableHeaderNumbering { get; set; }
+    public bool? EnableDocumentTitle { get; set; }
 
     /// <summary>
     /// All key/value pairs found in the frontmatter (including the ones already exposed as typed properties above),
@@ -73,9 +74,7 @@ public static class FrontmatterParser
 
         foreach (var (key, value) in raw)
         {
-            if (value is null) continue;
             if (value is IEnumerable && value is not string) continue; // skip lists/nested mappings, only scalars are supported as placeholders
-
             result[key] = value.ToString() ?? "";
         }
 

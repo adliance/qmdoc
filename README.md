@@ -28,6 +28,10 @@ or
 
     qmdoc --source "c:\users\me\project\documentation\my_awesome_document.md"
 
+By default, only Markdown files directly inside the source directory are converted. Add `--include-subdirectories` to also look into all of its subdirectories:
+
+    qmdoc --source "c:\users\me\project\documentation" --include-subdirectories
+
 QmDoc supports the following commands:
 
 - `pdf` (default command) converts Markdown to PDF.

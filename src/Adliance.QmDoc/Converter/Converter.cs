@@ -77,6 +77,10 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
 
         var theme = GetTheme(markdownContext);
         var layout = ApplyCommonPlaceholders(file, ThemeProvider.GetContent(theme), markdownContext);
+        if (markdownContext.Frontmatter.EnableDocumentTitle == false)
+        {
+            layout = Regex.Replace(layout, "<div class=\"document-title\">.*?</div>", "", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+        }
 
         IHtmlProcessor[] steps =
         [

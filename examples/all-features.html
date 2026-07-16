@@ -20,17 +20,26 @@
     --font-family-code: 'Ubuntu Mono', monospace;
     --font-family-heading: 'Lora', sans-serif;
 
-    --color-dark-white: #fafafa;
-    --color-dark-blue: rgb(2, 30, 69);
-    --color-medium-blue: rgb(19, 64, 148);
-    --color-light-blue: rgb(16, 168, 229);
-    --color-turquoise: rgb(0, 199, 199);
-    --color-green: rgb(140, 185, 24);
-    --color-medium-orange: rgb(244, 125, 9);
-    --color-dark-orange: rgb(237, 70, 34);
-    --color-pink: rgb(229, 0, 125);
-    --color-green-blue: linear-gradient(165deg, #134094, #10a8e5, #00c7c7, #8cb918);
-    --color-orange-red: linear-gradient(165deg, #f47d09, #ed4622, #e5007d);
+    --color-text: rgb(2, 30, 69);
+    --color-heading: rgb(140, 185, 24);
+    --color-link: var(--color-heading);
+    --color-mark: white;
+    --color-mark-background: var(--color-text);
+    --color-pre: var(--color-text);
+    --color-pre-background: #fafafa;
+    --color-table-background: white;
+    --color-table-background-alternate: var(--color-pre-background);
+    --color-table-border: rgb(19, 64, 148);
+    --color-info: rgb(16, 168, 229);
+    --color-warning: rgb(244, 125, 9);
+    --color-danger: rgb(237, 70, 34);
+    --color-li: var(--color-table-border);
+    --color-footnote: var(--color-table-border);
+    --color-footnote-border: var(--color-table-border);
+    --color-documentTitle: var(--color-table-border);
+    --color-documentTitle-author: var(--color-table-border);
+
+    --transform-heading: none;
 
     box-sizing: border-box;
     margin: 0;
@@ -40,7 +49,7 @@ body {
     font-family: var(--font-family), sans-serif;
     width: 100%;
     font-size: var(--fontSize);
-    color: var(--color-dark-blue);
+    color: var(--color-text);
     line-height: var(--line-height);
     text-align: justify;
     max-width: 100%;
@@ -55,7 +64,8 @@ code, pre {
 }
 
 pre {
-    background-color: var(--color-dark-white);
+    color: var(--color-pre);
+    background-color: var(--color-pre-background);
     padding: 1rem;
     line-height: 0.9rem;
     white-space: pre-wrap;
@@ -66,13 +76,13 @@ b, strong {
 }
 
 a {
-    color: var(--color-dark-blue);
+    color: var(--color-link);
     text-decoration: none;
 }
 
 mark {
-    color: var(--color-dark-white);
-    background-color: var(--color-dark-blue);
+    color: var(--color-mark);
+    background-color: var(--color-mark-background);
     padding: 1px 6px;
     border-radius: 3px;
 }
@@ -112,10 +122,11 @@ table, p, ul, ol, img, pre, .block, .markdown-alert, figure {
     }
 }
 h1, h2, h3, h4, h5 {
-    color: var(--color-green);
+    color: var(--color-heading);
     font-family: var(--font-family-heading), sans-serif;
     font-weight: bold;
     page-break-after: avoid;
+    text-transform: var(--transform-heading);
 }
 
 h1 {
@@ -163,7 +174,7 @@ ul {
     li::before {
         content: "•";
         padding-right: 10px;
-        color: var(--color-medium-blue);
+        color: var(--color-li);
     }
 }
 
@@ -192,22 +203,26 @@ table {
         font-size: calc(var(--fontSize-th));
         font-family: var(--font-family-heading), sans-serif;
         padding: var(--margin-base);
-        border-bottom: 2px solid var(--color-medium-blue);
+        border-bottom: 2px solid var(--color-table-border);
         vertical-align: bottom;
-        color: var(--color-dark-blue);
+        color: var(--color-text);
         hyphens: auto;
         font-weight: bold
     }
 
     tbody {
         tr:nth-of-type(even) {
-            background-color: #f5f5f5;
+            background-color: var(--color-table-background-alternate);
+        }
+
+        tr:nth-of-type(odd) {
+            background-color: var(--color-table-background);
         }
 
         tr td {
             font-size: calc(var(--fontSize-td));
             padding: var(--margin-base);
-            border-bottom: 1px solid var(--color-medium-blue);
+            border-bottom: 1px solid var(--color-table-border);
             vertical-align: top;
             text-align: left;
         }
@@ -257,7 +272,7 @@ figure {
     padding: calc(var(--margin-base) * 2) calc(var(--margin-base) * 2) calc(var(--margin-base) * 2) 70px;
     border-radius: 5px;
     background-repeat: no-repeat;
-    background-size: 30px 30px;
+    background-size: 1.5rem 1.5rem;
     background-position: 20px 20px;
     display: block;
     margin-bottom: calc(var(--margin-base) * 2);
@@ -273,20 +288,20 @@ figure {
 }
 
 .block-alert, .markdown-alert-warning, .markdown-alert-caution {
-    border: 1px solid var(--color-medium-orange);
-    background-color: color-mix(in oklch, var(--color-medium-orange) 40%, white);
+    border: 1px solid var(--color-warning);
+    background-color: color-mix(in oklch, var(--color-warning) 40%, white);
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 8C119 8 8 119.08 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 110a42 42 0 1 1-42 42 42 42 0 0 1 42-42zm56 254a12 12 0 0 1-12 12h-88a12 12 0 0 1-12-12v-24a12 12 0 0 1 12-12h12v-64h-12a12 12 0 0 1-12-12v-24a12 12 0 0 1 12-12h64a12 12 0 0 1 12 12v100h12a12 12 0 0 1 12 12z" fill="rgb(244, 125, 9)" fill-opacity=".4" /><path fill="rgb(244, 125, 9)" d="M256 202a42 42 0 1 0-42-42 42 42 0 0 0 42 42zm44 134h-12V236a12 12 0 0 0-12-12h-64a12 12 0 0 0-12 12v24a12 12 0 0 0 12 12h12v64h-12a12 12 0 0 0-12 12v24a12 12 0 0 0 12 12h88a12 12 0 0 0 12-12v-24a12 12 0 0 0-12-12z"/></svg>');
 }
 
 .block-question, .markdown-alert-note, .markdown-alert-tip {
-    border: 1px solid var(--color-light-blue);
-    background-color: color-mix(in oklch, var(--color-light-blue) 40%, white);
+    border: 1px solid var(--color-info);
+    background-color: color-mix(in oklch, var(--color-info) 40%, white);
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 8C119 8 8 119.08 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 422a46 46 0 1 1 46-46 46.05 46.05 0 0 1-46 46zm40-131.33V300a12 12 0 0 1-12 12h-56a12 12 0 0 1-12-12v-4c0-41.06 31.13-57.47 54.65-70.66 20.17-11.31 32.54-19 32.54-34 0-19.82-25.27-33-45.7-33-27.19 0-39.44 13.14-57.3 35.79a12 12 0 0 1-16.67 2.13L148.82 170a12 12 0 0 1-2.71-16.26C173.4 113 208.16 90 262.66 90c56.34 0 116.53 44 116.53 102 0 77-83.19 78.21-83.19 106.67z" fill="rgb(16, 168, 229)" fill-opacity=".4"/><path fill="rgb(16, 168, 229)" d="M256 338a46 46 0 1 0 46 46 46 46 0 0 0-46-46zm6.66-248c-54.5 0-89.26 23-116.55 63.76a12 12 0 0 0 2.71 16.24l34.7 26.31a12 12 0 0 0 16.67-2.13c17.86-22.65 30.11-35.79 57.3-35.79 20.43 0 45.7 13.14 45.7 33 0 15-12.37 22.66-32.54 34C247.13 238.53 216 254.94 216 296v4a12 12 0 0 0 12 12h56a12 12 0 0 0 12-12v-1.33c0-28.46 83.19-29.67 83.19-106.67 0-58-60.19-102-116.53-102z"/></svg>');
 }
 
 .block-danger, .markdown-alert-important {
-    border: 1px solid var(--color-dark-orange);
-    background-color: color-mix(in oklch, var(--color-dark-orange) 40%, white);
+    border: 1px solid var(--color-danger);
+    background-color: color-mix(in oklch, var(--color-danger) 40%, white);
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 8C119 8 8 119.08 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 376a32 32 0 1 1 32-32 32 32 0 0 1-32 32zm38.24-238.41l-12.8 128A16 16 0 0 1 265.52 288h-19a16 16 0 0 1-15.92-14.41l-12.8-128A16 16 0 0 1 233.68 128h44.64a16 16 0 0 1 15.92 17.59z" fill="rgb(237, 70, 34)" fill-opacity="0.4"/><path fill="rgb(237, 70, 34)" d="M278.32 128h-44.64a16 16 0 0 0-15.92 17.59l12.8 128A16 16 0 0 0 246.48 288h19a16 16 0 0 0 15.92-14.41l12.8-128A16 16 0 0 0 278.32 128zM256 320a32 32 0 1 0 32 32 32 32 0 0 0-32-32z"/></svg>');
 }
 
@@ -308,6 +323,10 @@ div.toc table {
         border: 0;
         padding: 5px 10px;
     }
+
+    a {
+        color: var(--color-text);
+    }
 }
 .footnotes {
     page-break-inside: avoid;
@@ -316,20 +335,20 @@ div.toc table {
 
     hr {
         border: 0;
-        border-top: 1px solid var(--color-medium-blue);
+        border-top: 1px solid var(--color-footnote-border);
     }
 }
 
 .footnote-ref {
     sup {
-        color: var(--color-medium-blue);
+        color: var(--color-footnote);
     }
 }
 span.link-to-document, span.link-to-chapter {
     white-space: nowrap;
 
     a {
-        color: var(--color-green) !important;
+        color: var(--color-link) !important;
     }
 }
 
@@ -354,9 +373,10 @@ div.document-title {
     font-family: var(--font-family-heading), sans-serif;
     padding-top: var(--margin-base);
     margin-bottom: calc(var(--margin-base) * 9);
-    color: var(--color-medium-blue);
+    color: var(--color-documentTitle);
     font-weight: bold;
     line-height: 1.4em;
+    hyphens: manual;
 
     &:has(+ div.document-author) {
         margin-bottom: 0;
@@ -367,11 +387,11 @@ div.document-author {
     text-align: center;
     font-size: var(--fontSize);
     font-weight: normal;
-    color: var(--color-medium-blue);
+    color: var(--color-documentTitle-author);
     margin-bottom: calc(var(--margin-base) * 9);
 
     span, a {
-        color: var(--color-medium-blue);
+        color: var(--color-documentTitle-author);
 
         &.name, &.company {
             font-weight: bold;
@@ -556,9 +576,9 @@ At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergr
 </div>
 <h2 id="git">6.5. Git</h2>
 <ul>
-<li>Version: 8107961</li>
+<li>Version: 9e11f79</li>
 <li>Date: 16. Juli 2026</li>
-<li>Date and Version: Version 8107961, 16. Juli 2026</li>
+<li>Date and Version: Version 9e11f79, 16. Juli 2026</li>
 </ul>
 <p>And a full Git changelog of the current document is also available, formatted as a table:</p>
 <table>
@@ -571,6 +591,12 @@ At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergr
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>16. 07. 2026</td>
+<td>Hannes</td>
+<td>9e11f79</td>
+<td>Added support for including partials <span class="git-version-details"> </span></td>
+</tr>
 <tr>
 <td>16. 07. 2026</td>
 <td>Hannes</td>

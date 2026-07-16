@@ -9,6 +9,8 @@ body {
     overflow-x: hidden;
     padding: 0 90px 0 95px; /* for some reason, the PDF has a little more margin on the left than on the right, maybe related to scrollbar in PdfService (Chrome) */
     hyphens: auto;
+    margin-right: auto;
+    margin-left: auto;
 }
 
 code, pre {
