@@ -5,6 +5,12 @@ img {
 }
 
 figure {
+    background: var(--color-figure-background);
+    padding: var(--padding-figure);
+    border: 1px solid var(--color-figure-border);
+    border-radius: var(--borderRadius-figure);
+    page-break-inside: avoid;
+
     p:last-of-type {
         margin-bottom: 0;
 

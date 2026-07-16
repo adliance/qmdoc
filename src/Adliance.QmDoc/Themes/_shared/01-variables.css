@@ -29,8 +29,12 @@
     --color-footnote-border: var(--color-table-border);
     --color-documentTitle: var(--color-table-border);
     --color-documentTitle-author: var(--color-table-border);
+    --color-figure-background: var(--color-pre-background);
+    --color-figure-border: #f0f0f0;
 
     --transform-heading: none;
+    --padding-figure: 1rem;
+    --borderRadius-figure: 5px;
 
     box-sizing: border-box;
     margin: 0;

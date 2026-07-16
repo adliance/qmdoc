@@ -5,7 +5,7 @@ body {
     color: var(--color-text);
     line-height: var(--line-height);
     text-align: justify;
-    max-width: 100%;
+    max-width: 1200px;
     overflow-x: hidden;
     padding: 0 90px 0 95px; /* for some reason, the PDF has a little more margin on the left than on the right, maybe related to scrollbar in PdfService (Chrome) */
     hyphens: auto;

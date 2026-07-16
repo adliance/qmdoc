@@ -10,7 +10,7 @@ table {
         border-bottom: 2px solid var(--color-table-border);
         vertical-align: bottom;
         color: var(--color-text);
-        hyphens: auto;
+        hyphens: manual;
         font-weight: bold
     }
 
