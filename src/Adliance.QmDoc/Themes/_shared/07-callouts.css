@@ -2,7 +2,7 @@
     padding: calc(var(--margin-base) * 2) calc(var(--margin-base) * 2) calc(var(--margin-base) * 2) 70px;
     border-radius: 5px;
     background-repeat: no-repeat;
-    background-size: 30px 30px;
+    background-size: 1.5rem 1.5rem;
     background-position: 20px 20px;
     display: block;
     margin-bottom: calc(var(--margin-base) * 2);

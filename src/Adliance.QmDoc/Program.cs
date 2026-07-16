@@ -48,8 +48,8 @@ public class Program
                 try
                 {
                     var options = OptionsProvider.LoadOptions();
-                    new PdfConverter(p, options).Run().GetAwaiter().GetResult();
                     new HtmlConverter(p, options).Run().GetAwaiter().GetResult();
+                    new PdfConverter(p, options).Run().GetAwaiter().GetResult();
                     Exit(0);
                 }
                 catch (Exception ex)

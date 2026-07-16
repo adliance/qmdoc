@@ -15,10 +15,12 @@ table {
     }
 
     tbody {
-        background-color: var(--color-table-background);
-
         tr:nth-of-type(even) {
             background-color: var(--color-table-background-alternate);
+        }
+
+        tr:nth-of-type(odd) {
+            background-color: var(--color-table-background);
         }
 
         tr td {
