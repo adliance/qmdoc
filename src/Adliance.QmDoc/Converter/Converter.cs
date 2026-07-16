@@ -62,7 +62,6 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
         markdownContext = ApplyCommonPlaceholders(file, markdownContext);
         var markdownProcessors = new List<IMarkdownProcessor>
         {
-            new ImagesMustNotContainSpaces(file.SourceAbsolutePath)
         };
         PrepareAdditionalProcessors(file, markdownProcessors);
 

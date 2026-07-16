@@ -62,15 +62,6 @@ public static class FrontmatterParser
         var result = Deserializer.Deserialize<Frontmatter>(yaml);
         result.Custom = ParseAllValues(yaml);
         result.MarkdownWithoutFrontmatter = markdown[(block.Span.End + 1)..].TrimStart('\n');
-
-        Program.WriteLine($"""
-                           {"\t"}Frontmatter configuration found:
-                           {"\t\t"}Title: {result.Title}
-                           {"\t\t"}Theme: {result.Theme}
-                           {"\t\t"}Author: {result.Author}
-                           {"\t\t"}Custom: {(result.Custom.Count == 0 ? "-" : string.Join(", ", result.Custom.Keys))}
-                           """);
-
         return result;
     }
 

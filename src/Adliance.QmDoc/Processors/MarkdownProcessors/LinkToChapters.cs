@@ -1,5 +1,6 @@
 using System;
 using System.Text.RegularExpressions;
+using Markdig.Helpers;
 
 namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
@@ -17,31 +18,14 @@ public class LinkToChapters : IMarkdownProcessor
         return markdownContext;
     }
 
+    /// <summary>
+    /// Mirrors the id Markdig's AutoIdentifierExtension assigns to headings (via .UseAdvancedExtensions()),
+    /// so that chapter links and the TOC point to the same anchor Markdig actually renders.
+    /// </summary>
     public static string GetChapterId(string chapterName)
     {
         if (string.IsNullOrWhiteSpace(chapterName)) throw new ArgumentException(null, nameof(chapterName));
 
-        var result = chapterName.Trim();
-        result = result.Replace(" ", "-");
-        result = result.Replace("&amp;", "");
-        result = result.Replace("&", "");
-        result = result.Replace(",", "");
-        result = result.Replace(":", "");
-        result = result.Replace(";", "");
-        result = result.Replace("(", "");
-        result = result.Replace(")", "");
-        result = result.ToLower();
-        result = result.Replace("ä", "a");
-        result = result.Replace("ö", "o");
-        result = result.Replace("ü", "u");
-        result = result.Replace("\"", "");
-        result = result.Replace("%22", "");
-        result = result.Replace("ß", "ss");
-        result = result.Replace("---", "-");
-        result = result.Replace("--", "-");
-        result = result.Replace(".-", ".");
-        result = result.TrimStart('1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-');
-
-        return result;
+        return LinkHelper.Urilize(chapterName.Trim(), allowOnlyAscii: true);
     }
 }
