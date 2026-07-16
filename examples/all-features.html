@@ -384,13 +384,14 @@ div.document-author {
 <body>
 <div class="document-title">QmDoc feature overview</div>
 <div class="document-author"><span class="name">Hannes Sachsenhofer</span>, Adliance GmbH</div><p>This example document is a showcase for all QmDoc features, using the latest 2026 theme.
-It is built by calling <code>qmdoc pdf --include-html --source &quot;./examples/all-features.md&quot;</code>.</p>
+It is built by calling <code>qmdoc pdf-and-html --source &quot;./examples/all-features.md&quot;</code>.</p>
 <h1 id="general-qmdoc-features">1. General QmDoc features</h1>
 <ul>
 <li>The 2026 theme uses automatic hyphenation via CSS (<code>hyphens: auto;</code>).</li>
 <li>Headers are automatically numbered.</li>
-<li>PDF contain the outline metadata. Internally, this is also used to render the <span class="link-to-chapter"><i></i><a href="#table-of-content">6.2. Table of Content</a></span>.</li>
+<li>PDF contain the outline metadata. Internally, this is also used to render the <span class="link-to-chapter"><i></i><a href="#table-of-content">6.4. Table of Content</a></span>.</li>
 <li>Footer is added automatically for PDF, with document title, git version/date (if any) and page numbering.</li>
+<li>QmDoc supports separate <code>pdf</code>, <code>html</code> and <code>pdf-and-html</code> commands, so you can generate either format on its own or both at once.</li>
 </ul>
 <h1 id="basic-formatting">2. Basic formatting</h1>
 <ul>
@@ -460,8 +461,14 @@ At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergr
 <li>Project Code: QMD-2026</li>
 <li>Author (from frontmatter): Hannes Sachsenhofer</li>
 </ul>
+<h2 id="includes-partials">6.2. Includes (Partials)</h2>
+<p>Other Markdown files can be pulled into the current document with an include placeholder: write <code>include</code>, followed by a relative path to another Markdown file, wrapped in the same double curly braces used for <code>DATE</code> or <code>TOC</code> above. The path is resolved relative to the current file, or, if not found there, relative to the currently used theme's folder (useful for partials shared by a theme, like a common legal notice).</p>
+<p>Includes are resolved before any other processing happens, so headings inside an included file are numbered correctly, show up in the <span class="link-to-chapter"><i></i><a href="#table-of-content">6.4. Table of Content</a></span>, and placeholders inside the included content (like the current date) are resolved as well. Includes can be nested, and circular includes are detected and reported as an error instead of looping forever.</p>
+<p>The following heading and paragraph are pulled in from <code>partial-example.md</code>:</p>
+<h2 id="included-partial-heading">6.3. Included Partial Heading</h2>
+<p>This heading and paragraph live in a separate file, <code>partial-example.md</code>, next to the main document. It gets merged into <code>all-features.md</code> at the position of the <code>{{ include }}</code> placeholder, before headers are numbered or the table of content is built - that's why this heading is numbered correctly and appears in the <span class="link-to-chapter"><i></i><a href="#table-of-content">6.4. Table of Content</a></span> below. Placeholders also still work here, for example the current date: 16. Juli 2026.</p>
 <div style="page-break-after: always;"></div>
-<h2 id="table-of-content">6.2. Table of Content</h2>
+<h2 id="table-of-content">6.4. Table of Content</h2>
 <p>The table of contents also links to the chapters. Page numbers are only filled in PDF output, not in HTML output.</p>
 <div class="toc">
 <table>
@@ -513,11 +520,19 @@ At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergr
 <td style="text-align: right;"></td>
 </tr>
 <tr>
-<td>     <a href="#table-of-content">6.2. Table of Content</a></td>
+<td>     <a href="#includes-partials">6.2. Includes (Partials)</a></td>
 <td style="text-align: right;"></td>
 </tr>
 <tr>
-<td>     <a href="#git">6.3. Git</a></td>
+<td>     <a href="#included-partial-heading">6.3. Included Partial Heading</a></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr>
+<td>     <a href="#table-of-content">6.4. Table of Content</a></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr>
+<td>     <a href="#git">6.5. Git</a></td>
 <td style="text-align: right;"></td>
 </tr>
 <tr>
@@ -539,11 +554,11 @@ At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergr
 </tbody>
 </table>
 </div>
-<h2 id="git">6.3. Git</h2>
+<h2 id="git">6.5. Git</h2>
 <ul>
-<li>Version: 86c2442</li>
-<li>Date: 29. Juni 2026</li>
-<li>Date and Version: Version 86c2442, 29. Juni 2026</li>
+<li>Version: 8107961</li>
+<li>Date: 16. Juli 2026</li>
+<li>Date and Version: Version 8107961, 16. Juli 2026</li>
 </ul>
 <p>And a full Git changelog of the current document is also available, formatted as a table:</p>
 <table>
@@ -556,6 +571,12 @@ At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergr
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>16. 07. 2026</td>
+<td>Hannes</td>
+<td>8107961</td>
+<td>Add support for any placeholder defined in Frontmatter. <span class="git-version-details"> </span></td>
+</tr>
 <tr>
 <td>29. 06. 2026</td>
 <td>Hannes</td>

@@ -6,7 +6,7 @@ projectCode: QMD-2026
 ---
 
 This example document is a showcase for all QmDoc features, using the latest 2026 theme. 
-It is built by calling `qmdoc pdf --include-html --source "./examples/all-features.md"`.
+It is built by calling `qmdoc pdf-and-html --source "./examples/all-features.md"`.
 
 
 # General QmDoc features
@@ -14,6 +14,7 @@ It is built by calling `qmdoc pdf --include-html --source "./examples/all-featur
 - Headers are automatically numbered.
 - PDF contain the outline metadata. Internally, this is also used to render the [#Table of Content].
 - Footer is added automatically for PDF, with document title, git version/date (if any) and page numbering.
+- QmDoc supports separate `pdf`, `html` and `pdf-and-html` commands, so you can generate either format on its own or both at once.
 
 
 # Basic formatting
@@ -92,6 +93,15 @@ Any key/value pair defined in the frontmatter can also be used as a placeholder,
 - Client: {{ clientName }}
 - Project Code: {{ PROJECTCODE }}
 - Author (from frontmatter): {{ author }}
+
+## Includes (Partials)
+Other Markdown files can be pulled into the current document with an include placeholder: write `include`, followed by a relative path to another Markdown file, wrapped in the same double curly braces used for `DATE` or `TOC` above. The path is resolved relative to the current file, or, if not found there, relative to the currently used theme's folder (useful for partials shared by a theme, like a common legal notice).
+
+Includes are resolved before any other processing happens, so headings inside an included file are numbered correctly, show up in the [#Table of Content], and placeholders inside the included content (like the current date) are resolved as well. Includes can be nested, and circular includes are detected and reported as an error instead of looping forever.
+
+The following heading and paragraph are pulled in from `partial-example.md`:
+
+{{ include partial-example.md }}
 
 ---
 

@@ -59,6 +59,7 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
 
     protected MarkdownProcessorContext RunMarkdownProcessors(ConverterFile file, MarkdownProcessorContext markdownContext)
     {
+        markdownContext = new IncludeFiles(file.SourceAbsolutePath, GetTheme(markdownContext)).Apply(markdownContext);
         markdownContext = ApplyCommonPlaceholders(file, markdownContext);
         var markdownProcessors = new List<IMarkdownProcessor>
         {

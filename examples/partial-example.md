@@ -1,0 +1,2 @@
+## Included Partial Heading
+This heading and paragraph live in a separate file, `partial-example.md`, next to the main document. It gets merged into `all-features.md` at the position of the `{{ include }}` placeholder, before headers are numbered or the table of content is built - that's why this heading is numbered correctly and appears in the [#Table of Content] below. Placeholders also still work here, for example the current date: {{ DATE }}.
