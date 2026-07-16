@@ -34,14 +34,6 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
 
             EnsureTargetDirectory(f);
 
-            if (parameters.IncludeHtml)
-            {
-                var html = RunHtmlProcessors(f, markdownContext);
-                var targetPathForHtmlFile = f.TargetAbsolutePath[..^Path.GetExtension(f.TargetAbsolutePath).Length] + ".html";
-                Program.WriteLine($"\tHTML (Theme: {markdownContext.Theme}, {html.Length.Bytes().Humanize(CultureInfo.CurrentCulture)}) -> {targetPathForHtmlFile}");
-                await File.WriteAllTextAsync(targetPathForHtmlFile, html);
-            }
-
             var resultingBytes = await Convert(f, markdownContext);
             if (targetExtension == TargetExtension.Pdf)
             {
@@ -165,7 +157,7 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
 
         context.Theme = options.Theme;
         if (!string.IsNullOrWhiteSpace(context.Frontmatter.Theme)) context.Theme = context.Frontmatter.Theme;
-        else if (parameters is PdfParameters pdfParameters && !string.IsNullOrWhiteSpace(pdfParameters.Theme)) context.Theme = pdfParameters.Theme;
+        else if (parameters is ThemedConversionParameters themedParameters && !string.IsNullOrWhiteSpace(themedParameters.Theme)) context.Theme = themedParameters.Theme;
 
         if (string.IsNullOrWhiteSpace(context.Theme)) context.Theme = "2026";
         if (context.Theme.StartsWith("_"))
@@ -210,7 +202,8 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
 public enum TargetExtension
 {
     Pdf,
-    Docx
+    Docx,
+    Html
 }
 
 public class ConverterFile

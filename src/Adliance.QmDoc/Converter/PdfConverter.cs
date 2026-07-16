@@ -7,7 +7,7 @@ using Adliance.QmDoc.Themes;
 
 namespace Adliance.QmDoc.Converter;
 
-public class PdfConverter(PdfParameters parameters, Options.Options options) : Converter(TargetExtension.Pdf, parameters, options)
+public class PdfConverter(ThemedConversionParameters parameters, Options.Options options) : Converter(TargetExtension.Pdf, parameters, options)
 {
     private readonly Options.Options _options = options;
 

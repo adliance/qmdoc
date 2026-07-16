@@ -5,5 +5,5 @@ using CommandLine;
 
 namespace Adliance.QmDoc.Parameters;
 
-[Verb("pdf", true, HelpText = "Runs the full Markdown to PDF conversion.")]
-public class PdfParameters : ThemedConversionParameters;
+[Verb("html", false, HelpText = "Runs the full Markdown to HTML conversion.")]
+public class HtmlParameters : ThemedConversionParameters;

@@ -28,6 +28,17 @@ or
 
     qmdoc --source "c:\users\me\project\documentation\my_awesome_document.md"
 
+QmDoc supports the following commands:
+
+- `pdf` (default command) converts Markdown to PDF.
+- `html` converts Markdown to HTML.
+- `pdf-and-html` converts Markdown to both PDF and HTML at once.
+- `docx` converts Markdown to DOCX (only supports a subset of features compared to the PDF/HTML conversion).
+
+For example, to convert to both PDF and HTML:
+
+    qmdoc pdf-and-html --source "c:\users\me\project\documentation"
+
 Call
 
     qmdoc --help 
