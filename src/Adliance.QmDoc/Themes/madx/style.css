@@ -1,5 +1,17 @@
 * {
+    --color-madx-night: rgba(17, 28, 36, 1);
+    --color-madx-sun: rgba(248, 232, 0, 1);
+    --color-madx-shadow: rgba(49, 59, 62, 1);
+    --color-madx-stone: rgba(137, 141, 141, 1);
+    --color-madx-grass: rgba(205, 196, 0, 1);
+
     --font-family: Arial, Liberation Sans, sans-serif;
     --font-family-code: 'Ubuntu Mono', monospace;
     --font-family-heading: Arial, Liberation Sans, sans-serif;
+
+    --color-link: var(--color-madx-sun);
+    --color-heading: var(--color-madx-sun);
+    --color-table-border: var(--color-madx-sun);
+
+    --transform-heading: uppercase;
 }

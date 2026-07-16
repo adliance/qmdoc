@@ -5,7 +5,7 @@ using Adliance.QmDoc.Options;
 
 namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
-public class IncludeFiles(string sourceFilePath, string theme) : IMarkdownProcessor
+public class IncludesProcessor(string sourceFilePath, string theme) : IMarkdownProcessor
 {
     private static readonly Regex IncludeRegex = new(@"\{\{\s*include\s+([^{}]+?)\s*\}\}", RegexOptions.IgnoreCase);
 

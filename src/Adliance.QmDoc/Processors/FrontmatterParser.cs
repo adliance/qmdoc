@@ -21,6 +21,7 @@ public class Frontmatter
     public double? PdfScale { get; set; }
     public bool? EnableHeader { get; set; }
     public bool? EnableFooter { get; set; }
+    public bool? EnableHeaderNumbering { get; set; }
 
     /// <summary>
     /// All key/value pairs found in the frontmatter (including the ones already exposed as typed properties above),

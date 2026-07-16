@@ -59,7 +59,7 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
 
     protected MarkdownProcessorContext RunMarkdownProcessors(ConverterFile file, MarkdownProcessorContext markdownContext)
     {
-        markdownContext = new IncludeFiles(file.SourceAbsolutePath, GetTheme(markdownContext)).Apply(markdownContext);
+        markdownContext = new IncludesProcessor(file.SourceAbsolutePath, GetTheme(markdownContext)).Apply(markdownContext);
         markdownContext = ApplyCommonPlaceholders(file, markdownContext);
         var markdownProcessors = new List<IMarkdownProcessor>
         {
@@ -125,7 +125,7 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
             new GitDatePlaceholder(gitLatestChange),
             new GitDateAndVersionPlaceholder(gitLatestChange),
             new CssPlaceholder(GetTheme(context)),
-            new HeaderNumbering(!parameters.DisableHeaderNumbering),
+            new HeaderNumbering(context.Frontmatter.EnableHeaderNumbering != false),
             new TableOfContentsPlaceholder(),
             new FrontmatterValuesPlaceholder()
         };

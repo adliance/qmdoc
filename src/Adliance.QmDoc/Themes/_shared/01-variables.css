@@ -30,6 +30,8 @@
     --color-documentTitle: var(--color-table-border);
     --color-documentTitle-author: var(--color-table-border);
 
+    --transform-heading: none;
+
     box-sizing: border-box;
     margin: 0;
     padding: 0;
