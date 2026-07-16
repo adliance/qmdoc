@@ -1,6 +1,8 @@
 ---
 title: QmDoc feature overview
 author: Hannes Sachsenhofer
+clientName: Adliance GmbH
+projectCode: QMD-2026
 ---
 
 This example document is a showcase for all QmDoc features, using the latest 2026 theme. 
@@ -83,6 +85,13 @@ QmDoc also supports the GitHub style callouts. There's different flavors of this
 - Current Date: {{ DATE }}
 - Document Title: {{ TITLE }}
 - A `---` in it's own line renders as a page break in PDF.
+
+## Frontmatter values
+Any key/value pair defined in the frontmatter can also be used as a placeholder, by its key. This works for arbitrary, custom keys, but also for the built-in ones like `title` or `author`.
+
+- Client: {{ clientName }}
+- Project Code: {{ PROJECTCODE }}
+- Author (from frontmatter): {{ author }}
 
 ---
 

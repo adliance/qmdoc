@@ -134,7 +134,8 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
             new GitDateAndVersionPlaceholder(gitLatestChange),
             new CssPlaceholder(GetTheme(context)),
             new HeaderNumbering(!parameters.DisableHeaderNumbering),
-            new TableOfContentsPlaceholder()
+            new TableOfContentsPlaceholder(),
+            new FrontmatterValuesPlaceholder()
         };
 
         foreach (var p in processors) context = p.Apply(context);

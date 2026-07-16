@@ -64,7 +64,7 @@ public class MarkdownProcessorContext
 
     public void ReplacePlaceholder(string placeholder, string replaceWith)
     {
-        Markdown = Regex.Replace(Markdown, @"\{\{\W*" + placeholder + @"\W*\}\}", replaceWith, RegexOptions.IgnoreCase);
+        Markdown = Regex.Replace(Markdown, @"\{\{\W*" + Regex.Escape(placeholder) + @"\W*\}\}", replaceWith, RegexOptions.IgnoreCase);
     }
 }
 
