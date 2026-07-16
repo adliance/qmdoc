@@ -18,7 +18,7 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
 {
     public async Task Run()
     {
-        var files = BuildFilesList(parameters.Source, parameters.Target, targetExtension);
+        var files = BuildFilesList(parameters.Source, parameters.Target, targetExtension, parameters.IncludeSubdirectories);
         if (files.Count <= 0)
         {
             var fileInfo = new FileInfo(parameters.Source);
@@ -177,7 +177,7 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
 
     protected abstract void PrepareAdditionalProcessors(ConverterFile file, IList<IMarkdownProcessor> markdownProcessors);
 
-    private static IList<ConverterFile> BuildFilesList(string source, string targetBaseDirectory, TargetExtension targetExtension)
+    private static IList<ConverterFile> BuildFilesList(string source, string targetBaseDirectory, TargetExtension targetExtension, bool includeSubdirectories)
     {
         var result = new List<ConverterFile>();
 
@@ -189,7 +189,8 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
         else if (Directory.Exists(source))
         {
             var baseDirectory = new DirectoryInfo(source.TrimEnd('/', '\\'));
-            foreach (var fileInfo in baseDirectory.GetFiles("*.md", SearchOption.AllDirectories).OrderBy(x => x.FullName))
+            var searchOption = includeSubdirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+            foreach (var fileInfo in baseDirectory.GetFiles("*.md", searchOption).OrderBy(x => x.FullName))
             {
                 result.Add(new ConverterFile(baseDirectory.FullName, fileInfo.FullName[(baseDirectory.FullName.Length + 1)..], fileInfo.FullName, targetBaseDirectory, targetExtension));
             }
