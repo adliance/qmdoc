@@ -7,22 +7,24 @@ table {
         font-size: calc(var(--fontSize-th));
         font-family: var(--font-family-heading), sans-serif;
         padding: var(--margin-base);
-        border-bottom: 2px solid var(--color-medium-blue);
+        border-bottom: 2px solid var(--color-table-border);
         vertical-align: bottom;
-        color: var(--color-dark-blue);
+        color: var(--color-text);
         hyphens: auto;
         font-weight: bold
     }
 
     tbody {
+        background-color: var(--color-table-background);
+
         tr:nth-of-type(even) {
-            background-color: #f5f5f5;
+            background-color: var(--color-table-background-alternate);
         }
 
         tr td {
             font-size: calc(var(--fontSize-td));
             padding: var(--margin-base);
-            border-bottom: 1px solid var(--color-medium-blue);
+            border-bottom: 1px solid var(--color-table-border);
             vertical-align: top;
             text-align: left;
         }

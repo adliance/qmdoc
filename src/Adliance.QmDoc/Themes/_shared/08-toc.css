@@ -5,4 +5,8 @@ div.toc table {
         border: 0;
         padding: 5px 10px;
     }
+
+    a {
+        color: var(--color-text);
+    }
 }

@@ -35,5 +35,6 @@
   <ItemGroup>
     <EmbeddedResource Include="Themes/_shared/*" />
     <EmbeddedResource Include="Themes/2026/*" />
+    <EmbeddedResource Include="Themes/madx/*" />
   </ItemGroup>
 </Project>

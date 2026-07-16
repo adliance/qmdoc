@@ -2,7 +2,7 @@ span.link-to-document, span.link-to-chapter {
     white-space: nowrap;
 
     a {
-        color: var(--color-green) !important;
+        color: var(--color-link) !important;
     }
 }
 

@@ -4,9 +4,10 @@ div.document-title {
     font-family: var(--font-family-heading), sans-serif;
     padding-top: var(--margin-base);
     margin-bottom: calc(var(--margin-base) * 9);
-    color: var(--color-medium-blue);
+    color: var(--color-documentTitle);
     font-weight: bold;
     line-height: 1.4em;
+    hyphens: manual;
 
     &:has(+ div.document-author) {
         margin-bottom: 0;
@@ -17,11 +18,11 @@ div.document-author {
     text-align: center;
     font-size: var(--fontSize);
     font-weight: normal;
-    color: var(--color-medium-blue);
+    color: var(--color-documentTitle-author);
     margin-bottom: calc(var(--margin-base) * 9);
 
     span, a {
-        color: var(--color-medium-blue);
+        color: var(--color-documentTitle-author);
 
         &.name, &.company {
             font-weight: bold;

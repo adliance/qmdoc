@@ -11,17 +11,24 @@
     --font-family-code: 'Ubuntu Mono', monospace;
     --font-family-heading: 'Lora', sans-serif;
 
-    --color-dark-white: #fafafa;
-    --color-dark-blue: rgb(2, 30, 69);
-    --color-medium-blue: rgb(19, 64, 148);
-    --color-light-blue: rgb(16, 168, 229);
-    --color-turquoise: rgb(0, 199, 199);
-    --color-green: rgb(140, 185, 24);
-    --color-medium-orange: rgb(244, 125, 9);
-    --color-dark-orange: rgb(237, 70, 34);
-    --color-pink: rgb(229, 0, 125);
-    --color-green-blue: linear-gradient(165deg, #134094, #10a8e5, #00c7c7, #8cb918);
-    --color-orange-red: linear-gradient(165deg, #f47d09, #ed4622, #e5007d);
+    --color-text: rgb(2, 30, 69);
+    --color-heading: rgb(140, 185, 24);
+    --color-link: var(--color-heading);
+    --color-mark: white;
+    --color-mark-background: var(--color-text);
+    --color-pre: var(--color-text);
+    --color-pre-background: #fafafa;
+    --color-table-background: white;
+    --color-table-background-alternate: var(--color-pre-background);
+    --color-table-border: rgb(19, 64, 148);
+    --color-info: rgb(16, 168, 229);
+    --color-warning: rgb(244, 125, 9);
+    --color-danger: rgb(237, 70, 34);
+    --color-li: var(--color-table-border);
+    --color-footnote: var(--color-table-border);
+    --color-footnote-border: var(--color-table-border);
+    --color-documentTitle: var(--color-table-border);
+    --color-documentTitle-author: var(--color-table-border);
 
     box-sizing: border-box;
     margin: 0;

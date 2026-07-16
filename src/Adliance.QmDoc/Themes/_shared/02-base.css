@@ -2,7 +2,7 @@ body {
     font-family: var(--font-family), sans-serif;
     width: 100%;
     font-size: var(--fontSize);
-    color: var(--color-dark-blue);
+    color: var(--color-text);
     line-height: var(--line-height);
     text-align: justify;
     max-width: 100%;
@@ -17,7 +17,8 @@ code, pre {
 }
 
 pre {
-    background-color: var(--color-dark-white);
+    color: var(--color-pre);
+    background-color: var(--color-pre-background);
     padding: 1rem;
     line-height: 0.9rem;
     white-space: pre-wrap;
@@ -28,13 +29,13 @@ b, strong {
 }
 
 a {
-    color: var(--color-dark-blue);
+    color: var(--color-link);
     text-decoration: none;
 }
 
 mark {
-    color: var(--color-dark-white);
-    background-color: var(--color-dark-blue);
+    color: var(--color-mark);
+    background-color: var(--color-mark-background);
     padding: 1px 6px;
     border-radius: 3px;
 }
