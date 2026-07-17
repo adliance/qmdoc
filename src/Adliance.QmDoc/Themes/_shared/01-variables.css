@@ -11,6 +11,7 @@
     --font-family-code: 'Ubuntu Mono', monospace;
     --font-family-heading: 'Lora', sans-serif;
 
+    --color-background: white;
     --color-text: rgb(2, 30, 69);
     --color-heading: rgb(140, 185, 24);
     --color-link: var(--color-heading);
