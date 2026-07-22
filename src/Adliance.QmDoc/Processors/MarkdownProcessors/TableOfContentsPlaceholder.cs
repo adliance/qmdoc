@@ -1,3 +1,4 @@
+using System;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -66,7 +67,7 @@ public class TableOfContentsPlaceholder : IMarkdownProcessor
 
     private static int? GetPageNumber(string chapterTitle, PdfMetadata.OutlineData outline)
     {
-        if (outline.Title == chapterTitle) return outline.Page;
+        if (outline.Title.Equals(chapterTitle, StringComparison.OrdinalIgnoreCase)) return outline.Page;
         foreach (var o in outline.Children)
         {
             var page = GetPageNumber(chapterTitle, o);
