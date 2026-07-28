@@ -19,6 +19,7 @@ public class Frontmatter
     public int? PdfWidth { get; set; }
     public int? PdfHeight { get; set; }
     public double? PdfScale { get; set; }
+    public int? PdfTimeoutSeconds { get; set; }
     public bool? EnableHeader { get; set; }
     public bool? EnableFooter { get; set; }
     public bool? EnableHeaderNumbering { get; set; }

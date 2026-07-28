@@ -28,7 +28,10 @@ public class PdfConverter(ThemedConversionParameters parameters, Options.Options
             Scale = markdownContext.Frontmatter.PdfScale ?? settings.Pdf.Scale
         };
 
-        var pdfer = new AdliancePdfer(new AdliancePdferSettings());
+        var pdfer = new AdliancePdfer(new AdliancePdferSettings
+        {
+            TimeoutSeconds = markdownContext.Frontmatter.PdfTimeoutSeconds ?? settings.Pdf.TimeoutSeconds
+        });
 
         if (TableOfContentsPlaceholder.ContainsTocPlaceholder(markdownContext))
         {
@@ -59,4 +62,5 @@ public class AdliancePdferSettings : IPdferConfiguration
     public string ServerUrl => "https://pdf2.adliance.dev";
     public string? ApiKeyPdf => null;
     public string? ApiKeyTemplate => null;
+    public required int TimeoutSeconds { get; init; }
 }

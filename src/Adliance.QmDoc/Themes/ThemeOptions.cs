@@ -13,5 +13,6 @@ public class ThemeOptions
         [JsonPropertyName("header_height")] public int HeaderHeight { get; set; }
         [JsonPropertyName("footer_height")] public int FooterHeight { get; set; }
         [JsonPropertyName("scale")] public double? Scale { get; set; }
+        [JsonPropertyName("timeout_seconds")] public int TimeoutSeconds { get; set; } = 60;
     }
 }
