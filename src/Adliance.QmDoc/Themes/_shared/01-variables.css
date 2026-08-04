@@ -37,6 +37,12 @@
     --padding-figure: 1rem;
     --borderRadius-figure: 5px;
 
+    --padding-blockquote: 0 0 0 2rem;
+    --fontSize-blockquote: 14px;
+    --border-blockquote: 0 solid var(--color-pre-background);
+    --borderWidth-blockquote: 0 0 0 10px;
+    --color-blockquote: #777;
+
     box-sizing: border-box;
     margin: 0;
     padding: 0;

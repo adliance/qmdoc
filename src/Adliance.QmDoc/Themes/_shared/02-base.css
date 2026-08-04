@@ -77,3 +77,11 @@ table, p, ul, ol, img, pre, .block, .markdown-alert, figure {
         margin-top: calc(var(--margin-base) * 3);
     }
 }
+
+blockquote {
+    padding: var(--padding-blockquote);
+    font-size: var(--fontSize-blockquote);
+    border: var(--border-blockquote);
+    border-width: var(--borderWidth-blockquote);
+    color: var(--color-blockquote);
+}
