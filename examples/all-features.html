@@ -20,6 +20,7 @@
     --font-family-code: 'Ubuntu Mono', monospace;
     --font-family-heading: 'Lora', sans-serif;
 
+    --color-background: white;
     --color-text: rgb(2, 30, 69);
     --color-heading: rgb(140, 185, 24);
     --color-link: var(--color-heading);
@@ -45,6 +46,12 @@
     --padding-figure: 1rem;
     --borderRadius-figure: 5px;
 
+    --padding-blockquote: 0 0 0 2rem;
+    --fontSize-blockquote: 14px;
+    --border-blockquote: 0 solid var(--color-pre-background);
+    --borderWidth-blockquote: 0 0 0 10px;
+    --color-blockquote: #777;
+
     box-sizing: border-box;
     margin: 0;
     padding: 0;
@@ -62,6 +69,9 @@ body {
     hyphens: auto;
     margin-right: auto;
     margin-left: auto;
+    background-color: var(--color-background);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
 }
 
 code, pre {
@@ -127,6 +137,14 @@ table, p, ul, ol, img, pre, .block, .markdown-alert, figure {
         margin-top: calc(var(--margin-base) * 3);
     }
 }
+
+blockquote {
+    padding: var(--padding-blockquote);
+    font-size: var(--fontSize-blockquote);
+    border: var(--border-blockquote);
+    border-width: var(--borderWidth-blockquote);
+    color: var(--color-blockquote);
+}
 h1, h2, h3, h4, h5 {
     color: var(--color-heading);
     font-family: var(--font-family-heading), sans-serif;
@@ -180,6 +198,12 @@ ul {
     li::before {
         content: "•";
         padding-right: 10px;
+        color: var(--color-li);
+    }
+}
+
+ol {
+    li::marker {
         color: var(--color-li);
     }
 }
@@ -241,11 +265,16 @@ img {
 }
 
 figure {
+    width: fit-content;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
     background: var(--color-figure-background);
     padding: var(--padding-figure);
     border: 1px solid var(--color-figure-border);
     border-radius: var(--borderRadius-figure);
     page-break-inside: avoid;
+    transform: translateY(2px); /* move down a little bit to avoid the cropping of top-border on new pages */
 
     p:last-of-type {
         margin-bottom: 0;
@@ -265,6 +294,12 @@ figure {
         margin-top: 3px !important;
         font-size: var(--fontSize-figcaption);
         text-align: center;
+
+        /* the caption must not widen the (shrink-wrapped) figure, so it
+           contributes nothing to the intrinsic width, but still renders
+           across the full width of the figure */
+        width: 0;
+        min-width: 100%;
         max-width: 100% !important; /* to override .left/.right width limits */
     }
 }
@@ -289,6 +324,7 @@ figure {
     display: block;
     margin-bottom: calc(var(--margin-base) * 2);
     page-break-inside: avoid;
+    transform: translateY(2px); /* move down a little bit to avoid the cropping of top-border on new pages */
 
     p:last-child {
         margin-bottom: 0;
@@ -482,7 +518,7 @@ At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergr
 </div>
 <h1 id="custom-qmdoc-placeholders">6. Custom QmDoc Placeholders</h1>
 <ul>
-<li>Current Date: 16. Juli 2026</li>
+<li>Current Date: 31. August 2026</li>
 <li>Document Title: QmDoc feature overview</li>
 <li>A <code>---</code> in it's own line renders as a page break in PDF.</li>
 </ul>
@@ -498,7 +534,7 @@ At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergr
 <p>Includes are resolved before any other processing happens, so headings inside an included file are numbered correctly, show up in the <span class="link-to-chapter"><i></i><a href="#table-of-content">6.4. Table of Content</a></span>, and placeholders inside the included content (like the current date) are resolved as well. Includes can be nested, and circular includes are detected and reported as an error instead of looping forever.</p>
 <p>The following heading and paragraph are pulled in from <code>partial-example.md</code>:</p>
 <h2 id="included-partial-heading">6.3. Included Partial Heading</h2>
-<p>This heading and paragraph live in a separate file, <code>partial-example.md</code>, next to the main document. It gets merged into <code>all-features.md</code> at the position of the <code>{{ include }}</code> placeholder, before headers are numbered or the table of content is built - that's why this heading is numbered correctly and appears in the <span class="link-to-chapter"><i></i><a href="#table-of-content">6.4. Table of Content</a></span> below. Placeholders also still work here, for example the current date: 16. Juli 2026.</p>
+<p>This heading and paragraph live in a separate file, <code>partial-example.md</code>, next to the main document. It gets merged into <code>all-features.md</code> at the position of the <code>{{ include }}</code> placeholder, before headers are numbered or the table of content is built - that's why this heading is numbered correctly and appears in the <span class="link-to-chapter"><i></i><a href="#table-of-content">6.4. Table of Content</a></span> below. Placeholders also still work here, for example the current date: 31. August 2026.</p>
 <h3 id="multi-language-includes">6.3.1. Multi-language includes</h3>
 <p>Documents can be named <code>&lt;filename&gt;.&lt;language-code&gt;.md</code> (eg. <code>report.de.md</code>). When such a document includes another file, QmDoc first looks for a same-language version of the included file, and only falls back to the plain, non-translated file if no translated version exists. This works for nested includes too - the language of the top-level document is used throughout its entire include tree.</p>
 <p>See <code>multi-language-example.md</code> and its German counterpart <code>multi-language-example.de.md</code> for a working, side-by-side example: both include the exact same <code>multi-language-partial.md</code>, but the German document automatically pulls in <code>multi-language-partial.de.md</code> instead - without any change to the include statement itself.</p>
@@ -595,9 +631,9 @@ At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergr
 </div>
 <h2 id="git">6.5. Git</h2>
 <ul>
-<li>Version: 9e11f79</li>
+<li>Version: 82232fd</li>
 <li>Date: 16. Juli 2026</li>
-<li>Date and Version: Version 9e11f79, 16. Juli 2026</li>
+<li>Date and Version: Version 82232fd, 16. Juli 2026</li>
 </ul>
 <p>And a full Git changelog of the current document is also available, formatted as a table:</p>
 <table>
@@ -610,6 +646,12 @@ At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergr
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>16. 07. 2026</td>
+<td>Hannes</td>
+<td>82232fd</td>
+<td>Add multi-language support for includes. <span class="git-version-details"> </span></td>
+</tr>
 <tr>
 <td>16. 07. 2026</td>
 <td>Hannes</td>

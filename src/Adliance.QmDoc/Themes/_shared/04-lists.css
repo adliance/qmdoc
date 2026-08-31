@@ -12,6 +12,12 @@ ul {
     }
 }
 
+ol {
+    li::marker {
+        color: var(--color-li);
+    }
+}
+
 ol, ul {
     padding-left: calc(var(--margin-base) * 3);
 

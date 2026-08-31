@@ -5,11 +5,16 @@ img {
 }
 
 figure {
+    width: fit-content;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
     background: var(--color-figure-background);
     padding: var(--padding-figure);
     border: 1px solid var(--color-figure-border);
     border-radius: var(--borderRadius-figure);
     page-break-inside: avoid;
+    transform: translateY(2px); /* move down a little bit to avoid the cropping of top-border on new pages */
 
     p:last-of-type {
         margin-bottom: 0;
@@ -29,6 +34,12 @@ figure {
         margin-top: 3px !important;
         font-size: var(--fontSize-figcaption);
         text-align: center;
+
+        /* the caption must not widen the (shrink-wrapped) figure, so it
+           contributes nothing to the intrinsic width, but still renders
+           across the full width of the figure */
+        width: 0;
+        min-width: 100%;
         max-width: 100% !important; /* to override .left/.right width limits */
     }
 }

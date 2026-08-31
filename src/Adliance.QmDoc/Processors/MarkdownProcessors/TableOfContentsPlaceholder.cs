@@ -67,7 +67,9 @@ public class TableOfContentsPlaceholder : IMarkdownProcessor
 
     private static int? GetPageNumber(string chapterTitle, PdfMetadata.OutlineData outline)
     {
-        if (outline.Title.Equals(chapterTitle, StringComparison.OrdinalIgnoreCase)) return outline.Page;
+        var outlineTitle = outline.Title.Trim().Replace(" ", "").Replace("‐", "");
+        chapterTitle = chapterTitle.Trim().Replace(" ", "").Replace("‐", "");
+        if (outlineTitle.Equals(chapterTitle, StringComparison.OrdinalIgnoreCase)) return outline.Page;
         foreach (var o in outline.Children)
         {
             var page = GetPageNumber(chapterTitle, o);

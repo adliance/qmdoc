@@ -12,6 +12,8 @@ body {
     margin-right: auto;
     margin-left: auto;
     background-color: var(--color-background);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
 }
 
 code, pre {
