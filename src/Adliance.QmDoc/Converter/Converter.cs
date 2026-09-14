@@ -102,6 +102,7 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
 
         result = new BodyPlaceholder(result).Apply(layout).ResultingHtml;
         result = Regex.Replace(result, " href=\"(.*?)\\.html\"", " href=\"$1.pdf\"", RegexOptions.IgnoreCase);
+        result = new MermaidJsSnippet(targetExtension).Apply(result).ResultingHtml;
         return result;
     }
 
