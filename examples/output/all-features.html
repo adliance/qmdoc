@@ -452,7 +452,7 @@ div.document-author {
 <body>
 <div class="document-title">QmDoc feature overview</div>
 <div class="document-author"><span class="name">Hannes Sachsenhofer</span>, Adliance GmbH</div><p>This example document is a showcase for all QmDoc features, using the latest 2026 theme.
-It is built by calling <code>qmdoc pdf-and-html --source &quot;./examples/all-features.md&quot;</code>.</p>
+It is built by calling <code>qmdoc pdf-and-html-and-markdown --source &quot;./examples/input&quot; --target &quot;./examples/output&quot;</code>.</p>
 <h1 id="general-qmdoc-features">1. General QmDoc features</h1>
 <ul>
 <li>The 2026 theme uses automatic hyphenation via CSS (<code>hyphens: auto;</code>).</li>
@@ -518,7 +518,7 @@ At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergr
 </div>
 <h1 id="custom-qmdoc-placeholders">6. Custom QmDoc Placeholders</h1>
 <ul>
-<li>Current Date: 31. August 2026</li>
+<li>Current Date: 24. September 2026</li>
 <li>Document Title: QmDoc feature overview</li>
 <li>A <code>---</code> in it's own line renders as a page break in PDF.</li>
 </ul>
@@ -534,7 +534,7 @@ At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergr
 <p>Includes are resolved before any other processing happens, so headings inside an included file are numbered correctly, show up in the <span class="link-to-chapter"><i></i><a href="#table-of-content">6.4. Table of Content</a></span>, and placeholders inside the included content (like the current date) are resolved as well. Includes can be nested, and circular includes are detected and reported as an error instead of looping forever.</p>
 <p>The following heading and paragraph are pulled in from <code>partial-example.md</code>:</p>
 <h2 id="included-partial-heading">6.3. Included Partial Heading</h2>
-<p>This heading and paragraph live in a separate file, <code>partial-example.md</code>, next to the main document. It gets merged into <code>all-features.md</code> at the position of the <code>{{ include }}</code> placeholder, before headers are numbered or the table of content is built - that's why this heading is numbered correctly and appears in the <span class="link-to-chapter"><i></i><a href="#table-of-content">6.4. Table of Content</a></span> below. Placeholders also still work here, for example the current date: 31. August 2026.</p>
+<p>This heading and paragraph live in a separate file, <code>partial-example.md</code>, next to the main document. It gets merged into <code>all-features.md</code> at the position of the <code>{{ include }}</code> placeholder, before headers are numbered or the table of content is built - that's why this heading is numbered correctly and appears in the <span class="link-to-chapter"><i></i><a href="#table-of-content">6.4. Table of Content</a></span> below. Placeholders also still work here, for example the current date: 24. September 2026.</p>
 <h3 id="multi-language-includes">6.3.1. Multi-language includes</h3>
 <p>Documents can be named <code>&lt;filename&gt;.&lt;language-code&gt;.md</code> (eg. <code>report.de.md</code>). When such a document includes another file, QmDoc first looks for a same-language version of the included file, and only falls back to the plain, non-translated file if no translated version exists. This works for nested includes too - the language of the top-level document is used throughout its entire include tree.</p>
 <p>See <code>multi-language-example.md</code> and its German counterpart <code>multi-language-example.de.md</code> for a working, side-by-side example: both include the exact same <code>multi-language-partial.md</code>, but the German document automatically pulls in <code>multi-language-partial.de.md</code> instead - without any change to the include statement itself.</p>
@@ -631,71 +631,12 @@ At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergr
 </div>
 <h2 id="git">6.5. Git</h2>
 <ul>
-<li>Version: 82232fd</li>
-<li>Date: 16. Juli 2026</li>
-<li>Date and Version: Version 82232fd, 16. Juli 2026</li>
+<li>Version:</li>
+<li>Date:</li>
+<li>Date and Version:</li>
 </ul>
 <p>And a full Git changelog of the current document is also available, formatted as a table:</p>
-<table>
-<thead>
-<tr>
-<th>Datum</th>
-<th>Person</th>
-<th>Version</th>
-<th>Änderung</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>16. 07. 2026</td>
-<td>Hannes</td>
-<td>82232fd</td>
-<td>Add multi-language support for includes. <span class="git-version-details"> </span></td>
-</tr>
-<tr>
-<td>16. 07. 2026</td>
-<td>Hannes</td>
-<td>9e11f79</td>
-<td>Added support for including partials <span class="git-version-details"> </span></td>
-</tr>
-<tr>
-<td>16. 07. 2026</td>
-<td>Hannes</td>
-<td>8107961</td>
-<td>Add support for any placeholder defined in Frontmatter. <span class="git-version-details"> </span></td>
-</tr>
-<tr>
-<td>29. 06. 2026</td>
-<td>Hannes</td>
-<td>86c2442</td>
-<td>Drop outdated themes and make 2026 the default. <span class="git-version-details"> </span></td>
-</tr>
-<tr>
-<td>26. 06. 2026</td>
-<td>Hannes</td>
-<td>3ca249f</td>
-<td>Support images and image captions. <span class="git-version-details"> </span></td>
-</tr>
-<tr>
-<td>25. 06. 2026</td>
-<td>Hannes</td>
-<td>25541ad</td>
-<td>Bump version because of newly added &quot;standard callout&quot; support. <span class="git-version-details"> </span></td>
-</tr>
-<tr>
-<td>25. 06. 2026</td>
-<td>Hannes</td>
-<td>5817485</td>
-<td>Expand example showcase. <span class="git-version-details"> </span></td>
-</tr>
-<tr>
-<td>25. 06. 2026</td>
-<td>Hannes</td>
-<td>51e581c</td>
-<td>Add a markdown file as an example to showcase all QMDoc features. <span class="git-version-details"> </span></td>
-</tr>
-</tbody>
-</table>
+<div class="block block-alert">Dieses Dokument befindet sich nicht in Versionskontrolle.</div>
 <h1 id="images">7. Images</h1>
 <p>Images are automatically centered. Wide images are resized to fit the space,
 while small images keep their original size,</p>

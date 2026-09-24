@@ -15,7 +15,7 @@ public class Program
 {
     private static void Main(string[] args)
     {
-        var parserResult = Parser.Default.ParseArguments<PdfParameters, HtmlParameters, PdfAndHtmlParameters, DocxParameters, SetThemeParameters, UpdateParameters>(args);
+        var parserResult = Parser.Default.ParseArguments<PdfParameters, HtmlParameters, PdfAndHtmlParameters, PdfAndHtmlAndMarkdownParameters, DocxParameters, SetThemeParameters, UpdateParameters>(args);
         parserResult
             .WithParsed<PdfParameters>(p =>
             {
@@ -49,6 +49,20 @@ public class Program
                 {
                     var options = OptionsProvider.LoadOptions();
                     new HtmlConverter(p, options).Run().GetAwaiter().GetResult();
+                    new PdfConverter(p, options).Run().GetAwaiter().GetResult();
+                    Exit(0);
+                }
+                catch (Exception ex)
+                {
+                    Exit(-2, ex.Message);
+                }
+            })
+            .WithParsed<PdfAndHtmlAndMarkdownParameters>(p =>
+            {
+                try
+                {
+                    var options = OptionsProvider.LoadOptions();
+                    new HtmlConverter(p, options, saveMarkdown: true).Run().GetAwaiter().GetResult();
                     new PdfConverter(p, options).Run().GetAwaiter().GetResult();
                     Exit(0);
                 }

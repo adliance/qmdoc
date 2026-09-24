@@ -37,6 +37,7 @@ QmDoc supports the following commands:
 - `pdf` (default command) converts Markdown to PDF.
 - `html` converts Markdown to HTML.
 - `pdf-and-html` converts Markdown to both PDF and HTML at once.
+- `pdf-and-html-and-markdown` does the same as `pdf-and-html`, but additionally stores the processed Markdown (after all includes, placeholders etc. have been applied) that is fed into the HTML conversion. The target directory must differ from the source directory, otherwise the source files would be overwritten.
 - `docx` converts Markdown to DOCX (only supports a subset of features compared to the PDF/HTML conversion).
 
 For example, to convert to both PDF and HTML:
