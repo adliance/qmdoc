@@ -46,7 +46,7 @@ Footnotes[^1] are supported[^note]. They are rendered at the end of the document
 
 
 # Chapter Linking
-Links to chapters (to the anchor of the heading) are supported: [#General QmDoc features]. They will automatically include the heading numbering as well.
+Links to chapters (to the anchor of the heading) are supported: [#General QmDoc features]. They will automatically include the heading numbering as well. If multiple chapters share the same title, add (some of) their parent chapters separated by `>` to pick the right one, e.g. a link to "#Risk Analysis > Open Questions" in square brackets. Ambiguous chapter links are reported as an error.
 
 QmDoc writes a warning if a link to a chapter is detected, but no matching heading.
 

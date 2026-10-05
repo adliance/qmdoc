@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using Adliance.AspNetCore.Buddy.Pdf;
 using Markdig;
+using Markdig.Renderers.Html;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 
@@ -25,6 +27,8 @@ public class TableOfContentsPlaceholder : IMarkdownProcessor
     private static string BuildToc(MarkdownProcessorContext context)
     {
         var document = Markdown.Parse(context.Markdown, context.Pipeline);
+        var outline = FlattenOutline(context.PdfMetadata);
+        var occurrences = new Dictionary<string, int>();
         var sb = new StringBuilder();
 
         sb.AppendLine("<div class=\"toc\">");
@@ -33,17 +37,25 @@ public class TableOfContentsPlaceholder : IMarkdownProcessor
         sb.AppendLine("|-|-:|");
         foreach (var heading in document.Descendants<HeadingBlock>())
         {
-            if (heading.Level > 5) continue;
-
             var text = ExtractText(heading);
             if (string.IsNullOrWhiteSpace(text)) continue;
+
+            // count all headings (also the ones not shown in the TOC), because all of them are part of the PDF outline
+            var normalizedTitle = NormalizeTitle(text);
+            var occurrence = occurrences.GetValueOrDefault(normalizedTitle);
+            occurrences[normalizedTitle] = occurrence + 1;
+
+            if (heading.Level > 5) continue;
 
             var indentText = "";
             if (heading.Level > 1) indentText = string.Concat(Enumerable.Repeat("&nbsp;", (heading.Level - 1) * 5));
             var pageText = "";
-            var page = GetPageNumber(text, context.PdfMetadata);
+            var page = GetPageNumber(normalizedTitle, occurrence, outline);
             if (page.HasValue) pageText = page.Value.ToString(CultureInfo.InvariantCulture);
-            sb.AppendLine(CultureInfo.InvariantCulture, $"| {indentText}[{text}](#{LinkToChapters.GetChapterId(text)}) | {pageText} |");
+
+            // use the id Markdig actually assigned, as it differs from the title for duplicate headings (e.g. "open-questions-1")
+            var id = heading.GetAttributes().Id ?? LinkToChapters.GetChapterId(text);
+            sb.AppendLine(CultureInfo.InvariantCulture, $"| {indentText}[{text}](#{id}) | {pageText} |");
         }
 
         sb.AppendLine("");
@@ -52,31 +64,40 @@ public class TableOfContentsPlaceholder : IMarkdownProcessor
         return sb.ToString();
     }
 
-    private static int? GetPageNumber(string chapterTitle, PdfMetadata? pdfMetadata)
+    /// <summary>
+    /// Returns the page of the n-th outline entry (zero-based <paramref name="occurrence"/>) with the given title,
+    /// so that multiple headings with the same title get their own page number.
+    /// </summary>
+    private static int? GetPageNumber(string normalizedTitle, int occurrence, List<PdfMetadata.OutlineData> outline)
     {
-        if (pdfMetadata == null) return null;
-
-        foreach (var o in pdfMetadata.Outline)
-        {
-            var page = GetPageNumber(chapterTitle, o);
-            if (page != null) return page;
-        }
-
-        return null;
+        return outline
+            .Where(o => NormalizeTitle(o.Title).Equals(normalizedTitle, StringComparison.OrdinalIgnoreCase))
+            .Skip(occurrence)
+            .Select(o => (int?)o.Page)
+            .FirstOrDefault();
     }
 
-    private static int? GetPageNumber(string chapterTitle, PdfMetadata.OutlineData outline)
+    /// <summary>
+    /// Flattens the outline in document order.
+    /// </summary>
+    private static List<PdfMetadata.OutlineData> FlattenOutline(PdfMetadata? pdfMetadata)
     {
-        var outlineTitle = outline.Title.Trim().Replace(" ", "").Replace("‐", "");
-        chapterTitle = chapterTitle.Trim().Replace(" ", "").Replace("‐", "");
-        if (outlineTitle.Equals(chapterTitle, StringComparison.OrdinalIgnoreCase)) return outline.Page;
-        foreach (var o in outline.Children)
-        {
-            var page = GetPageNumber(chapterTitle, o);
-            if (page != null) return page;
-        }
+        var result = new List<PdfMetadata.OutlineData>();
+        if (pdfMetadata == null) return result;
 
-        return null;
+        foreach (var o in pdfMetadata.Outline) AddOutline(o, result);
+        return result;
+
+        static void AddOutline(PdfMetadata.OutlineData outline, List<PdfMetadata.OutlineData> result)
+        {
+            result.Add(outline);
+            foreach (var o in outline.Children) AddOutline(o, result);
+        }
+    }
+
+    private static string NormalizeTitle(string title)
+    {
+        return title.Trim().Replace(" ", "").Replace("‐", "");
     }
 
     private static string ExtractText(HeadingBlock heading)

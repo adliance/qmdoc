@@ -34,7 +34,7 @@ public class HtmlConverter(ThemedConversionParameters parameters, Options.Option
 
     protected override void PrepareAdditionalProcessors(ConverterFile file, IList<IMarkdownProcessor> markdownProcessors)
     {
-        markdownProcessors.Add(new LinkToChapters());
+        markdownProcessors.Add(new LinkToChapters(file.SourceAbsolutePath));
         markdownProcessors.Add(new PageBreak());
         markdownProcessors.Add(new LinkToDocuments(file.SourceBaseDirectory, file.SourceAbsolutePath));
         markdownProcessors.Add(new LinkedDocumentsPlaceholder()); // add after the "LinkToDocuments" step, because that one fills the context with the linked documents
