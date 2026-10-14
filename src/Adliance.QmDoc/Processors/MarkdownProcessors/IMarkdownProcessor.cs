@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Adliance.AspNetCore.Buddy.Pdf;
 using Markdig;
+using Markdig.Extensions.AutoIdentifiers;
 
 namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
@@ -14,7 +15,9 @@ public interface IMarkdownProcessor
 
 public class MarkdownProcessorContext
 {
-    public readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder().UseYamlFrontMatter().UseAdvancedExtensions().Build();
+    // keep non-ASCII letters in heading ids (e.g. "изхвърляне", "élimination"), like VS Code and GitHub do;
+    // must be registered before UseAdvancedExtensions(), which would otherwise add the ASCII-only default
+    public readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder().UseYamlFrontMatter().UseAutoIdentifiers(AutoIdentifierOptions.AutoLink).UseAdvancedExtensions().Build();
 
     public MarkdownProcessorContext(string sourceMarkdown)
     {

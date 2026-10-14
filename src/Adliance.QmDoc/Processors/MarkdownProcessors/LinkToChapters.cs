@@ -102,7 +102,7 @@ public class LinkToChapters(string filePath) : IMarkdownProcessor
     }
 
     /// <summary>
-    /// Mirrors the id Markdig's AutoIdentifierExtension assigns to headings (via .UseAdvancedExtensions()),
+    /// Mirrors the id Markdig's AutoIdentifierExtension assigns to headings (see MarkdownProcessorContext.Pipeline),
     /// so that chapter links and the TOC point to the same anchor Markdig actually renders.
     /// Note that Markdig appends "-1", "-2", ... for duplicate headings, which is not reflected here.
     /// </summary>
@@ -110,7 +110,7 @@ public class LinkToChapters(string filePath) : IMarkdownProcessor
     {
         if (string.IsNullOrWhiteSpace(chapterName)) throw new ArgumentException(null, nameof(chapterName));
 
-        return LinkHelper.Urilize(chapterName.Trim(), allowOnlyAscii: true);
+        return LinkHelper.Urilize(chapterName.Trim(), allowOnlyAscii: false);
     }
 
     private sealed record Heading(int Level, string Text, string Slug, string Id, List<Heading> Parents)
