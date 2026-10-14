@@ -26,6 +26,11 @@ public class Frontmatter
     public bool? EnableDocumentTitle { get; set; }
 
     /// <summary>
+    /// Optional text (eg. "Internal Draft - do not publish") that is stamped diagonally over every page of the PDF.
+    /// </summary>
+    public string? Watermark { get; set; }
+
+    /// <summary>
     /// All key/value pairs found in the frontmatter (including the ones already exposed as typed properties above),
     /// usable as {{KEY}} placeholders in the document.
     /// </summary>
@@ -70,13 +75,13 @@ public static class FrontmatterParser
 
     private static IReadOnlyDictionary<string, string> ParseAllValues(string yaml)
     {
-        var raw = RawDeserializer.Deserialize<Dictionary<string, object>>(yaml) ?? new Dictionary<string, object>();
+        var raw = RawDeserializer.Deserialize<Dictionary<string, object?>>(yaml) ?? new Dictionary<string, object?>();
         var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var (key, value) in raw)
         {
             if (value is IEnumerable && value is not string) continue; // skip lists/nested mappings, only scalars are supported as placeholders
-            result[key] = value.ToString() ?? "";
+            result[key] = value?.ToString() ?? ""; // empty values (eg. "watermark:") are deserialized as null
         }
 
         return result;
