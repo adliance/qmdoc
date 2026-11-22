@@ -17,6 +17,31 @@ public class ExpressionParserTests
     private static string EvalError(string formula, CultureInfo? culture = null, ReferenceResolver? references = null, NameResolver? names = null) =>
         Assert.Throws<CalculationException>(() => Eval(formula, culture, references, names)).Message;
 
+    #region Evaluate: limits
+
+    [Fact]
+    public void Evaluate_NumberTooLarge_IsAnErrorInsteadOfACrash()
+    {
+        Assert.Contains("too large", EvalError("99999999999999999999999999999"));
+        Assert.Contains("too large", EvalError("79000000000000000000000000000 * 10"));
+    }
+
+    [Fact]
+    public void Evaluate_MoreThan28Decimals_IsRoundedTo28Decimals()
+    {
+        Assert.Equal("0," + new string('0', 28), EvalFormatted("0,00000000000000000000000000001"));
+    }
+
+    [Theory]
+    [InlineData("１ + 1")] // full-width digit
+    [InlineData("٣ + 1")] // Arabic-Indic digit
+    public void Evaluate_NonAsciiDigits_IsAnErrorInsteadOfACrash(string formula)
+    {
+        Assert.NotEmpty(EvalError(formula));
+    }
+
+    #endregion
+
     #region Evaluate: arithmetic
 
     [Theory]

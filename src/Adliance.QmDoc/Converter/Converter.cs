@@ -14,7 +14,7 @@ using Markdig;
 
 namespace Adliance.QmDoc.Converter;
 
-public abstract class Converter(TargetExtension targetExtension, CommonConversionParameters parameters, Options.Options options)
+public abstract partial class Converter(TargetExtension targetExtension, CommonConversionParameters parameters, Options.Options options)
 {
     public async Task Run()
     {
@@ -57,7 +57,7 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
         return markdownContext;
     }
 
-    protected MarkdownProcessorContext RunMarkdownProcessors(ConverterFile file, MarkdownProcessorContext markdownContext)
+    protected MarkdownProcessorContext RunMarkdownProcessors(ConverterFile file, MarkdownProcessorContext markdownContext, bool reportErrors = true)
     {
         markdownContext = new IncludesProcessor(file.SourceAbsolutePath, GetTheme(markdownContext)).Apply(markdownContext);
         markdownContext = ApplyCommonPlaceholders(file, markdownContext);
@@ -65,11 +65,11 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
         PrepareAdditionalProcessors(file, markdownProcessors);
 
         foreach (var p in markdownProcessors) markdownContext = p.Apply(markdownContext);
-        foreach (var e in markdownContext.Errors) Program.WriteLine($"\t\t {e.ErrorMessage}");
+        if (reportErrors) ReportErrors(markdownContext.Errors);
         return markdownContext;
     }
 
-    protected string RunHtmlProcessors(ConverterFile file, MarkdownProcessorContext markdownContext)
+    protected string RunHtmlProcessors(ConverterFile file, MarkdownProcessorContext markdownContext, bool reportErrors = true)
     {
         var html = Markdown.ToHtml(markdownContext.Markdown, markdownContext.Pipeline);
 
@@ -94,15 +94,27 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
         foreach (var step in steps)
         {
             var stepResult = step.Apply(result);
-            foreach (var e in stepResult.Errors) Program.WriteLine($"\t\t {e.ErrorMessage}");
+            if (reportErrors) ReportErrors(stepResult.Errors);
             result = stepResult.ResultingHtml;
         }
 
         result = new BodyPlaceholder(result).Apply(layout).ResultingHtml;
-        result = Regex.Replace(result, " href=\"(.*?)\\.html\"", " href=\"$1.pdf\"", RegexOptions.IgnoreCase);
+        result = LinkToConvertedDocumentRegex().Replace(result, " href=\"$1.pdf\"");
         result = new MermaidJsSnippet(targetExtension).Apply(result).ResultingHtml;
         return result;
     }
+
+    private static void ReportErrors(IEnumerable<ProcessorError> errors)
+    {
+        foreach (var e in errors) Program.WriteLine($"\t\t {e.ErrorMessage}");
+    }
+
+    /// <summary>
+    /// Relative links to other documents ("other.html", see LinkToDocuments) always point to the PDF.
+    /// Links to web pages ("https://example.com/page.html") are left alone.
+    /// </summary>
+    [GeneratedRegex(@" href=""(?![a-z][a-z0-9+.\-]*:|//)([^""]*?)\.html""", RegexOptions.IgnoreCase)]
+    private static partial Regex LinkToConvertedDocumentRegex();
 
     private MarkdownProcessorContext ApplyCommonPlaceholders(ConverterFile file, MarkdownProcessorContext context)
     {
@@ -180,7 +192,16 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
         if (!targetDirectory.Exists) targetDirectory.Create();
     }
 
-    protected abstract void PrepareAdditionalProcessors(ConverterFile file, IList<IMarkdownProcessor> markdownProcessors);
+    /// <summary>
+    /// Adds the processors that run after the common placeholders, by default the ones for links and page breaks of the HTML/PDF.
+    /// </summary>
+    protected virtual void PrepareAdditionalProcessors(ConverterFile file, IList<IMarkdownProcessor> markdownProcessors)
+    {
+        markdownProcessors.Add(new LinkToChapters(file.SourceAbsolutePath));
+        markdownProcessors.Add(new PageBreak());
+        markdownProcessors.Add(new LinkToDocuments(file.SourceBaseDirectory, file.SourceAbsolutePath));
+        markdownProcessors.Add(new LinkedDocumentsPlaceholder()); // add after the "LinkToDocuments" step, because that one fills the context with the linked documents
+    }
 
     private static IList<ConverterFile> BuildFilesList(string source, string targetBaseDirectory, TargetExtension targetExtension, bool includeSubdirectories)
     {

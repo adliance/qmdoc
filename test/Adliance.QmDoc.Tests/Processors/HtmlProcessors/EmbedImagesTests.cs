@@ -20,7 +20,9 @@ public sealed class EmbedImagesTests : IDisposable
     [InlineData("image.svg", "image/svg+xml")]
     [InlineData("image.jpg", "image/jpeg")]
     [InlineData("image.jpeg", "image/jpeg")]
-    [InlineData("image.gif", "image/jpeg")] // everything else is treated as JPEG
+    [InlineData("image.gif", "image/gif")]
+    [InlineData("image.webp", "image/webp")]
+    [InlineData("image.tiff", "image/jpeg")] // everything else is treated as JPEG
     public void Apply_EmbedsLocalImages(string fileName, string mimeType)
     {
         _dir.Write(fileName, Bytes);

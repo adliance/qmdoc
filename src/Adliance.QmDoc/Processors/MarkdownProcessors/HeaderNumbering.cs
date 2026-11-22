@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Markdig;
@@ -26,7 +27,7 @@ public class HeaderNumbering(bool enable) : IMarkdownProcessor
             if (heading.Level > 4) continue;
             if (heading is { Line: 0, Level: 4 }) continue; // document author — leave unnumbered
 
-            var text = markdownContext.Markdown[heading.Span.Start..(heading.Span.End + 1)].TrimStart('#').Trim();
+            var text = GetText(markdownContext.Markdown[heading.Span.Start..(heading.Span.End + 1)], heading.IsSetext);
 
             string newTitle;
             switch (heading.Level)
@@ -70,5 +71,17 @@ public class HeaderNumbering(bool enable) : IMarkdownProcessor
 
         markdownContext.Markdown = result;
         return markdownContext;
+    }
+
+    /// <summary>
+    /// The text of an ATX heading ("# Title") or a setext heading ("Title\n====="), which is replaced by an ATX heading,
+    /// otherwise the underline would stay in the document as text (or, for "---", become a page break).
+    /// </summary>
+    private static string GetText(string headingMarkdown, bool isSetext)
+    {
+        if (!isSetext) return headingMarkdown.TrimStart('#').Trim();
+
+        var lines = headingMarkdown.Split('\n');
+        return string.Join(" ", lines[..^1].Select(l => l.Trim()));
     }
 }

@@ -2,12 +2,13 @@ ul {
     list-style: none;
 
     li {
-        text-indent: calc(var(--margin-base) * -2);
+        position: relative;
     }
 
     li::before {
         content: "•";
-        padding-right: 10px;
+        position: absolute;
+        left: calc(var(--margin-base) * -1.5);
         color: var(--color-li);
     }
 }

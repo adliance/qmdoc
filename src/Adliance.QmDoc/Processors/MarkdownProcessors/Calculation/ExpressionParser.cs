@@ -54,10 +54,18 @@ public sealed partial class ExpressionParser
         parser.SkipWhitespace();
         if (parser.AtEnd) throw new CalculationException("The formula is empty.");
 
-        var result = parser.ParseExpression();
-        parser.SkipWhitespace();
-        if (!parser.AtEnd) throw parser.Unexpected();
-        return result;
+        try
+        {
+            var result = parser.ParseExpression();
+            parser.SkipWhitespace();
+            if (!parser.AtEnd) throw parser.Unexpected();
+            return result;
+        }
+        catch (OverflowException)
+        {
+            // decimal arithmetic throws for results beyond ~7.9e28, which must not abort the whole conversion
+            throw new CalculationException("The result is too large.");
+        }
     }
 
     /// <summary>
@@ -133,7 +141,7 @@ public sealed partial class ExpressionParser
         }
 
         if (Current == '[') return ParseReference();
-        if (char.IsDigit(Current) || Unit.CurrencySymbolChars.Contains(Current)) return ParseNumberWithUnit();
+        if (char.IsAsciiDigit(Current) || Unit.CurrencySymbolChars.Contains(Current)) return ParseNumberWithUnit();
         if (char.IsLetter(Current) || Current == '_')
         {
             // units are only allowed directly after a number, so a name here is a reference to eg. a frontmatter value
@@ -176,7 +184,7 @@ public sealed partial class ExpressionParser
             var whitespaceStart = _position;
             SkipWhitespace();
             var space = _position > whitespaceStart;
-            if (AtEnd || !char.IsDigit(Current)) throw Unexpected();
+            if (AtEnd || !char.IsAsciiDigit(Current)) throw Unexpected();
             var (prefixedValue, prefixedDecimals, prefixedDash) = ParseNumber();
             return new Quantity(prefixedValue, Unit.Of(symbol), prefixedDecimals, new UnitStyle(space, true, prefixedDash));
         }
@@ -236,6 +244,11 @@ public sealed partial class ExpressionParser
         return _text[start.._position];
     }
 
+    /// <summary>
+    /// The most decimals a decimal (and Math.Round) supports.
+    /// </summary>
+    private const int MaxDecimals = 28;
+
     private (decimal Value, int Decimals, bool DashForNoCents) ParseNumber()
     {
         var number = new StringBuilder();
@@ -248,7 +261,7 @@ public sealed partial class ExpressionParser
         if (_text.AsSpan(_position).StartsWith(decimalSeparator, StringComparison.Ordinal) && _position + decimalSeparator.Length < _text.Length)
         {
             var afterSeparator = _text[_position + decimalSeparator.Length];
-            if (char.IsDigit(afterSeparator))
+            if (char.IsAsciiDigit(afterSeparator))
             {
                 _position += decimalSeparator.Length;
                 number.Append('.');
@@ -262,7 +275,8 @@ public sealed partial class ExpressionParser
             }
         }
 
-        return (decimal.Parse(number.ToString(), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture), decimals, dashForNoCents);
+        if (!decimal.TryParse(number.ToString(), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var value)) throw new CalculationException($"The number \"{number}\" is too large.");
+        return (value, Math.Min(decimals, MaxDecimals), dashForNoCents);
     }
 
     /// <summary>
@@ -282,13 +296,13 @@ public sealed partial class ExpressionParser
             return !Unit.IsCurrency(_text[position..end]);
         }
 
-        return char.IsDigit(c) || c is '(' or '[';
+        return char.IsAsciiDigit(c) || c is '(' or '[';
     }
 
     private int ReadDigits(StringBuilder number)
     {
         var count = 0;
-        while (!AtEnd && char.IsDigit(Current))
+        while (!AtEnd && char.IsAsciiDigit(Current))
         {
             number.Append(Current);
             _position++;
@@ -310,10 +324,10 @@ public sealed partial class ExpressionParser
         if (digitsEnd > _text.Length) return false;
         for (var i = digitsStart; i < digitsEnd; i++)
         {
-            if (!char.IsDigit(_text[i])) return false;
+            if (!char.IsAsciiDigit(_text[i])) return false;
         }
 
-        if (digitsEnd < _text.Length && char.IsDigit(_text[digitsEnd])) return false;
+        if (digitsEnd < _text.Length && char.IsAsciiDigit(_text[digitsEnd])) return false;
 
         _position++;
         return true;

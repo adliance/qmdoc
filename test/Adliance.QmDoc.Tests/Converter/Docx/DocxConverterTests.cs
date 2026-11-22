@@ -364,6 +364,13 @@ public sealed class DocxConverterTests : IDisposable
     }
 
     [Fact]
+    public async Task Run_EmptyFigure_DoesNotCrash()
+    {
+        using var document = await Convert(Lines("^^^", "^^^", "", "Text"));
+        Assert.Contains("Text", Paragraphs(document));
+    }
+
+    [Fact]
     public async Task Run_RendersFiguresAndFloatingImages()
     {
         _dir.Write("src/image.png", Png(100, 50));

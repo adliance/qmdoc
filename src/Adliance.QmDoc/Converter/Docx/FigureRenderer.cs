@@ -83,7 +83,8 @@ internal sealed class FigureRenderer(DocxRenderContext context) : DocxObjectRend
         }
 
         if (!cell.Elements<Paragraph>().Any()) cell.AppendChild(new Paragraph());
-        cell.Elements<Paragraph>().Last().ParagraphProperties!.KeepNext = null;
+        var lastParagraph = cell.Elements<Paragraph>().Last();
+        if (lastParagraph.ParagraphProperties != null) lastParagraph.ParagraphProperties.KeepNext = null; // null for an empty figure
 
         if (floating == null) DocxRenderContext.WriteBlock(renderer, TableRenderer.SpacerParagraph(theme.ToTwips(theme.MarginBasePx * 2)));
     }

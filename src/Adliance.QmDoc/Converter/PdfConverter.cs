@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
 using System.Threading.Tasks;
@@ -10,49 +9,52 @@ using Adliance.QmDoc.Themes;
 
 namespace Adliance.QmDoc.Converter;
 
-public class PdfConverter(ThemedConversionParameters parameters, Options.Options options) : Converter(TargetExtension.Pdf, parameters, options)
+/// <summary>
+/// Converts Markdown to PDF by rendering the HTML with the external PDF service.
+/// </summary>
+/// <param name="createPdfer">Creates the client of the PDF service for the given timeout (in seconds), uses the Adliance PDF service by default.</param>
+public class PdfConverter(ThemedConversionParameters parameters, Options.Options options, Func<int, IPdfer>? createPdfer = null) : Converter(TargetExtension.Pdf, parameters, options)
 {
-    private readonly Options.Options _options = options;
+    private readonly Func<int, IPdfer> _createPdfer = createPdfer ?? (timeoutSeconds => new AdliancePdfer(new AdliancePdferSettings { TimeoutSeconds = timeoutSeconds }));
 
     protected override async Task<byte[]> Convert(ConverterFile file, MarkdownProcessorContext markdownContext)
     {
-        var theme = string.IsNullOrWhiteSpace(parameters.Theme) ? _options.Theme : parameters.Theme;
+        var theme = GetTheme(markdownContext);
         var settings = ThemeProvider.GetOptions(theme);
+        var frontmatter = markdownContext.Frontmatter;
 
         var pdfOptions = new PdfOptions
         {
-            FooterHtml = markdownContext.Frontmatter.EnableFooter == false ? null : ApplyCommonPlaceholders(file, ThemeProvider.GetFooter(GetTheme(markdownContext)), markdownContext),
-            HeaderHtml =  markdownContext.Frontmatter.EnableHeader == false ? null : ApplyCommonPlaceholders(file, ThemeProvider.GetHeader(GetTheme(markdownContext)), markdownContext),
+            FooterHtml = frontmatter.EnableFooter == false ? null : ApplyCommonPlaceholders(file, ThemeProvider.GetFooter(theme), markdownContext),
+            HeaderHtml = frontmatter.EnableHeader == false ? null : ApplyCommonPlaceholders(file, ThemeProvider.GetHeader(theme), markdownContext),
             FooterHeight = settings.Pdf.FooterHeight,
             HeaderHeight = settings.Pdf.HeaderHeight,
             Outline = true,
-            PaperHeight = markdownContext.Frontmatter.PdfHeight,
-            PaperWidth = markdownContext.Frontmatter.PdfWidth,
-            Scale = markdownContext.Frontmatter.PdfScale ?? settings.Pdf.Scale,
-            Watermarks = string.IsNullOrWhiteSpace(markdownContext.Frontmatter.Watermark) ? null : [new WatermarkOptions { Html = GetWatermarkHtml(markdownContext.Frontmatter.Watermark) }]
+            PaperHeight = frontmatter.PdfHeight,
+            PaperWidth = frontmatter.PdfWidth,
+            Scale = frontmatter.PdfScale ?? settings.Pdf.Scale,
+            Watermarks = string.IsNullOrWhiteSpace(frontmatter.Watermark) ? null : [new WatermarkOptions { Html = GetWatermarkHtml(frontmatter.Watermark) }]
         };
 
-        var pdfer = new AdliancePdfer(new AdliancePdferSettings
-        {
-            TimeoutSeconds = markdownContext.Frontmatter.PdfTimeoutSeconds ?? settings.Pdf.TimeoutSeconds
-        });
+        var pdfer = _createPdfer(frontmatter.PdfTimeoutSeconds ?? settings.Pdf.TimeoutSeconds);
 
         if (TableOfContentsPlaceholder.ContainsTocPlaceholder(markdownContext))
         {
+            // the page numbers of the TOC are only known after rendering the PDF once;
+            // errors are reported after the second pass only, otherwise they would show up twice
             Program.WriteLine("\tTOC detected, second pass required");
-            var firstPassHtml = RunHtmlProcessors(file, markdownContext);
+            var firstPassHtml = RunHtmlProcessors(file, markdownContext, reportErrors: false);
             var firstPassPdf = await pdfer.HtmlToPdf(firstPassHtml, pdfOptions);
             var firstPassMetadata = await pdfer.GetPdfMetadata(firstPassPdf);
             markdownContext.ResetForSecondPass(firstPassMetadata);
-            markdownContext = RunMarkdownProcessors(file, markdownContext);
+            markdownContext = RunMarkdownProcessors(file, markdownContext, reportErrors: false);
         }
 
         var html = RunHtmlProcessors(file, markdownContext);
-        var pdf = await pdfer.HtmlToPdf(html, pdfOptions);
-        return pdf;
+        return await pdfer.HtmlToPdf(html, pdfOptions);
     }
 
-    private static string GetWatermarkHtml(string text)
+    internal static string GetWatermarkHtml(string text)
     {
         // the SVG uses an A4-shaped coordinate system (in mm) and is scaled to the page, so the text runs from corner to corner;
         // the font size shrinks for longer texts so that it always fits onto the diagonal
@@ -67,14 +69,6 @@ public class PdfConverter(ThemedConversionParameters parameters, Options.Options
                           font-family="Arial, Helvetica, sans-serif" font-weight="bold" font-size="{fontSize:0.##}" fill="#c00000" fill-opacity="0.2">{WebUtility.HtmlEncode(text.Trim())}</text>
                 </svg>
                 """);
-    }
-
-    protected override void PrepareAdditionalProcessors(ConverterFile file, IList<IMarkdownProcessor> markdownProcessors)
-    {
-        markdownProcessors.Add(new LinkToChapters(file.SourceAbsolutePath));
-        markdownProcessors.Add(new PageBreak());
-        markdownProcessors.Add(new LinkToDocuments(file.SourceBaseDirectory, file.SourceAbsolutePath));
-        markdownProcessors.Add(new LinkedDocumentsPlaceholder()); // add after the "LinkToDocuments" step, because that one fills the context with the linked documents
     }
 }
 

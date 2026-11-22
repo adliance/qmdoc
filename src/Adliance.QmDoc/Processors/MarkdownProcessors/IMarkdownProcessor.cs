@@ -53,6 +53,7 @@ public class MarkdownProcessorContext
         PdfMetadata = pdfMetadata;
         Markdown = Frontmatter.MarkdownWithoutFrontmatter;
         Errors.Clear();
+        LinkedDocuments.Clear();
     }
 
     public bool ContainsPlaceholderInSource(string placeholder)

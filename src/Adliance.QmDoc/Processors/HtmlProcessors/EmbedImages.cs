@@ -44,11 +44,13 @@ public class EmbedImages(string sourceFilePath) : IHtmlProcessor
         || imageUrl.StartsWith("//", StringComparison.Ordinal)
         || imageUrl.StartsWith("data:", StringComparison.OrdinalIgnoreCase);
 
-    private static string GetMimeType(string filePath)
+    private static string GetMimeType(string filePath) => Path.GetExtension(filePath).ToLowerInvariant() switch
     {
-        var extension = Path.GetExtension(filePath);
-        if (extension.Equals(".png", StringComparison.OrdinalIgnoreCase)) return "image/png";
-        if (extension.Equals(".svg", StringComparison.OrdinalIgnoreCase)) return "image/svg+xml";
-        return "image/jpeg";
-    }
+        ".png" => "image/png",
+        ".svg" => "image/svg+xml",
+        ".gif" => "image/gif",
+        ".webp" => "image/webp",
+        ".bmp" => "image/bmp",
+        _ => "image/jpeg"
+    };
 }

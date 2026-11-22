@@ -30,6 +30,19 @@ public class HeaderNumberingTests
     }
 
     [Fact]
+    public void Apply_ConvertsSetextHeadingsToNumberedAtxHeadings()
+    {
+        var markdown = Lines("Title", "=====", "", "Sub", "---", "", "Text");
+        Assert.Equal(Lines("# 1. Title", "", "## 1.1. Sub", "", "Text"), Number(markdown));
+    }
+
+    [Fact]
+    public void Apply_MultiLineSetextHeading_IsJoinedIntoOneLine()
+    {
+        Assert.Equal(Lines("# 1. First line second line", "", "Text"), Number(Lines("First line", "second line", "===", "", "Text")));
+    }
+
+    [Fact]
     public void Apply_KeepsTextBetweenHeadings()
     {
         var markdown = Lines("Intro", "", "# A", "", "Text with # hash", "", "## B", "", "- list");

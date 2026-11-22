@@ -22,7 +22,7 @@ All notable changes to QmDoc. New versions are built and published automatically
 - The README documents all QmDoc features and is now included in the NuGet package.
 - Examples for calculations in the feature showcase (`examples/input/all-features.md`).
 - This changelog.
-- Unit tests (`test/Adliance.QmDoc.Tests`) for the conversion, placeholders, calculations and formulas. They run in the build pipeline, which also publishes the test results and code coverage.
+- Unit tests (`test/Adliance.QmDoc.Tests`) for the conversion (including integration tests of the PDF conversion against the actual PDF service), placeholders, calculations and formulas. They run in the build pipeline, which also publishes the test results and code coverage.
 
 ## Changed
 - **Breaking:** QmDoc now requires .NET 11.
@@ -45,6 +45,15 @@ All notable changes to QmDoc. New versions are built and published automatically
 - Includes, chapter links and links to other documents inside code are left alone, so their syntax can be shown in code examples.
 - Links to documents in other folders use the correct path, and `[my%20document.md]` works.
 - An empty frontmatter, and a document starting with text between two `---` page breaks, no longer cause errors.
+- PDF: a `theme` in the frontmatter also sets the header and footer height, scale and timeout of that theme. Before, those of the `--theme` parameter (or the default theme) were used, so the header or footer could overlap the text.
+- Links to web pages ending in `.html` (eg. `https://example.com/page.html`) are no longer changed to `.pdf`, only links to other documents are.
+- PDF: warnings of documents with a `{{ TOC }}` are no longer shown twice.
+- Headings underlined with `===` or `---` are numbered correctly. Before, the underline stayed in the document as text, or became a page break.
+- GIF and WebP images are embedded with the correct image type.
+- The `pdf-and-html-and-markdown` command works as documented (`pdf-html-markdown` still works as well).
+- Calculations with very large numbers, more than 28 decimals or non-ASCII digits (eg. `１`) show a warning instead of aborting the conversion.
+- DOCX: an empty figure (`^^^` directly followed by `^^^`) no longer aborts the conversion.
+- PDF/HTML: when a bullet point wraps over several lines, the following lines start at the same position as the first line. Before, they were indented a few pixels further.
 
 # 2026-10-14
 
