@@ -119,7 +119,9 @@ public abstract partial class Converter(TargetExtension targetExtension, CommonC
 
     protected string RunHtmlProcessors(ConverterFile file, MarkdownProcessorContext markdownContext, bool reportErrors = true)
     {
-        var html = Markdown.ToHtml(markdownContext.Markdown, markdownContext.Pipeline);
+        var html = parameters is HtmlParameters { SourceLines: true }
+            ? SourceLines.ToHtml(markdownContext)
+            : Markdown.ToHtml(markdownContext.Markdown, markdownContext.Pipeline);
 
         var theme = GetTheme(markdownContext);
         var layout = ApplyCommonPlaceholders(file, ThemeProvider.GetContent(theme), markdownContext);

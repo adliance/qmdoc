@@ -44,9 +44,9 @@ For example, to convert to both PDF and HTML:
 
     qmdoc pdf-and-html --source "c:\users\me\project\documentation"
 
-Instead of reading the source file, QmDoc can read the Markdown from standard input with `--stdin`. `--source` must then be the path of a single Markdown file, which is used to resolve includes, images, links and the Git history (it doesn't need to exist). With `--stdout`, the resulting file is written to standard output instead of the target directory, and all log messages go to standard error. This is how editors can convert unsaved changes:
+Instead of reading the source file, QmDoc can read the Markdown from standard input with `--stdin`. `--source` must then be the path of a single Markdown file, which is used to resolve includes, images, links and the Git history (it doesn't need to exist). With `--stdout`, the resulting file is written to standard output instead of the target directory, and all log messages go to standard error. `--source-lines` (only for `html`) adds `data-line` attributes with the zero-based line in the source file to all blocks, so editors can scroll the preview to the same position. This is how editors can convert unsaved changes:
 
-    cat draft.md | qmdoc html --stdin --stdout --source "c:\users\me\project\documentation\my_awesome_document.md" > preview.html
+    cat draft.md | qmdoc html --stdin --stdout --source-lines --source "c:\users\me\project\documentation\my_awesome_document.md" > preview.html
 
 Call
 
@@ -54,12 +54,12 @@ Call
     
 to see all commands and parameters.
 
-## VS Code Preview
-The QmDoc Preview extension for Visual Studio Code shows a live preview of the Markdown file next to the editor, rendered by QmDoc with the same theme as the PDF. The preview is updated on save, when you start a new line or paragraph, and after a short pause in typing. It uses the installed QmDoc global tool, so keep that up to date.
+## VS Code Extension
+The Adliance QmDoc Previewer extension for Visual Studio Code shows a live preview of the Markdown file next to the editor, rendered by QmDoc with the same theme as the PDF. The preview is updated on save, when you start a new line or paragraph, and after a short pause in typing, and it scrolls along with the editor. The extension installs QmDoc as .NET global tool if it's missing and keeps it up to date (you only need the .NET SDK).
 
 To install it, download the `.vsix` file from the latest build of the extension pipeline (`azure-pipelines-vscode-extension.yml`) and install it in VS Code with "Extensions: Install from VSIX..." or with
 
-    code --install-extension qmdoc-preview-1.0.1.vsix
+    code --install-extension qmdoc-previewer-1.0.1.vsix
 
 Then open a Markdown file and click the PDF icon in the editor title bar (or run "QmDoc: Open QmDoc Preview to the Side"). See the [extension's README](https://github.com/adliance/qmdoc/blob/master/src/Adliance.QmDoc.VsCodeExtension/README.md) for its settings.
 

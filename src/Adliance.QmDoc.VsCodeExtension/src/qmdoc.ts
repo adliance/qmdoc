@@ -12,6 +12,8 @@ export interface ConversionResult {
     log: string;
     /** Why the conversion failed. */
     error?: string;
+    /** Set when QmDoc is missing or too old, which an installation or update fixes. */
+    needsInstall?: boolean;
 }
 
 const timeoutMs = 120_000;
@@ -28,11 +30,18 @@ function candidates(): string[] {
 let resolvedExecutable: string | undefined;
 
 /**
+ * Looks for QmDoc again on the next conversion, eg. after it was installed.
+ */
+export function resetExecutable(): void {
+    resolvedExecutable = undefined;
+}
+
+/**
  * Runs "qmdoc html --stdin --stdout" for the given Markdown.
  * @param sourcePath Path of the Markdown file the text belongs to. QmDoc uses it to resolve includes, images and links, it does not need to exist.
  */
 export async function convertToHtml(markdown: string, sourcePath: string, theme: string, additionalArguments: string[]): Promise<ConversionResult> {
-    const args = ['html', '--stdin', '--stdout', '--source', sourcePath];
+    const args = ['html', '--stdin', '--stdout', '--source-lines', '--source', sourcePath];
     if (theme.trim()) args.push('--theme', theme.trim());
     args.push(...additionalArguments);
 
@@ -48,6 +57,7 @@ export async function convertToHtml(markdown: string, sourcePath: string, theme:
     return {
         problems: [],
         log: '',
+        needsInstall: true,
         error: 'QmDoc was not found. Please install it with "dotnet tool install -g Adliance.QmDoc" (requires .NET 11) and restart VS Code.'
     };
 }
@@ -79,8 +89,8 @@ function run(executable: string, args: string[], stdin: string, cwd: string): Pr
         child.on('close', code => {
             const log = Buffer.concat(stderr).toString('utf8');
             const html = Buffer.concat(stdout).toString('utf8');
-            if (/Option 'std(in|out)' is unknown/i.test(log)) {
-                finish({ problems: [], log, error: 'The installed QmDoc is too old for the preview. Please update it with "dotnet tool update -g Adliance.QmDoc".' });
+            if (/Option '(stdin|stdout|source-lines)' is unknown/i.test(log)) {
+                finish({ problems: [], log, needsInstall: true, error: 'The installed QmDoc is too old for the preview. Please update it with "dotnet tool update -g Adliance.QmDoc".' });
                 return;
             }
             if (code !== 0 || !html) {

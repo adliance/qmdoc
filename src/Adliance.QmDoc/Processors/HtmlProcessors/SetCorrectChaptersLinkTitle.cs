@@ -14,7 +14,7 @@ public class SetCorrectChaptersLinkTitle(string filePath) : IHtmlProcessor
         html = RewriteLegacyAsciiAnchors(html);
         var resultingHtml = html;
 
-        var hMatches = Regex.Matches(html, "<h\\d id=\"(.*?)\">(.*?)</");
+        var hMatches = Regex.Matches(html, "<h\\d id=\"(.*?)\"(?: data-line=\"\\d+\")?>(.*?)</");
         foreach (Match? m in hMatches)
         {
             if (m == null) continue;
@@ -66,7 +66,7 @@ public class SetCorrectChaptersLinkTitle(string filePath) : IHtmlProcessor
     /// </summary>
     private static string RewriteLegacyAsciiAnchors(string html)
     {
-        var headings = Regex.Matches(html, "<h\\d id=\"(.*?)\">(.*?)</h\\d>")
+        var headings = Regex.Matches(html, "<h\\d id=\"(.*?)\"(?: data-line=\"\\d+\")?>(.*?)</h\\d>")
             .Select(m => (Id: m.Groups[1].Value, Text: WebUtility.HtmlDecode(Regex.Replace(m.Groups[2].Value, "<.*?>", ""))))
             .ToList();
         var ids = headings.Select(h => h.Id).ToHashSet();

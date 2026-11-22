@@ -1,7 +1,7 @@
 {
-  "name": "qmdoc-preview",
-  "displayName": "QmDoc Preview",
-  "description": "Live preview of Markdown files as rendered by QmDoc (Adliance.QmDoc), with the same theme as the PDF.",
+  "name": "qmdoc-previewer",
+  "displayName": "Adliance QmDoc Previewer",
+  "description": "Live preview of Markdown files as rendered by Adliance QmDoc, with the same theme as the PDF. Installs and updates the QmDoc .NET global tool automatically.",
   "version": "0.0.0",
   "publisher": "adliance",
   "license": "MIT",
@@ -25,6 +25,7 @@
   ],
   "main": "./out/extension.js",
   "activationEvents": [
+    "onStartupFinished",
     "onWebviewPanel:qmdoc.preview"
   ],
   "contributes": {
@@ -46,6 +47,11 @@
         "title": "Refresh QmDoc Preview",
         "category": "QmDoc",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "qmdoc.installOrUpdate",
+        "title": "Install or Update QmDoc",
+        "category": "QmDoc"
       }
     ],
     "menus": {
@@ -99,6 +105,16 @@
           },
           "default": [],
           "markdownDescription": "Additional arguments for `qmdoc html`, eg. `[\"--placeholders\", \"customer.json\"]`."
+        },
+        "qmdoc.preview.scrollSync": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Scrolls the preview to the same position as the editor."
+        },
+        "qmdoc.autoUpdate": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Installs QmDoc as .NET global tool (`dotnet tool install -g Adliance.QmDoc`) if it's missing, and updates it when a newer version is available. Checked when VS Code starts, at most once a day. Requires the .NET SDK."
         }
       }
     }

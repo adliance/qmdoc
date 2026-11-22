@@ -528,4 +528,36 @@ public sealed class HtmlConverterTests : IDisposable
         Assert.Contains("--stdout", ex.Message);
         Assert.Equal(0, stdout.Length);
     }
+
+    [Fact]
+    public async Task Run_SourceLines_OnlyAddsDataLineAttributes()
+    {
+        var (withoutLines, _) = await ConvertFullDocument();
+        var (withLines, _) = await Convert(FullDocument, configure: p =>
+        {
+            p.PlaceholdersFile = "placeholders.json";
+            p.SourceLines = true;
+        });
+
+        Assert.Contains(" data-line=\"", withLines);
+        Assert.Equal(withoutLines, System.Text.RegularExpressions.Regex.Replace(withLines, " data-line=\"\\d+\"", ""));
+    }
+
+    [Fact]
+    public async Task Run_SourceLines_MapsToLinesOfSourceFile()
+    {
+        _dir.Write("src/partials/legal.md", "## Rechtliches\n\nText");
+        var (html, _) = await Convert(FullDocument, configure: p => p.SourceLines = true);
+
+        var sourceLines = FullDocument.Split('\n');
+        int LineOf(string text) => Array.FindIndex(sourceLines, l => l == text);
+
+        Assert.Contains($"<h1 id=\"einleitung\" data-line=\"{LineOf("# Einleitung")}\">", html);
+        Assert.Contains($"<h1 id=\"kosten\" data-line=\"{LineOf("# Kosten")}\">", html);
+        // included content maps to the include placeholder
+        Assert.Contains($"<h2 id=\"rechtliches\" data-line=\"{LineOf("{{ include partials/legal.md }}")}\">", html);
+        // callouts and table rows keep their line
+        Assert.Contains($"<div class=\"block block-alert\" data-line=\"{LineOf("{{!}} Ein Hinweis.")}\">", html);
+        Assert.Contains($"<tr data-line=\"{LineOf("| Konzept | 10h | {{ = [Stunden] * Stundensatz }} |")}\">", html);
+    }
 }

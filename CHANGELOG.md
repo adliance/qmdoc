@@ -22,7 +22,8 @@ All notable changes to QmDoc. New versions are built and published automatically
 - The README documents all QmDoc features and is now included in the NuGet package.
 - Examples for calculations in the feature showcase (`examples/input/all-features.md`).
 - `--stdin` reads the Markdown from standard input instead of the source file (`--source` is then only used to resolve includes, images and links, and doesn't need to exist). `--stdout` writes the resulting file to standard output, with all log messages on standard error.
-- QmDoc Preview extension for VS Code (`src/Adliance.QmDoc.VsCodeExtension`): a live preview of Markdown files rendered by QmDoc, updated on save, on new lines/paragraphs and after a pause in typing. It's built as `.vsix` by its own pipeline (`azure-pipelines-vscode-extension.yml`).
+- `--source-lines` (for `html`) adds `data-line` attributes with the line in the source file to all blocks (headings, paragraphs, list items, tables, ...), even for content from includes and placeholders.
+- Adliance QmDoc Previewer, an extension for VS Code (`src/Adliance.QmDoc.VsCodeExtension`): a live preview of Markdown files rendered by QmDoc, updated on save, on new lines/paragraphs and after a pause in typing, and scrolled along with the editor. It installs and updates the QmDoc global tool automatically. It's built as `.vsix` by its own pipeline (`azure-pipelines-vscode-extension.yml`).
 - This changelog.
 - Unit tests (`test/Adliance.QmDoc.Tests`) for the conversion (including integration tests of the PDF conversion against the actual PDF service), placeholders, calculations and formulas. They run in the build pipeline, which also publishes the test results and code coverage.
 

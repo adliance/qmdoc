@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import { ToolInstaller } from './installer';
 import { convertToHtml } from './qmdoc';
 
 export const previewViewType = 'qmdoc.preview';
@@ -29,10 +30,15 @@ export class PreviewManager implements vscode.Disposable {
     private timerIsNewLine = false;
     /** The <head> of the currently shown HTML. As long as it doesn't change, only the <body> is replaced, which keeps the scroll position. */
     private shownHead?: string;
+    /** The first visible line of the editor of the previewed document, the preview scrolls to the same position. */
+    private editorLine?: number;
     private readonly previewScript: string;
     private readonly disposables: vscode.Disposable[] = [];
 
-    constructor(extensionUri: vscode.Uri, private readonly output: vscode.OutputChannel) {
+    /** QmDoc is installed or updated automatically only once per session when the preview finds it missing or outdated. */
+    private installAttempted = false;
+
+    constructor(extensionUri: vscode.Uri, private readonly output: vscode.OutputChannel, private readonly installer: ToolInstaller) {
         this.previewScript = fs.readFileSync(vscode.Uri.joinPath(extensionUri, 'media', 'preview.js').fsPath, 'utf8');
 
         this.disposables.push(
@@ -45,6 +51,11 @@ export class PreviewManager implements vscode.Disposable {
                 // eg. the old version of a file in a diff editor
                 if (editor.document.uri.scheme !== 'file' && editor.document.uri.scheme !== 'untitled') return;
                 this.setDocument(editor.document.uri);
+            }),
+            vscode.window.onDidChangeTextEditorVisibleRanges(e => {
+                if (!this.panel || !this.isPreviewed(e.textEditor.document) || e.visibleRanges.length === 0) return;
+                this.editorLine = e.visibleRanges[0].start.line;
+                if (this.scrollSync()) void this.panel.webview.postMessage({ type: 'scrollToLine', line: this.editorLine });
             }),
             vscode.workspace.onDidChangeConfiguration(e => {
                 if (e.affectsConfiguration('qmdoc.preview')) this.convertNow();
@@ -113,11 +124,21 @@ export class PreviewManager implements vscode.Disposable {
     private setDocument(uri: vscode.Uri): void {
         if (!this.panel) return;
         this.documentUri = uri;
+        this.editorLine = vscode.window.visibleTextEditors.find(e => e.document.uri.toString() === uri.toString())?.visibleRanges[0]?.start.line;
         this.generation++;
         this.shownHead = undefined;
         this.panel.title = `QmDoc Preview: ${path.basename(uri.path)}`;
         this.panel.webview.html = this.messagePage('Converting …');
         this.convertNow();
+    }
+
+    private scrollSync(): boolean {
+        return vscode.workspace.getConfiguration('qmdoc.preview').get<boolean>('scrollSync', true);
+    }
+
+    /** The line the preview should scroll to, or undefined to keep its scroll position. */
+    private syncLine(): number | undefined {
+        return this.scrollSync() ? this.editorLine : undefined;
     }
 
     private isPreviewed(document: vscode.TextDocument): boolean {
@@ -188,7 +209,15 @@ export class PreviewManager implements vscode.Disposable {
         const config = vscode.workspace.getConfiguration('qmdoc.preview');
         const sourcePath = this.sourcePath(document);
         const started = Date.now();
-        const result = await convertToHtml(document.getText(), sourcePath, config.get<string>('theme', ''), config.get<string[]>('additionalArguments', []));
+        const convert = () => convertToHtml(document.getText(), sourcePath, config.get<string>('theme', ''), config.get<string[]>('additionalArguments', []));
+        await this.installer.whenReady(); // don't run QmDoc while it's being updated
+        let result = await convert();
+        if (result.needsInstall && !this.installAttempted && vscode.workspace.getConfiguration('qmdoc').get<boolean>('autoUpdate', true)) {
+            this.installAttempted = true;
+            await this.installer.start(true);
+            if (generation !== this.generation || !this.panel) return;
+            result = await convert();
+        }
         if (generation !== this.generation || !this.panel) return;
 
         if (!result.html) {
@@ -223,7 +252,7 @@ export class PreviewManager implements vscode.Disposable {
         const body = /<body[^>]*>([\s\S]*)<\/body>/i.exec(html)?.[1];
 
         if (body !== undefined && this.shownHead === head) {
-            void this.panel.webview.postMessage({ type: 'update', body, problems });
+            void this.panel.webview.postMessage({ type: 'update', body, problems, line: this.syncLine() });
             return;
         }
 
@@ -232,7 +261,7 @@ export class PreviewManager implements vscode.Disposable {
     }
 
     private injectPreviewScript(html: string, problems: string[], uri: vscode.Uri): string {
-        const settings = JSON.stringify({ uri: uri.toString(), problems }).replace(/</g, '\\u003c');
+        const settings = JSON.stringify({ uri: uri.toString(), problems, line: this.syncLine() }).replace(/</g, '\\u003c');
         const script = `<script>window.qmdocPreview = ${settings};\n${this.previewScript}</script>`;
         // a function as replacement, so that "$" in the script or in the problems isn't interpreted as a replacement pattern
         return /<\/body>/i.test(html) ? html.replace(/<\/body>(?![\s\S]*<\/body>)/i, () => `${script}</body>`) : html + script;

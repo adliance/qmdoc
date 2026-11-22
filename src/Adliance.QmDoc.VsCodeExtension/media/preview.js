@@ -12,16 +12,32 @@
     const sameDocument = previous.uri === settings.uri;
     vscode.setState({ uri: settings.uri, scrollY: sameDocument ? previous.scrollY || 0 : 0 });
 
-    if (sameDocument && previous.scrollY) {
-        const restore = () => window.scrollTo(0, previous.scrollY);
-        restore();
-        // fonts and Mermaid diagrams change the height of the page after it's loaded
-        window.addEventListener('load', restore);
-        setTimeout(restore, 300);
+    // the line of the editor the preview is synchronized with (see scrollToLine), undefined after scrolling the preview manually
+    let syncedLine = typeof settings.line === 'number' ? settings.line : undefined;
+    let ignoreScrollEventsUntil = 0;
+
+    if (syncedLine !== undefined) {
+        scrollToLine(syncedLine);
+    } else if (sameDocument && previous.scrollY) {
+        scrollTo(previous.scrollY);
+    }
+
+    // fonts, images and Mermaid diagrams change the height of the page after it's loaded
+    const restore = () => {
+        if (syncedLine !== undefined) scrollToLine(syncedLine);
+        else if (sameDocument && previous.scrollY && window.scrollY === 0) scrollTo(previous.scrollY);
+    };
+    window.addEventListener('load', restore);
+    setTimeout(restore, 300);
+    if (typeof ResizeObserver !== 'undefined') {
+        new ResizeObserver(() => {
+            if (syncedLine !== undefined) scrollToLine(syncedLine);
+        }).observe(document.documentElement);
     }
 
     let scrollTimer;
     window.addEventListener('scroll', () => {
+        if (Date.now() > ignoreScrollEventsUntil) syncedLine = undefined;
         clearTimeout(scrollTimer);
         scrollTimer = setTimeout(() => vscode.setState({ uri: settings.uri, scrollY: window.scrollY }), 100);
     });
@@ -31,9 +47,12 @@
         if (message.type === 'update') {
             const scrollY = window.scrollY;
             document.body.innerHTML = message.body;
-            window.scrollTo(0, scrollY);
+            if (typeof message.line === 'number') scrollToLine(message.line);
+            else scrollTo(scrollY);
             showProblems(message.problems || []);
             renderMermaid();
+        } else if (message.type === 'scrollToLine') {
+            scrollToLine(message.line);
         } else if (message.type === 'error') {
             showBanner('qmdoc-preview-error', [message.message], true);
         }
@@ -52,6 +71,46 @@
         }
         vscode.postMessage({ type: 'openLink', href });
     });
+
+    function scrollTo(y) {
+        ignoreScrollEventsUntil = Date.now() + 200;
+        window.scrollTo(0, y);
+    }
+
+    /**
+     * QmDoc adds the (zero-based) source line to all blocks with --source-lines ("data-line").
+     * The position of a line is interpolated between the block that starts at or before it and the next block after it.
+     * Lines in an include all map to the include, so scrolling over the include in the editor scrolls through all of its content.
+     */
+    function scrollToLine(line) {
+        syncedLine = line;
+        let before, beforeLine, after, afterLine;
+        for (const element of document.querySelectorAll('[data-line]')) {
+            if (element.getClientRects().length === 0) continue; // hidden
+            const elementLine = Number(element.getAttribute('data-line'));
+            if (elementLine <= line) {
+                if (before === undefined || elementLine > beforeLine) {
+                    before = element;
+                    beforeLine = elementLine;
+                }
+            } else if (after === undefined || elementLine < afterLine) {
+                after = element;
+                afterLine = elementLine;
+            }
+        }
+
+        if (!before) {
+            scrollTo(0);
+            return;
+        }
+
+        const top = element => element.getBoundingClientRect().top + window.scrollY;
+        let y = top(before);
+        if (after && top(after) > y) {
+            y += (top(after) - y) * (line - beforeLine) / (afterLine - beforeLine);
+        }
+        scrollTo(Math.max(0, y));
+    }
 
     function renderMermaid() {
         if (!document.querySelector('.mermaid:not([data-processed])')) return;
