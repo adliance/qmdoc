@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <LangVersion>Latest</LangVersion>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>qmdoc</ToolCommandName>
@@ -26,7 +26,7 @@
     <PackageReference Include="Adliance.Buddy.CodeStyle" Version="8.2.0.1" />
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
     <PackageReference Include="LibGit2Sharp" Version="0.32.0" />
-    <PackageReference Include="Markdig" Version="1.4.0" />
+    <PackageReference Include="Markdig" Version="1.6.0" />
     <PackageReference Include="Morincer.Markdig.Renderers.Docx" Version="1.0.1" />
     <PackageReference Include="YamlDotNet" Version="18.1.0" />
     <PackageReference Include="Humanizer" Version="3.0.10" />
