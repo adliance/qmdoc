@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Adliance.QmDoc.Processors.MarkdownProcessors;
-using DiffPlex;
-using DiffPlex.Chunkers;
 using Markdig;
 using Markdig.Renderers.Html;
 using Markdig.Syntax;
@@ -63,12 +61,12 @@ public static class SourceLines
     /// </summary>
     internal static int[] MapLines(string sourceMarkdown, string processedMarkdown)
     {
-        var diff = Differ.Instance.CreateDiffs(sourceMarkdown, processedMarkdown, false, false, LineChunker.Instance);
-        var sourceCount = diff.PiecesOld.Count;
-        var map = new int[diff.PiecesNew.Count];
+        var sourceLines = LineDiff.SplitLines(sourceMarkdown);
+        var processedLines = LineDiff.SplitLines(processedMarkdown);
+        var map = new int[processedLines.Length];
         int sourceLine = 0, processedLine = 0;
 
-        foreach (var block in diff.DiffBlocks)
+        foreach (var block in LineDiff.Diff(sourceLines, processedLines))
         {
             // unchanged lines before the block
             while (processedLine < block.InsertStartB) map[processedLine++] = sourceLine++;
@@ -77,7 +75,7 @@ public static class SourceLines
             {
                 map[block.InsertStartB + i] = block.DeleteCountA == block.InsertCountB
                     ? block.DeleteStartA + i // changed lines, eg. "# Title" -> "# 1. Title"
-                    : PlaceholderLine(diff.PiecesOld, block.DeleteStartA, block.DeleteCountA);
+                    : PlaceholderLine(sourceLines, block.DeleteStartA, block.DeleteCountA);
             }
 
             sourceLine = block.DeleteStartA + block.DeleteCountA;
@@ -86,7 +84,7 @@ public static class SourceLines
 
         while (processedLine < map.Length) map[processedLine++] = sourceLine++;
 
-        for (var i = 0; i < map.Length; i++) map[i] = Math.Clamp(map[i], 0, Math.Max(sourceCount - 1, 0));
+        for (var i = 0; i < map.Length; i++) map[i] = Math.Clamp(map[i], 0, Math.Max(sourceLines.Length - 1, 0));
         return map;
     }
 
