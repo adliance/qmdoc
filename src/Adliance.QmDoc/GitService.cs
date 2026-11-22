@@ -40,10 +40,12 @@ public static class GitService
                 if (ignoreCommitsWithout.Any() && !ignoreCommitsWithout.Any(x => commit.Message != null && commit.Message.Contains(x, StringComparison.OrdinalIgnoreCase))) continue;
                 if (ignoreCommits.Any() && ignoreCommits.Any(x => commit.Sha.Contains(x, StringComparison.OrdinalIgnoreCase))) continue;
 
+                // the root commit of the repository has no parent and is compared to an empty tree, so that everything it adds is a change;
+                // in shallow clones, commits at the boundary seem to have no parent as well, but there we can't tell what they changed
                 var parent = commit.Parents.FirstOrDefault();
-                if (parent == null) continue;
+                if (parent == null && repo.Info.IsShallow) continue;
 
-                foreach (var change in repo.Diff.Compare<TreeChanges>(parent.Tree, commit.Tree))
+                foreach (var change in repo.Diff.Compare<TreeChanges>(parent?.Tree, commit.Tree))
                 {
                     if (change.Path.Replace('/', Path.DirectorySeparatorChar).Equals(relativeFilePath, StringComparison.OrdinalIgnoreCase))
                     {

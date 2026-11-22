@@ -19,9 +19,23 @@ All notable changes to QmDoc. New versions are built and published automatically
 
 ## Changed
 - **Breaking:** QmDoc now requires .NET 11.
+- The footer of PDF and DOCX files shows the document title across the whole width (next to the page number), with the Git version in a smaller line below it if there is one. Long titles no longer wrap into a narrow column, and the footer starts and ends at the same position as the text.
 
 ## Fixed
 - A frontmatter placeholder inside another placeholder (eg. `{{ = 2 * {{ Stundensatz }} }}`) no longer breaks the outer placeholder.
+- An empty chapter link like `[#]` no longer aborts the conversion.
+- Regular links and images whose text looks like a file name (eg. `![chart.png](chart.png)`) are no longer turned into broken document links.
+- `$` in the document or in placeholder values (eg. `$0` or `$$` in a code example) is no longer mangled.
+- Callouts (`{{!}}`, `{{!!}}`, `{{?}}`) work in DOCX files.
+- The table of contents links to headings that contain frontmatter placeholders or calculations.
+- `---` in code blocks, under headings and in tables without leading `|` is no longer turned into a page break.
+- Images with spaces or non-ASCII characters in the file name are embedded, images from the web are no longer reported as missing.
+- Amounts like `135,- €` can be used in calculations, and units like `1/h` are shown as `5/h` instead of `51/h`.
+- The Git history includes the first commit of a repository.
+- Commit messages with multiple lines are shown correctly in `{{ GIT_VERSIONS }}`.
+- Includes, chapter links and links to other documents inside code are left alone, so their syntax can be shown in code examples.
+- Links to documents in other folders use the correct path, and `[my%20document.md]` works.
+- An empty frontmatter, and a document starting with text between two `---` page breaks, no longer cause errors.
 
 # 2026-10-14
 

@@ -25,6 +25,11 @@ public sealed class Unit : IEquatable<Unit>
 
     public static Unit None { get; } = new(new SortedDictionary<string, int>(StringComparer.Ordinal));
 
+    /// <summary>
+    /// True for currency symbols and codes like "€" or "EUR".
+    /// </summary>
+    public static bool IsCurrency(string symbol) => CurrencySymbols.Contains(symbol);
+
     public static Unit Of(string symbol) => new(new SortedDictionary<string, int>(StringComparer.Ordinal) { [symbol] = 1 });
 
     public bool IsNone => _exponents.Count == 0;

@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 
@@ -17,10 +19,11 @@ public class GitVersionsPlaceholder(IList<GitService.Change> changes): IMarkdown
 
             foreach (var change in changes)
             {
+                var details = GetDetails(change);
                 replacement += $"\n| {change.Date.ToString("dd. MM. yyyy", new CultureInfo("de-DE")).Replace(" ", "&nbsp;")} |" +
                                $" {change.Author.Replace(" ", "&nbsp;")} |" +
                                $" {change.ShaShort} |" +
-                               $" {change.MessageShort} {(string.IsNullOrWhiteSpace(change.Message) ? "" : $"<span class=\"git-version-details\"> {change.Message.Substring(change.MessageShort.Length).Replace("\r", "").Replace("\n", "").Trim()}")}</span> |";
+                               $" {change.MessageShort}{(details.Length == 0 ? "" : $" <span class=\"git-version-details\"> {details}</span>")} |";
             }
         }
         else
@@ -29,8 +32,15 @@ public class GitVersionsPlaceholder(IList<GitService.Change> changes): IMarkdown
         }
 
         markdownContext.ReplacePlaceholder(Placeholder, replacement);
-
-
         return markdownContext;
+    }
+
+    /// <summary>
+    /// The rest of the commit message after the first line, in a single line (the table cell can't contain line breaks).
+    /// </summary>
+    private static string GetDetails(GitService.Change change)
+    {
+        if (change.Message.Length <= change.MessageShort.Length || !change.Message.StartsWith(change.MessageShort, StringComparison.Ordinal)) return "";
+        return Regex.Replace(change.Message[change.MessageShort.Length..], @"\s+", " ").Trim();
     }
 }

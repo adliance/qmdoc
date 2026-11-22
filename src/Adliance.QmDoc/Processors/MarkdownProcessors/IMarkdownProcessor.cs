@@ -67,7 +67,8 @@ public class MarkdownProcessorContext
 
     public void ReplacePlaceholder(string placeholder, string replaceWith)
     {
-        Markdown = Regex.Replace(Markdown, PlaceholderPattern(Regex.Escape(placeholder)), replaceWith, RegexOptions.IgnoreCase);
+        // use a MatchEvaluator, so that "$0" or "$$" in the value are inserted as they are and not interpreted as substitutions
+        Markdown = Regex.Replace(Markdown, PlaceholderPattern(Regex.Escape(placeholder)), _ => replaceWith, RegexOptions.IgnoreCase);
     }
 
     /// <summary>

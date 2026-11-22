@@ -35,7 +35,7 @@ public class ConfigurablePlaceholders : IHtmlProcessor
         var result = html;
         foreach (var (placeholder, value) in _placeholders)
         {
-            result = Regex.Replace(result, @"\{?\{\W*" + placeholder + @"\W*\}\}?", value, RegexOptions.IgnoreCase);
+            result = Regex.Replace(result, @"\{?\{\W*" + Regex.Escape(placeholder) + @"\W*\}\}?", _ => value, RegexOptions.IgnoreCase);
         }
 
         return new HtmlProcessorResult(result);

@@ -85,16 +85,37 @@ public sealed class DocxConverterTests : IDisposable
         Assert.Equal(fill, paragraph.ParagraphProperties?.Shading?.Fill?.Value);
     }
 
-    [Theory(Skip = "Bug: the documented callouts \"{{!}}\", \"{{!!}}\" and \"{{?}}\" are not rendered in DOCX, only \"{!}\" etc. with single braces")]
+    [Theory]
     [InlineData("{{!}}", "D6E4F0")]
     [InlineData("{{!!}}", "FCE4D6")]
     [InlineData("{{?}}", "FFF2CC")]
+    [InlineData("{{ ! }}", "D6E4F0")]
+    [InlineData("{{!!}}   ", "FCE4D6")]
     public async Task Run_RendersCallouts(string placeholder, string fill)
     {
         using var document = await Convert($"{placeholder} Callout text");
         Assert.Contains("Callout text", Paragraphs(document));
         var paragraph = ParagraphWithText(document, "Callout text");
         Assert.Equal(fill, paragraph.ParagraphProperties?.Shading?.Fill?.Value);
+    }
+
+    [Fact]
+    public async Task Run_RendersCalloutWithFormatting()
+    {
+        using var document = await Convert("{{!}} **Wichtig:** Text");
+        var paragraph = ParagraphWithText(document, "Wichtig: Text");
+        Assert.Equal("D6E4F0", paragraph.ParagraphProperties?.Shading?.Fill?.Value);
+    }
+
+    [Theory]
+    [InlineData("Text {{!}} in the middle")]
+    [InlineData("{{!}}Text without space")]
+    [InlineData("{{x}} Text")]
+    public async Task Run_OtherTexts_AreNoCallouts(string markdown)
+    {
+        using var document = await Convert(markdown);
+        var paragraph = ParagraphWithText(document, markdown);
+        Assert.Null(paragraph.ParagraphProperties?.Shading);
     }
 
     [Fact]
@@ -120,6 +141,22 @@ public sealed class DocxConverterTests : IDisposable
         Assert.Contains(footer.Footer.Descendants<FieldCode>(), f => f.Text.Trim() == "PAGE");
         Assert.Contains(footer.Footer.Descendants<FieldCode>(), f => f.Text.Trim() == "NUMPAGES");
         Assert.NotNull(Body(document).Descendants<FooterReference>().SingleOrDefault());
+    }
+
+    [Fact]
+    public async Task Run_FooterTitleUsesWholeWidthWithoutVersionLine()
+    {
+        using var document = await Convert(Lines("---", "title: Ein sehr langer Dokumenttitel, der fast die ganze Zeile braucht", "---", "Text"));
+        var footer = Assert.Single(document.MainDocumentPart!.FooterParts).Footer!;
+
+        var cells = Assert.Single(footer.Descendants<TableRow>()).Elements<TableCell>().ToList();
+        Assert.Equal(2, cells.Count);
+        Assert.Equal("Ein sehr langer Dokumenttitel, der fast die ganze Zeile braucht", Assert.Single(cells[0].Elements<Paragraph>()).InnerText); // no Git version, no second line
+        Assert.Contains(cells[1].Descendants<FieldCode>(), f => f.Text.Trim() == "PAGE");
+        Assert.True(int.Parse(cells[0].TableCellProperties!.TableCellWidth!.Width!.Value!, System.Globalization.CultureInfo.InvariantCulture) >
+                    int.Parse(cells[1].TableCellProperties!.TableCellWidth!.Width!.Value!, System.Globalization.CultureInfo.InvariantCulture) * 4);
+
+        Assert.Empty(new DocumentFormat.OpenXml.Validation.OpenXmlValidator().Validate(document.MainDocumentPart.FooterParts.Single(), TestContext.Current.CancellationToken));
     }
 
     [Fact]

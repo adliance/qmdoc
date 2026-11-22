@@ -1,50 +1,54 @@
 using System;
 using System.IO;
+using System.Net;
 using System.Text.RegularExpressions;
 
 namespace Adliance.QmDoc.Processors.HtmlProcessors;
 
+/// <summary>
+/// Embeds local images into the HTML, so that the HTML (and the PDF service) doesn't need access to the image files.
+/// </summary>
 public class EmbedImages(string sourceFilePath) : IHtmlProcessor
 {
     public HtmlProcessorResult Apply(string html)
     {
-        var resultingHtml = html;
-        var result = new HtmlProcessorResult(resultingHtml);
+        var result = new HtmlProcessorResult(html);
 
-        foreach (Match? match in Regex.Matches(html, "<img src=\"(.*?)\"", RegexOptions.IgnoreCase))
+        result.ResultingHtml = Regex.Replace(html, "<img src=\"(.*?)\"", m =>
         {
-            if (match == null) continue;
+            var imageUrl = m.Groups[1].Value;
+            if (IsRemote(imageUrl)) return m.Value;
 
-            var imageUrl = match.Groups[1].Value;
-            imageUrl = imageUrl.Replace("%20", " ");
-
-            var fullFilePath = Path.Combine(Path.GetDirectoryName(sourceFilePath) ?? "", imageUrl);
-            if (File.Exists(fullFilePath))
+            // Markdig percent-encodes spaces and non-ASCII characters ("my%20image.png") and HTML-encodes "&"
+            var imagePath = Uri.UnescapeDataString(WebUtility.HtmlDecode(imageUrl));
+            var fullFilePath = Path.Combine(Path.GetDirectoryName(sourceFilePath) ?? "", imagePath);
+            if (!File.Exists(fullFilePath))
             {
-                // we have a local file
-                var imageBytes = File.ReadAllBytes(fullFilePath);
-                var imageBase64 = Convert.ToBase64String(imageBytes);
-
-                var mimeType = "image/jpeg";
-                if (Path.GetExtension(fullFilePath).Equals(".png", StringComparison.OrdinalIgnoreCase))
-                {
-                    mimeType = "image/png";
-                }
-                else if (Path.GetExtension(fullFilePath).Equals(".svg", StringComparison.OrdinalIgnoreCase))
-                {
-                    mimeType = "image/svg+xml";
-                }
-
-                resultingHtml = resultingHtml.Replace($"<img src=\"{imageUrl}\"", $"<img src=\"data:{mimeType};base64,{imageBase64}\"");
+                result.Errors.Add(new ProcessorError(sourceFilePath, $"Unable to find image '{imagePath}'.", false));
+                return m.Value;
             }
-            else
-            {
-                result.Errors.Add(new ProcessorError(sourceFilePath, $"Unable to find image '{imageUrl}'.", false));
-            }
-        }
 
-        result.ResultingHtml = resultingHtml;
+            var imageBase64 = Convert.ToBase64String(File.ReadAllBytes(fullFilePath));
+            return $"<img src=\"data:{GetMimeType(fullFilePath)};base64,{imageBase64}\"";
+        }, RegexOptions.IgnoreCase);
+
         return result;
     }
 
+    /// <summary>
+    /// Images from the web (or already embedded ones) are left alone.
+    /// </summary>
+    private static bool IsRemote(string imageUrl) =>
+        imageUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+        || imageUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+        || imageUrl.StartsWith("//", StringComparison.Ordinal)
+        || imageUrl.StartsWith("data:", StringComparison.OrdinalIgnoreCase);
+
+    private static string GetMimeType(string filePath)
+    {
+        var extension = Path.GetExtension(filePath);
+        if (extension.Equals(".png", StringComparison.OrdinalIgnoreCase)) return "image/png";
+        if (extension.Equals(".svg", StringComparison.OrdinalIgnoreCase)) return "image/svg+xml";
+        return "image/jpeg";
+    }
 }

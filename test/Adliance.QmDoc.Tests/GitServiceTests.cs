@@ -112,7 +112,20 @@ public sealed class GitServiceTests : IDisposable
         Assert.Empty(GitService.GetVersions(path, null, [], []));
     }
 
-    [Fact(Skip = "Bug: changes in the root commit of a repository are never listed, so a document that was only committed once in a new repository is reported as \"not in version control\"")]
+    [Fact]
+    public void GetVersions_InShallowClone_IgnoresCommitsAtTheBoundary()
+    {
+        Commit("docs/doc.md", "v1", "First");
+        var second = Commit("docs/doc.md", "v2", "Second");
+        Assert.Equal(2, GitService.GetVersions(DocPath, null, [], []).Count);
+
+        // a shallow clone only knows the commits listed in ".git/shallow", but not their parents
+        File.WriteAllText(Path.Combine(_dir.Path, ".git", "shallow"), second.Sha + "\n");
+
+        Assert.Empty(GitService.GetVersions(DocPath, null, [], []));
+    }
+
+    [Fact]
     public void GetVersions_IncludesRootCommit()
     {
         using var dir = new TempDirectory();

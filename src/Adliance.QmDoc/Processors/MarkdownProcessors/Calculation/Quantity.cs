@@ -84,9 +84,13 @@ public sealed record Quantity(decimal Value, Unit Unit, int Decimals, UnitStyle 
         }
         if (Unit.IsNone) return number;
 
+        // a unit without numerator ("1/h") is written as "5/h" and not as "5 1/h" (or even "51/h")
+        var unit = Unit.ToString();
+        if (unit.StartsWith("1/", StringComparison.Ordinal)) return number + unit[1..];
+
         // non-breaking space, so that number and unit are never split across lines
         var separator = Style.SpaceBetween ? "\u00A0" : "";
-        return Style.Prefix && Unit.IsSingleCurrency ? Unit + separator + number : number + separator + Unit;
+        return Style.Prefix && Unit.IsSingleCurrency ? unit + separator + number : number + separator + unit;
     }
 
     private static int NeededDecimals(decimal value)

@@ -60,10 +60,8 @@ public partial class CalculationPlaceholders(string filePath) : IMarkdownProcess
         if (matches.Count == 0 && sumsWithoutEquals.Count == 0) return markdownContext;
 
         var document = Markdig.Markdown.Parse(markdown, markdownContext.Pipeline);
-        var codeSpans = document.Descendants<CodeBlock>().Select(x => x.Span)
-            .Concat(document.Descendants<CodeInline>().Select(x => x.Span))
-            .ToList();
-        bool IsInCode(Match m) => codeSpans.Any(s => m.Index >= s.Start && m.Index <= s.End); // leave code blocks alone
+        var codeSpans = CodeSpans.Find(document);
+        bool IsInCode(Match m) => codeSpans.Contains(m.Index); // leave code blocks alone
 
         foreach (var match in sumsWithoutEquals.Where(m => !IsInCode(m)))
         {

@@ -26,10 +26,20 @@ public class LinkToChapters(string filePath) : IMarkdownProcessor
     public MarkdownProcessorContext Apply(MarkdownProcessorContext markdownContext)
     {
         var headings = GetHeadings(markdownContext);
+        var codeSpans = CodeSpans.Find(markdownContext.Markdown, markdownContext.Pipeline);
 
         markdownContext.Markdown = Regex.Replace(markdownContext.Markdown, @"\[#(.*?)\]", m =>
         {
+            if (codeSpans.Contains(m.Index)) return m.Value;
+
             var segments = m.Groups[1].Value.Split(PathSeparator).Select(x => x.Trim()).ToArray();
+            if (segments.Any(string.IsNullOrEmpty))
+            {
+                // "[#]" is probably not meant as a chapter link at all, but "[#Risk Analysis > ]" is
+                if (!string.IsNullOrWhiteSpace(m.Groups[1].Value)) markdownContext.Errors.Add(new ProcessorError(filePath, $"The chapter link \"{m.Value}\" contains an empty chapter title."));
+                return m.Value;
+            }
+
             var title = segments[^1];
             var id = ResolveChapterId(m.Value, segments, headings, markdownContext);
             return $"<span class=\"link-to-chapter\"><i></i>[{title}](#{id})</span>";

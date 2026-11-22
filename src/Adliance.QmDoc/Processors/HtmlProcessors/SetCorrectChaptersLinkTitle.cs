@@ -24,7 +24,8 @@ public class SetCorrectChaptersLinkTitle(string filePath) : IHtmlProcessor
 
             // Markdig percent-encodes non-ASCII characters in links, but not in ids
             var href = Uri.EscapeDataString(id);
-            resultingHtml = Regex.Replace(resultingHtml, $"<a href=\"#(?:{Regex.Escape(id)}|{Regex.Escape(href)})\">.*?</a>", $"<a href=\"#{href}\">{(title ?? "").RemoveMultipleNbsp().Trim()}</a>");
+            var link = $"<a href=\"#{href}\">{(title ?? "").RemoveMultipleNbsp().Trim()}</a>";
+            resultingHtml = Regex.Replace(resultingHtml, $"<a href=\"#(?:{Regex.Escape(id)}|{Regex.Escape(href)})\">.*?</a>", _ => link);
         }
 
         var result = new HtmlProcessorResult(resultingHtml);

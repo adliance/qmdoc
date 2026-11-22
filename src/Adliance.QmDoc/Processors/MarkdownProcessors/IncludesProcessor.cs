@@ -31,8 +31,11 @@ public class IncludesProcessor(string sourceFilePath, string theme) : IMarkdownP
 
     private string ResolveIncludes(string markdown, string currentFilePath, MarkdownProcessorContext markdownContext, HashSet<string> chain)
     {
+        var codeSpans = CodeSpans.Find(markdown, markdownContext.Pipeline);
         return IncludeRegex.Replace(markdown, m =>
         {
+            if (codeSpans.Contains(m.Index)) return m.Value; // allows to show the include syntax in code examples
+
             var includePath = m.Groups[1].Value.Trim();
             var resolvedPath = ResolvePath(currentFilePath, includePath);
 

@@ -61,10 +61,7 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
     {
         markdownContext = new IncludesProcessor(file.SourceAbsolutePath, GetTheme(markdownContext)).Apply(markdownContext);
         markdownContext = ApplyCommonPlaceholders(file, markdownContext);
-        var markdownProcessors = new List<IMarkdownProcessor>
-        {
-            new CalculationPlaceholders(file.SourceAbsolutePath) // after the common placeholders, so that frontmatter values inside formulas are already replaced
-        };
+        var markdownProcessors = new List<IMarkdownProcessor>();
         PrepareAdditionalProcessors(file, markdownProcessors);
 
         foreach (var p in markdownProcessors) markdownContext = p.Apply(markdownContext);
@@ -131,9 +128,11 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
             new GitDatePlaceholder(gitLatestChange),
             new GitDateAndVersionPlaceholder(gitLatestChange),
             new CssPlaceholder(GetTheme(context)),
+            new FrontmatterValuesPlaceholder(),
+            new CalculationPlaceholders(file.SourceAbsolutePath), // after the frontmatter values, so that "{{ = 2 * {{ Faktor }} }}" works
+            // after all placeholders that may change the text of headings, so that the TOC links to the final ids of the headings
             new HeaderNumbering(context.Frontmatter.EnableHeaderNumbering != false),
-            new TableOfContentsPlaceholder(),
-            new FrontmatterValuesPlaceholder()
+            new TableOfContentsPlaceholder()
         };
 
         foreach (var p in processors) context = p.Apply(context);

@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 
@@ -6,14 +8,19 @@ namespace Adliance.QmDoc.Converter.Docx;
 
 internal static class IconBlocksProcessor
 {
-    private sealed record IconBlockStyle(string Prefix, string Fill, string BorderColor);
+    private sealed record IconBlockStyle(string Fill, string BorderColor);
 
-    private static readonly IconBlockStyle[] Styles =
-    [
-        new("{!!}", "FCE4D6", "C55A11"), // danger  – light red,    orange-red border
-        new("{!}",  "D6E4F0", "2E74B5"), // alert   – light blue,   blue border
-        new("{?}",  "FFF2CC", "D6B656"), // question– light yellow,  amber border
-    ];
+    private static readonly Dictionary<string, IconBlockStyle> Styles = new()
+    {
+        ["!!"] = new("FCE4D6", "C55A11"), // danger  – light red,    orange-red border
+        ["!"] = new("D6E4F0", "2E74B5"), // alert   – light blue,   blue border
+        ["?"] = new("FFF2CC", "D6B656"), // question– light yellow,  amber border
+    };
+
+    /// <summary>
+    /// "{{!}} Text", like in the HTML/PDF conversion (also "{{ ! }}" and "{!}"), followed by a space or the end of the paragraph.
+    /// </summary>
+    private static readonly Regex PrefixRegex = new(@"^\{\{?\s*(?<type>!!|!|\?)\s*\}\}?(?:\s+|$)", RegexOptions.Compiled);
 
     internal static void Apply(WordprocessingDocument document)
     {
@@ -23,11 +30,11 @@ internal static class IconBlocksProcessor
         {
             var fullText = string.Concat(para.Descendants<Text>().Select(t => t.Text));
 
-            var style = Styles.FirstOrDefault(s => fullText.StartsWith(s.Prefix + " ") || fullText == s.Prefix);
-            if (style == null) continue;
+            var match = PrefixRegex.Match(fullText);
+            if (!match.Success) continue;
 
-            var stripLen = style.Prefix.Length + (fullText.Length > style.Prefix.Length ? 1 : 0); // +1 for the space
-            StripLeadingText(para, stripLen);
+            var style = Styles[match.Groups["type"].Value];
+            StripLeadingText(para, match.Length);
 
             var pPr = para.ParagraphProperties;
             if (pPr == null)

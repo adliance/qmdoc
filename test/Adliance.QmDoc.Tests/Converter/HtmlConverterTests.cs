@@ -253,7 +253,7 @@ public sealed class HtmlConverterTests : IDisposable
         Assert.Empty(converter.SingleContext.Errors);
     }
 
-    [Fact(Skip = "Bug: the TOC is built before frontmatter placeholders are replaced, so its links to headings with placeholders point to the wrong anchor")]
+    [Fact]
     public async Task Run_TocWithFrontmatterPlaceholderInHeading()
     {
         var (html, _) = await Convert(Lines("---", "clientName: ACME", "---", "{{ TOC }}", "", "# Angebot für {{ clientName }}"));
@@ -261,12 +261,79 @@ public sealed class HtmlConverterTests : IDisposable
         Assert.Contains("<a href=\"#angebot-f%C3%BCr-acme\">1. Angebot für ACME</a>", html);
     }
 
-    [Fact(Skip = "Bug: the TOC is built before calculations are replaced, so its links to headings with calculations point to the wrong anchor")]
+    [Fact]
     public async Task Run_TocWithCalculationInHeading()
     {
         var (html, _) = await Convert(Lines("{{ TOC }}", "", "# Kosten {{ = 2 * 3 }}"));
         Assert.Contains("id=\"kosten-6\"", html);
         Assert.Contains("<a href=\"#kosten-6\">1. Kosten 6</a>", html);
+    }
+
+    [Fact]
+    public async Task Run_ChapterLinkToHeadingWithPlaceholderAndCalculation()
+    {
+        var (html, converter) = await Convert(Lines("---", "clientName: ACME", "---", "# Kosten für {{ clientName }}: {{ = 2 * 3 }}€", "", "[#Kosten für ACME]"));
+        Assert.Contains("id=\"kosten-für-acme-6\"", html);
+        Assert.Contains("<span class=\"link-to-chapter\"><i></i><a href=\"#kosten-f%C3%BCr-acme-6\">1. Kosten für ACME: 6€</a></span>", html);
+        Assert.Empty(converter.SingleContext.Errors);
+    }
+
+    [Fact]
+    public async Task Run_PageBreaksAroundTextAtBeginningOfDocument()
+    {
+        var (html, converter) = await Convert(Lines("---", "", "Deckblatt", "", "---", "", "# A"));
+        Assert.Equal(2, html.Split("<div style=\"page-break-after: always;\"></div>").Length - 1);
+        Assert.Contains("<p>Deckblatt</p>", html);
+        Assert.Contains(">1. A</h1>", html);
+        Assert.Empty(converter.SingleContext.Errors);
+    }
+
+    [Fact]
+    public async Task Run_EmptyFrontmatter_HasNoPageBreaks()
+    {
+        var (html, _) = await Convert(Lines("---", "---", "# A"));
+        Assert.DoesNotContain("<div style=\"page-break-after: always;\">", html);
+        Assert.Contains(">1. A</h1>", html);
+    }
+
+    [Fact]
+    public async Task Run_CodeExamples_AreLeftAlone()
+    {
+        var markdown = Lines(
+            "# A",
+            "",
+            "```markdown",
+            "---",
+            "{{ include missing.md }}",
+            "[#A] [missing.md] [XYZ-999] {{ = 1 + 1 }}",
+            "```",
+            "",
+            "`[#A]` `{{ include missing.md }}`");
+        var (html, converter) = await Convert(markdown);
+        Assert.Contains("<code class=\"language-markdown\">---\n{{ include missing.md }}\n[#A] [missing.md] [XYZ-999] {{ = 1 + 1 }}\n</code>", html);
+        Assert.Contains("<code>[#A]</code> <code>{{ include missing.md }}</code>", html);
+        Assert.DoesNotContain("<div style=\"page-break-after: always;\">", html);
+        Assert.Empty(converter.SingleContext.Errors);
+    }
+
+    [Fact]
+    public async Task Run_DollarSignsInDocument_StayAsTheyAre()
+    {
+        var (html, _) = await Convert(Lines("---", "Preis: $0 / $$", "---", "{{ Preis }}", "", "`echo $$ $0 $&`"));
+        Assert.Contains("<p>$0 / $$</p>", html);
+        Assert.Contains("<code>echo $$ $0 $&amp;</code>", html);
+    }
+
+    [Fact]
+    public async Task Run_ImageLinkWithFileNameAsText_IsEmbedded()
+    {
+        _dir.Write("src/my chart.png", [1, 2, 3]);
+        _dir.Write("src/other.md", "x");
+        var (html, converter) = await Convert("![my chart.png](<my chart.png>) [other.md](other.md)");
+        Assert.Contains($"<img src=\"data:image/png;base64,{System.Convert.ToBase64String([1, 2, 3])}\" alt=\"my chart.png\" />", html);
+        Assert.Contains("<a href=\"other.md\">other.md</a>", html); // regular links stay regular links
+        Assert.Empty(converter.SingleContext.Errors);
+        Assert.Empty(converter.SingleContext.LinkedDocuments);
     }
 
     [Fact]

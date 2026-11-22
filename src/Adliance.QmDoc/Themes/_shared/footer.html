@@ -7,27 +7,36 @@
     <link href="https://fonts.googleapis.com/css?family=Ubuntu:400,700&display=swap" rel="stylesheet">
     {{ CSS }}
     <style>
-        table, tr, th, td, tbody, thead {
+        .footer {
+            margin-top: 15px;
             font-size: 14px;
-            border: 0 !important;
+            text-align: left;
+        }
+
+        /* comes first in the HTML, so that the title uses the whole width next to (and, when it wraps, below) the page number */
+        .page-number {
+            float: right;
+            white-space: nowrap;
+            padding-left: 20px;
+        }
+
+        .version {
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        .version:empty {
+            display: none;
         }
     </style>
 </head>
 <body>
 
-<table style="margin-top: 15px;">
-    <tr>
-        <td style="text-align: left; width:33%;">
-            {{TITLE}}
-        </td>
-        <td style="text-align: center;">
-            {{GIT_DATE_VERSION}}
-        </td>
-        <td style="text-align: right; width:33%;">
-            <span class="current-page"></span> | <span class="total-pages"></span>
-        </td>
-    </tr>
-</table>
+<div class="footer">
+    <div class="page-number"><span class="current-page"></span> | <span class="total-pages"></span></div>
+    <div>{{TITLE}}</div>
+    <div class="version">{{GIT_DATE_VERSION}}</div>
+</div>
 
 </body>
 </html>

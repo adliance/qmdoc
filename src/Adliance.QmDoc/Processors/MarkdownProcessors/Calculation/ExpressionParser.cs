@@ -266,12 +266,23 @@ public sealed partial class ExpressionParser
     }
 
     /// <summary>
-    /// True if a number, bracket or reference follows (ignoring whitespace), so that "5,-3" stays a subtraction in cultures where "," is not the decimal separator.
+    /// True if a number, bracket, reference or name follows (ignoring whitespace), so that "5,-3" or "5,-Rabatt" are not read as "5,-"
+    /// followed by something else. A currency is not an operand, but the unit of "135,- €" or "135,- EUR".
     /// </summary>
     private bool IsFollowedByOperand(int position)
     {
         while (position < _text.Length && char.IsWhiteSpace(_text[position])) position++;
-        return position < _text.Length && (char.IsLetterOrDigit(_text[position]) || _text[position] is '(' or '[' || Unit.CurrencySymbolChars.Contains(_text[position]));
+        if (position >= _text.Length) return false;
+
+        var c = _text[position];
+        if (char.IsLetter(c) || c == '_')
+        {
+            var end = position;
+            while (end < _text.Length && (char.IsLetterOrDigit(_text[end]) || _text[end] == '_')) end++;
+            return !Unit.IsCurrency(_text[position..end]);
+        }
+
+        return char.IsDigit(c) || c is '(' or '[';
     }
 
     private int ReadDigits(StringBuilder number)

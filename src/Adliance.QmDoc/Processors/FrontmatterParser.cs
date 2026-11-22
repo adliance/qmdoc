@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Adliance.QmDoc.Processors.MarkdownProcessors;
 using Markdig;
 using Markdig.Extensions.Yaml;
@@ -44,8 +45,11 @@ public class Frontmatter
     public string MarkdownWithoutFrontmatter = "";
 }
 
-public static class FrontmatterParser
+public static partial class FrontmatterParser
 {
+    [GeneratedRegex(@"\A---[ \t]*\r?\n(?:[ \t]*\r?\n)*---[ \t]*(?:\r?\n|\z)")]
+    private static partial Regex EmptyFrontmatterRegex();
+
     private static readonly IDeserializer Deserializer = new DeserializerBuilder()
         .WithNamingConvention(CamelCaseNamingConvention.Instance)
         .IgnoreUnmatchedProperties()
@@ -61,9 +65,11 @@ public static class FrontmatterParser
 
         if (block == null)
         {
+            // Markdig doesn't recognize an empty frontmatter, which would otherwise end up as two page breaks
+            var emptyFrontmatter = EmptyFrontmatterRegex().Match(markdown);
             return new Frontmatter
             {
-                MarkdownWithoutFrontmatter = markdown,
+                MarkdownWithoutFrontmatter = emptyFrontmatter.Success ? markdown[emptyFrontmatter.Length..].TrimStart('\n') : markdown,
                 Theme = null
             };
         }
@@ -71,11 +77,29 @@ public static class FrontmatterParser
         var sb = new StringBuilder();
         for (var i = 0; i < block.Lines.Count; i++) sb.AppendLine(block.Lines.Lines[i].ToString());
         var yaml = sb.ToString();
+        var markdownAfterFrontmatter = RemoveRestOfLine(markdown[(block.Span.End + 1)..]).TrimStart('\n');
+
+        var raw = RawDeserializer.Deserialize<object?>(yaml);
+        // only blank lines or comments
+        if (raw == null) return new Frontmatter { MarkdownWithoutFrontmatter = markdownAfterFrontmatter };
+        // a document that starts with "---\nText\n---" looks like a frontmatter to Markdig, but it's text between two page breaks
+        if (raw is not IDictionary) return new Frontmatter { MarkdownWithoutFrontmatter = markdown };
 
         var result = Deserializer.Deserialize<Frontmatter>(yaml);
         result.Custom = ParseAllValues(yaml);
-        result.MarkdownWithoutFrontmatter = markdown[(block.Span.End + 1)..].TrimStart('\n');
+        result.MarkdownWithoutFrontmatter = markdownAfterFrontmatter;
         return result;
+    }
+
+    /// <summary>
+    /// Removes whitespace after the closing "---" of the frontmatter.
+    /// </summary>
+    private static string RemoveRestOfLine(string markdown)
+    {
+        var newline = markdown.IndexOf('\n');
+        var restOfLine = newline < 0 ? markdown : markdown[..newline];
+        if (!string.IsNullOrWhiteSpace(restOfLine)) return markdown;
+        return newline < 0 ? "" : markdown[(newline + 1)..];
     }
 
     private static IReadOnlyDictionary<string, string> ParseAllValues(string yaml)
