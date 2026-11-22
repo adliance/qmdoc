@@ -21,6 +21,7 @@ public class Program
             {
                 try
                 {
+                    PrepareStandardStreams(p);
                     var options = OptionsProvider.LoadOptions();
                     new PdfConverter(p, options).Run().GetAwaiter().GetResult();
                     Exit(0);
@@ -34,6 +35,7 @@ public class Program
             {
                 try
                 {
+                    PrepareStandardStreams(p);
                     var options = OptionsProvider.LoadOptions();
                     new HtmlConverter(p, options).Run().GetAwaiter().GetResult();
                     Exit(0);
@@ -47,6 +49,7 @@ public class Program
             {
                 try
                 {
+                    if (p.Stdout) throw new InvalidOperationException("--stdout only works for commands that create a single file (pdf, html, docx).");
                     var options = OptionsProvider.LoadOptions();
                     new HtmlConverter(p, options).Run().GetAwaiter().GetResult();
                     new PdfConverter(p, options).Run().GetAwaiter().GetResult();
@@ -61,6 +64,7 @@ public class Program
             {
                 try
                 {
+                    if (p.Stdout) throw new InvalidOperationException("--stdout only works for commands that create a single file (pdf, html, docx).");
                     var options = OptionsProvider.LoadOptions();
                     new HtmlConverter(p, options, saveMarkdown: true).Run().GetAwaiter().GetResult();
                     new PdfConverter(p, options).Run().GetAwaiter().GetResult();
@@ -75,6 +79,7 @@ public class Program
             {
                 try
                 {
+                    PrepareStandardStreams(p);
                     var options = OptionsProvider.LoadOptions();
                     new DocxConverter(p, options).Run().GetAwaiter().GetResult();
                     Exit(0);
@@ -118,6 +123,14 @@ public class Program
                 Console.Error.Write(helpText);
                 Exit(-1);
             });
+    }
+
+    /// <summary>
+    /// With --stdout, standard output only contains the resulting file, so all log messages go to standard error.
+    /// </summary>
+    private static void PrepareStandardStreams(CommonConversionParameters parameters)
+    {
+        if (parameters.Stdout) Console.SetOut(Console.Error);
     }
 
     public static void Exit(int code, string? message = null)

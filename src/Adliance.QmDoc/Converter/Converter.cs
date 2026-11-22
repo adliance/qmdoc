@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Adliance.QmDoc.Extensions;
@@ -16,35 +18,62 @@ namespace Adliance.QmDoc.Converter;
 
 public abstract partial class Converter(TargetExtension targetExtension, CommonConversionParameters parameters, Options.Options options)
 {
+    /// <summary>
+    /// Where the Markdown is read from with --stdin. Replaceable for tests.
+    /// </summary>
+    internal Func<TextReader> OpenStandardInput { get; set; } = () => new StreamReader(Console.OpenStandardInput(), new UTF8Encoding(false));
+
+    /// <summary>
+    /// Where the resulting file is written to with --stdout. Replaceable for tests.
+    /// </summary>
+    internal Func<Stream> OpenStandardOutput { get; set; } = Console.OpenStandardOutput;
+
     public async Task Run()
     {
-        var files = BuildFilesList(parameters.Source, parameters.Target, targetExtension, parameters.IncludeSubdirectories);
+        var files = parameters.Stdin
+            ? [BuildStdinFile(parameters.Source, parameters.Target, targetExtension)]
+            : BuildFilesList(parameters.Source, parameters.Target, targetExtension, parameters.IncludeSubdirectories);
         if (files.Count <= 0)
         {
             var fileInfo = new FileInfo(parameters.Source);
             Program.Exit(-3, $"No files found in {fileInfo.FullName}.");
         }
 
+        if (parameters.Stdout && files.Count > 1)
+        {
+            throw new InvalidOperationException($"--stdout only works for a single file, but {files.Count} files were found in {parameters.Source}. Please specify a single file with --source.");
+        }
+
         foreach (var f in files)
         {
             Program.WriteLine(f.SourceRelativePath + " ...");
-            var markdownContext = InitFromSourceFile(f);
+            var markdownContext = parameters.Stdin ? InitFromStandardInput() : InitFromSourceFile(f);
             markdownContext = RunMarkdownProcessors(f, markdownContext);
             Program.WriteLine($"\tMarkdown ({markdownContext.Markdown.Length.Bytes().Humanize(CultureInfo.CurrentCulture)})");
 
-            EnsureTargetDirectory(f);
+            if (!parameters.Stdout) EnsureTargetDirectory(f);
 
             var resultingBytes = await Convert(f, markdownContext);
+            var destination = parameters.Stdout ? "stdout" : f.TargetAbsolutePath;
             if (targetExtension == TargetExtension.Pdf)
             {
-                Program.WriteLine($"\tPDF (Theme: {markdownContext.Theme}, {resultingBytes.Length.Bytes().Humanize(CultureInfo.CurrentCulture)}) -> {f.TargetAbsolutePath}");
+                Program.WriteLine($"\tPDF (Theme: {markdownContext.Theme}, {resultingBytes.Length.Bytes().Humanize(CultureInfo.CurrentCulture)}) -> {destination}");
             }
             else
             {
-                Program.WriteLine($"\t{targetExtension.ToString().ToUpper()} ({resultingBytes.Length.Bytes().Humanize(CultureInfo.CurrentCulture)}) -> {f.TargetAbsolutePath}");
+                Program.WriteLine($"\t{targetExtension.ToString().ToUpper()} ({resultingBytes.Length.Bytes().Humanize(CultureInfo.CurrentCulture)}) -> {destination}");
             }
 
-            await File.WriteAllBytesAsync(f.TargetAbsolutePath, resultingBytes);
+            if (parameters.Stdout)
+            {
+                var stdout = OpenStandardOutput();
+                await stdout.WriteAsync(resultingBytes);
+                await stdout.FlushAsync();
+            }
+            else
+            {
+                await File.WriteAllBytesAsync(f.TargetAbsolutePath, resultingBytes);
+            }
         }
     }
 
@@ -52,9 +81,28 @@ public abstract partial class Converter(TargetExtension targetExtension, CommonC
 
     private static MarkdownProcessorContext InitFromSourceFile(ConverterFile file)
     {
-        var sourceMarkdown = File.ReadAllText(file.SourceAbsolutePath).Replace("\r\n", "\n");
-        var markdownContext = new MarkdownProcessorContext(sourceMarkdown);
-        return markdownContext;
+        return new MarkdownProcessorContext(File.ReadAllText(file.SourceAbsolutePath).Replace("\r\n", "\n"));
+    }
+
+    private MarkdownProcessorContext InitFromStandardInput()
+    {
+        using var reader = OpenStandardInput();
+        return new MarkdownProcessorContext(reader.ReadToEnd().Replace("\r\n", "\n"));
+    }
+
+    /// <summary>
+    /// With --stdin, the source is the path of the Markdown file the text belongs to (eg. an unsaved file in an editor).
+    /// It's only used to resolve relative paths, so it doesn't need to exist.
+    /// </summary>
+    private static ConverterFile BuildStdinFile(string source, string targetBaseDirectory, TargetExtension targetExtension)
+    {
+        if (Directory.Exists(source) || source.EndsWith('/') || source.EndsWith('\\'))
+        {
+            throw new InvalidOperationException($"--stdin requires --source to be the path of a Markdown file (it's used to resolve includes, images and links), but \"{source}\" is a directory.");
+        }
+
+        var fileInfo = new FileInfo(source);
+        return new ConverterFile(fileInfo.DirectoryName!, fileInfo.Name, fileInfo.FullName, targetBaseDirectory, targetExtension);
     }
 
     protected MarkdownProcessorContext RunMarkdownProcessors(ConverterFile file, MarkdownProcessorContext markdownContext, bool reportErrors = true)

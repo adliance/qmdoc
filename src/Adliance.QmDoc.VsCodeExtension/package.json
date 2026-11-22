@@ -1,0 +1,118 @@
+{
+  "name": "qmdoc-preview",
+  "displayName": "QmDoc Preview",
+  "description": "Live preview of Markdown files as rendered by QmDoc (Adliance.QmDoc), with the same theme as the PDF.",
+  "version": "0.0.0",
+  "publisher": "adliance",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adliance/qmdoc.git",
+    "directory": "src/Adliance.QmDoc.VsCodeExtension"
+  },
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "keywords": [
+    "markdown",
+    "preview",
+    "qmdoc",
+    "pdf"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onWebviewPanel:qmdoc.preview"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "qmdoc.showPreviewToSide",
+        "title": "Open QmDoc Preview to the Side",
+        "category": "QmDoc",
+        "icon": "$(file-pdf)"
+      },
+      {
+        "command": "qmdoc.showPreview",
+        "title": "Open QmDoc Preview",
+        "category": "QmDoc",
+        "icon": "$(file-pdf)"
+      },
+      {
+        "command": "qmdoc.refreshPreview",
+        "title": "Refresh QmDoc Preview",
+        "category": "QmDoc",
+        "icon": "$(refresh)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "qmdoc.showPreviewToSide",
+          "when": "editorLangId == markdown && !notebookEditorFocused",
+          "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "qmdoc.showPreview",
+          "when": "resourceLangId == markdown",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "qmdoc.showPreviewToSide",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "qmdoc.showPreview",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "qmdoc.refreshPreview",
+          "when": "qmdoc.previewVisible"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "QmDoc",
+      "properties": {
+        "qmdoc.preview.delay": {
+          "type": "number",
+          "default": 1500,
+          "minimum": 0,
+          "markdownDescription": "Milliseconds without typing after which the preview is updated. Starting a new line or paragraph, and saving, update the preview right away. `0` only updates on new lines and on save."
+        },
+        "qmdoc.preview.theme": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Theme for the preview (`--theme`). Empty uses the theme set with `qmdoc set-theme`. The `theme` frontmatter value of a document always wins."
+        },
+        "qmdoc.preview.additionalArguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "markdownDescription": "Additional arguments for `qmdoc html`, eg. `[\"--placeholders\", \"customer.json\"]`."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "@types/vscode": "1.90.0",
+    "@vscode/vsce": "^3.7.0",
+    "typescript": "^5.9.0"
+  }
+}

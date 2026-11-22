@@ -44,11 +44,24 @@ For example, to convert to both PDF and HTML:
 
     qmdoc pdf-and-html --source "c:\users\me\project\documentation"
 
+Instead of reading the source file, QmDoc can read the Markdown from standard input with `--stdin`. `--source` must then be the path of a single Markdown file, which is used to resolve includes, images, links and the Git history (it doesn't need to exist). With `--stdout`, the resulting file is written to standard output instead of the target directory, and all log messages go to standard error. This is how editors can convert unsaved changes:
+
+    cat draft.md | qmdoc html --stdin --stdout --source "c:\users\me\project\documentation\my_awesome_document.md" > preview.html
+
 Call
 
     qmdoc --help 
     
 to see all commands and parameters.
+
+## VS Code Preview
+The QmDoc Preview extension for Visual Studio Code shows a live preview of the Markdown file next to the editor, rendered by QmDoc with the same theme as the PDF. The preview is updated on save, when you start a new line or paragraph, and after a short pause in typing. It uses the installed QmDoc global tool, so keep that up to date.
+
+To install it, download the `.vsix` file from the latest build of the extension pipeline (`azure-pipelines-vscode-extension.yml`) and install it in VS Code with "Extensions: Install from VSIX..." or with
+
+    code --install-extension qmdoc-preview-1.0.1.vsix
+
+Then open a Markdown file and click the PDF icon in the editor title bar (or run "QmDoc: Open QmDoc Preview to the Side"). See the [extension's README](https://github.com/adliance/qmdoc/blob/master/src/Adliance.QmDoc.VsCodeExtension/README.md) for its settings.
 
 ## Themes
 QmDoc supports multiple themes which can be used to easily create PDF documents that match the different corporate designs of clients or projects.

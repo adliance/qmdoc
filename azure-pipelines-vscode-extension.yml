@@ -1,0 +1,62 @@
+# Builds the QmDoc Preview extension for VS Code (src/Adliance.QmDoc.VsCodeExtension) and publishes the .vsix file as build artifact.
+# Users install it with "Extensions: Install from VSIX..." or "code --install-extension qmdoc-preview-<version>.vsix".
+#
+# Optionally publishes to the Visual Studio Marketplace: set the variable "PublishToMarketplace" to "true" and add the
+# secret variable "VSCE_PAT" (a personal access token of the "adliance" Marketplace publisher).
+
+name: 1.0.$(Rev:r)
+
+resources:
+- repo: self
+
+trigger:
+  branches:
+    include:
+    - master
+  paths:
+    include:
+    - src/Adliance.QmDoc.VsCodeExtension
+    - azure-pipelines-vscode-extension.yml
+
+pr: none
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  extensionDirectory: 'src/Adliance.QmDoc.VsCodeExtension'
+  vsixFile: '$(Build.ArtifactStagingDirectory)/qmdoc-preview-$(Build.BuildNumber).vsix'
+
+steps:
+- checkout: self
+  clean: true
+
+- task: NodeTool@0
+  displayName: 'Install Node.js'
+  inputs:
+    versionSpec: '22.x'
+
+- script: npm ci
+  displayName: 'Install Dependencies'
+  workingDirectory: $(extensionDirectory)
+
+- script: npm version $(Build.BuildNumber) --no-git-tag-version
+  displayName: 'Set Version'
+  workingDirectory: $(extensionDirectory)
+
+- script: npx vsce package --out "$(vsixFile)"
+  displayName: 'Package'
+  workingDirectory: $(extensionDirectory)
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact'
+  inputs:
+    PathToPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'vscode-extension'
+
+- script: npx vsce publish --packagePath "$(vsixFile)"
+  displayName: 'Publish to Marketplace'
+  condition: and(succeeded(), eq(variables['PublishToMarketplace'], 'true'))
+  workingDirectory: $(extensionDirectory)
+  env:
+    VSCE_PAT: $(VSCE_PAT)

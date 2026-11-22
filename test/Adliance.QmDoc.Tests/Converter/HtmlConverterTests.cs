@@ -445,4 +445,87 @@ public sealed class HtmlConverterTests : IDisposable
         while (directory != null && !File.Exists(Path.Combine(directory.FullName, "QmDoc.slnx"))) directory = directory.Parent;
         return directory?.FullName ?? throw new InvalidOperationException("Unable to find the repository root.");
     }
+
+    private static (CapturingHtmlConverter Converter, MemoryStream Stdout) StandardStreamsConverter(HtmlParameters parameters, string stdin)
+    {
+        var stdout = new MemoryStream();
+        var converter = new CapturingHtmlConverter(parameters)
+        {
+            OpenStandardInput = () => new StringReader(stdin),
+            OpenStandardOutput = () => stdout
+        };
+        return (converter, stdout);
+    }
+
+    [Fact]
+    public async Task Run_StdinAndStdout_ResolvesRelativePathsFromSourceThatDoesNotExist()
+    {
+        _dir.Write("src/partials/legal.md", "## Rechtliches\n\nText");
+        _dir.Write("src/logo.png", [1, 2, 3]);
+        var parameters = new HtmlParameters { Source = _dir.Combine("src/unsaved.md"), Target = _dir.Combine("out"), Stdin = true, Stdout = true };
+        var (converter, stdout) = StandardStreamsConverter(parameters, "# Überschrift\r\n\r\n{{ include partials/legal.md }}\r\n\r\n![Logo](logo.png)\r\n\r\n{{ TITLE }}");
+
+        await converter.Run();
+
+        var html = System.Text.Encoding.UTF8.GetString(stdout.ToArray());
+        Assert.Contains("Überschrift", html);
+        Assert.Contains("Rechtliches", html);
+        Assert.Contains("data:image/png;base64,AQID", html);
+        Assert.Contains("unsaved", html);
+        Assert.Empty(converter.SingleContext.Errors.Select(e => e.ErrorMessage));
+        Assert.False(Directory.Exists(_dir.Combine("out")));
+        Assert.False(_dir.Exists("src/unsaved.md"));
+    }
+
+    [Fact]
+    public async Task Run_Stdin_UsesStdinInsteadOfSourceFileAndWritesTarget()
+    {
+        _dir.Write("src/doc.md", "# Saved on disk");
+        var parameters = new HtmlParameters { Source = _dir.Combine("src/doc.md"), Target = _dir.Combine("out"), Stdin = true };
+        var (converter, stdout) = StandardStreamsConverter(parameters, "# Unsaved in editor");
+
+        await converter.Run();
+
+        var html = _dir.Read("out/doc.html");
+        Assert.Contains("Unsaved in editor", html);
+        Assert.DoesNotContain("Saved on disk", html);
+        Assert.Equal(0, stdout.Length);
+    }
+
+    [Fact]
+    public async Task Run_Stdout_WritesFileFromDiskToStdout()
+    {
+        _dir.Write("src/doc.md", "# From disk");
+        var parameters = new HtmlParameters { Source = _dir.Combine("src/doc.md"), Target = _dir.Combine("out"), Stdout = true };
+        var (converter, stdout) = StandardStreamsConverter(parameters, "");
+
+        await converter.Run();
+
+        Assert.Contains("From disk", System.Text.Encoding.UTF8.GetString(stdout.ToArray()));
+        Assert.False(Directory.Exists(_dir.Combine("out")));
+    }
+
+    [Fact]
+    public async Task Run_StdinWithDirectorySource_Throws()
+    {
+        _dir.Write("src/doc.md", "# Doc");
+        var parameters = new HtmlParameters { Source = _dir.Combine("src"), Target = _dir.Combine("out"), Stdin = true, Stdout = true };
+        var (converter, _) = StandardStreamsConverter(parameters, "# Doc");
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(converter.Run);
+        Assert.Contains("--stdin", ex.Message);
+    }
+
+    [Fact]
+    public async Task Run_StdoutWithMultipleFiles_Throws()
+    {
+        _dir.Write("src/a.md", "# A");
+        _dir.Write("src/b.md", "# B");
+        var parameters = new HtmlParameters { Source = _dir.Combine("src"), Target = _dir.Combine("out"), Stdout = true };
+        var (converter, stdout) = StandardStreamsConverter(parameters, "");
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(converter.Run);
+        Assert.Contains("--stdout", ex.Message);
+        Assert.Equal(0, stdout.Length);
+    }
 }
