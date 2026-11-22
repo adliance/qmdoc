@@ -15,6 +15,7 @@ All notable changes to QmDoc. New versions are built and published automatically
 - The README documents all QmDoc features and is now included in the NuGet package.
 - Examples for calculations in the feature showcase (`examples/input/all-features.md`).
 - This changelog.
+- Unit tests (`test/Adliance.QmDoc.Tests`) for the conversion, placeholders, calculations and formulas. They run in the build pipeline, which also publishes the test results and code coverage.
 
 ## Changed
 - **Breaking:** QmDoc now requires .NET 11.

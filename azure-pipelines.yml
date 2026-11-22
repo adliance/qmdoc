@@ -46,6 +46,32 @@ steps:
     projects: './src/Adliance.QmDoc/Adliance.QmDoc.csproj'
     arguments: '--configuration Release'
 
+- script: >
+    dotnet test
+    --project ./test/Adliance.QmDoc.Tests/Adliance.QmDoc.Tests.csproj
+    --configuration Release
+    --results-directory "$(Agent.TempDirectory)/TestResults"
+    --report-trx
+    --coverage
+    --coverage-output-format cobertura
+    --coverage-output coverage.cobertura.xml
+    --coverage-settings ./test/Adliance.QmDoc.Tests/coverage.config
+  displayName: Test
+
+- task: PublishTestResults@2
+  displayName: Publish Test Results
+  condition: succeededOrFailed()
+  inputs:
+    testResultsFormat: VSTest
+    testResultsFiles: '$(Agent.TempDirectory)/TestResults/**/*.trx'
+    failTaskOnMissingResultsFile: true
+
+- task: PublishCodeCoverageResults@2
+  displayName: Publish Code Coverage
+  condition: succeededOrFailed()
+  inputs:
+    summaryFileLocation: '$(Agent.TempDirectory)/TestResults/coverage.cobertura.xml'
+
 - task: DotNetCoreCLI@2
   displayName: Pack
   inputs:
