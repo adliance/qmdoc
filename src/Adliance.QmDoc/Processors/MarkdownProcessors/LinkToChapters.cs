@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Adliance.QmDoc.Extensions;
 using Markdig;
 using Markdig.Helpers;
 using Markdig.Renderers.Html;
@@ -15,6 +16,8 @@ namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 /// Converts chapter links like [#Open Questions] into links to the heading's anchor.
 /// If multiple headings share the same title, the link can be qualified with (some of) its parent headings,
 /// separated by "&gt;", e.g. [#Risk Analysis > Open Questions].
+/// If no title matches exactly, a chapter whose title starts with (or else contains) the link text is used, as long as there is only one,
+/// e.g. [#Projektmeldung] links to "Projektmeldung (Forschungsregister)".
 /// </summary>
 public class LinkToChapters(string filePath) : IMarkdownProcessor
 {
@@ -38,7 +41,13 @@ public class LinkToChapters(string filePath) : IMarkdownProcessor
     private string ResolveChapterId(string link, string[] segments, List<Heading> headings, MarkdownProcessorContext markdownContext)
     {
         var slugs = segments.Select(GetChapterId).ToArray();
-        var candidates = headings.Where(h => h.Slug == slugs[^1] && MatchesParents(h, slugs[..^1])).ToList();
+        var candidates = headings.Where(h => h.Slug == slugs[^1] && MatchesParents(h, segments[..^1])).ToList();
+
+        if (candidates.Count == 0)
+        {
+            var possible = headings.Where(h => MatchesParents(h, segments[..^1])).ToList();
+            candidates = LenientMatching.FindPartial(possible.Select(h => h.Title).ToList(), segments[^1]).Select(i => possible[i]).ToList();
+        }
 
         if (candidates.Count == 1) return candidates[0].Id;
 
@@ -57,16 +66,17 @@ public class LinkToChapters(string filePath) : IMarkdownProcessor
 
     /// <summary>
     /// The parent segments must match the heading's parents in the same order, but levels in between may be omitted.
+    /// A parent segment matches if it is the parent's full title, or a part of it.
     /// </summary>
-    private static bool MatchesParents(Heading heading, string[] parentSlugs)
+    private static bool MatchesParents(Heading heading, string[] parentSegments)
     {
         var i = 0;
         foreach (var parent in heading.Parents)
         {
-            if (i < parentSlugs.Length && parent.Slug == parentSlugs[i]) i++;
+            if (i < parentSegments.Length && (parent.Slug == GetChapterId(parentSegments[i]) || parent.Title.Contains(parentSegments[i], StringComparison.OrdinalIgnoreCase))) i++;
         }
 
-        return i == parentSlugs.Length;
+        return i == parentSegments.Length;
     }
 
     private static List<Heading> GetHeadings(MarkdownProcessorContext markdownContext)
@@ -116,8 +126,13 @@ public class LinkToChapters(string filePath) : IMarkdownProcessor
     private sealed record Heading(int Level, string Text, string Slug, string Id, List<Heading> Parents)
     {
         /// <summary>
+        /// The title without the numbering added by HeaderNumbering.
+        /// </summary>
+        public string Title => Regex.Replace(Text, @"^(\d+\.)+\s*", "");
+
+        /// <summary>
         /// The titles of the heading and its parents, without the numbering added by HeaderNumbering.
         /// </summary>
-        public IEnumerable<string> Path => Parents.Append(this).Select(h => Regex.Replace(h.Text, @"^(\d+\.)+\s*", ""));
+        public IEnumerable<string> Path => Parents.Append(this).Select(h => h.Title);
     }
 }

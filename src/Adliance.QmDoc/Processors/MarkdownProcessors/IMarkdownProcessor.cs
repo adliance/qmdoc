@@ -57,7 +57,7 @@ public class MarkdownProcessorContext
 
     public bool ContainsPlaceholderInSource(string placeholder)
     {
-        return Regex.IsMatch(SourceMarkdown, @"\{\{\W*" + placeholder + @"\W*\}\}", RegexOptions.IgnoreCase);
+        return Regex.IsMatch(SourceMarkdown, PlaceholderPattern(placeholder), RegexOptions.IgnoreCase);
     }
 
     public bool ContainsPlaceholderInSource(params string[] placeholder)
@@ -67,8 +67,14 @@ public class MarkdownProcessorContext
 
     public void ReplacePlaceholder(string placeholder, string replaceWith)
     {
-        Markdown = Regex.Replace(Markdown, @"\{\{\W*" + Regex.Escape(placeholder) + @"\W*\}\}", replaceWith, RegexOptions.IgnoreCase);
+        Markdown = Regex.Replace(Markdown, PlaceholderPattern(Regex.Escape(placeholder)), replaceWith, RegexOptions.IgnoreCase);
     }
+
+    /// <summary>
+    /// Matches "{{KEY}}", "{{ KEY }}" etc., but must neither reach into a surrounding placeholder ("{{ = 2 * {{ KEY }} }}")
+    /// nor match a calculation of the same name ("{{ = KEY }}").
+    /// </summary>
+    private static string PlaceholderPattern(string placeholder) => @"\{\{[^\w{}=]*" + placeholder + @"[^\w{}]*?\}\}";
 }
 
 public class LinkedDocument(string fileName, string niceName)

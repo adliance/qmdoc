@@ -63,6 +63,7 @@ public abstract class Converter(TargetExtension targetExtension, CommonConversio
         markdownContext = ApplyCommonPlaceholders(file, markdownContext);
         var markdownProcessors = new List<IMarkdownProcessor>
         {
+            new CalculationPlaceholders(file.SourceAbsolutePath) // after the common placeholders, so that frontmatter values inside formulas are already replaced
         };
         PrepareAdditionalProcessors(file, markdownProcessors);
 

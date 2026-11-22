@@ -31,6 +31,11 @@ public class Frontmatter
     public string? Watermark { get; set; }
 
     /// <summary>
+    /// Culture (eg. "de-AT" or "en-US") used to parse and format numbers in calculations, default is "de-DE".
+    /// </summary>
+    public string? Culture { get; set; }
+
+    /// <summary>
     /// All key/value pairs found in the frontmatter (including the ones already exposed as typed properties above),
     /// usable as {{KEY}} placeholders in the document.
     /// </summary>

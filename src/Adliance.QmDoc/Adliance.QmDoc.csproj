@@ -18,6 +18,7 @@
     <Description>Tool to convert documentation and markdown files to pretty-looking PDF (also supports DOCX).</Description>
     <Copyright>Adliance GmbH</Copyright>
     <PackageProjectUrl>https://www.adliance.net</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
@@ -30,6 +31,10 @@
     <PackageReference Include="Morincer.Markdig.Renderers.Docx" Version="1.0.1" />
     <PackageReference Include="YamlDotNet" Version="18.1.0" />
     <PackageReference Include="Humanizer" Version="3.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 
   <ItemGroup>
