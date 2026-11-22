@@ -15,7 +15,8 @@ It is built by calling `qmdoc pdf-and-html-and-markdown --source "./examples/inp
 - Headers are automatically numbered.
 - PDF contain the outline metadata. Internally, this is also used to render the [#Table of Content].
 - Footer is added automatically for PDF, with document title, git version/date (if any) and page numbering.
-- QmDoc supports separate `pdf`, `html` and `pdf-and-html` commands, so you can generate either format on its own or both at once.
+- QmDoc supports separate `pdf`, `html`, `docx`, `pdf-and-html` and `pdf-and-html-and-markdown` commands, so you can generate each format on its own or several at once.
+- The author from the frontmatter is shown below the title. Instead, a level 4 heading in the first line like `#### Name | Company | name@example.com` is shown as author line with an e-mail link.
 
 
 # Basic formatting
@@ -27,6 +28,17 @@ It is built by calling `qmdoc pdf-and-html-and-markdown --source "./examples/inp
 - Subscript ~asdf~
 - Highlight ==asdf==
 - Insert ++asdf++
+
+Task lists and tables are supported as well:
+
+- [x] Write the document
+- [ ] Get it reviewed
+
+| Format | Command | Notes |
+|--------|---------|------:|
+| PDF    | `pdf`   | default |
+| HTML   | `html`  | single file, images embedded |
+| Word   | `docx`  | subset of features |
 
 Superscript^asdf^ and Subscript~asdf~ are not breaking up line height, because it looks shitty when lines 
 suddenly have different visual ~heights~ on longer paragraphs like this one. 
@@ -47,9 +59,20 @@ Footnotes[^1] are supported[^note]. They are rendered at the end of the document
 
 
 # Chapter Linking
-Links to chapters (to the anchor of the heading) are supported: [#General QmDoc features]. They will automatically include the heading numbering as well. If multiple chapters share the same title, add (some of) their parent chapters separated by `>` to pick the right one, e.g. a link to "#Risk Analysis > Open Questions" in square brackets. Ambiguous chapter links are reported as an error.
+Links to chapters (to the anchor of the heading) are supported: [#General QmDoc features]. They will automatically include the heading numbering as well.
+
+- The title doesn't need to be complete, as long as only one chapter matches: `[#Mermaid]` links to [#Mermaid].
+- If multiple chapters share the same title, add (some of) their parent chapters separated by `>` to pick the right one: `[#Images > Image captions]` links to [#Images > Image captions]. Ambiguous chapter links are reported as an error.
+- Regular Markdown links to a chapter keep their own text: [see the calculations](#calculations).
 
 QmDoc writes a warning if a link to a chapter is detected, but no matching heading.
+
+## Links to other documents
+`[multi-language-example.md]` links to another Markdown file, which shows up as [multi-language-example.md]. In the PDF and HTML, it points to the PDF of that document. A document code like `[QMD-001]` links to the document whose file name starts with that code: [QMD-001].
+
+All documents linked from this document are listed with `{{ LINKED_DOCUMENTS }}`:
+
+{{ LINKED_DOCUMENTS }}
 
 
 # Callouts (Alert Blocks)
@@ -86,17 +109,18 @@ QmDoc also supports the GitHub style callouts. There's different flavors of this
 # Custom QmDoc Placeholders
 - Current Date: {{ DATE }}
 - Document Title: {{ TITLE }}
-- A `---` in it's own line renders as a page break in PDF.
+- A `---` in its own line renders as a page break in PDF (`***` and `___` stay horizontal rules).
+- {{ PRODUCT }} and {{ SUPPORT }} come from `placeholders.json` next to this document (or the file given with `--placeholders`).
 
 ## Frontmatter values
-Any key/value pair defined in the frontmatter can also be used as a placeholder, by its key. This works for arbitrary, custom keys, but also for the built-in ones like `title` or `author`.
+Any key/value pair defined in the frontmatter can also be used as a placeholder, by its key. This works for arbitrary, custom keys, but also for the built-in ones like `title` or `author`. Besides `title` and `author`, the frontmatter can contain settings like `theme`, `watermark: Draft` (stamped over every page of the PDF), `culture` (for calculations), `enableHeaderNumbering: false`, `enableDocumentTitle: false` or `enableHeader: false`/`enableFooter: false`.
 
 - Client: {{ clientName }}
 - Project Code: {{ PROJECTCODE }}
 - Author (from frontmatter): {{ author }}
 
 ## Includes (Partials)
-Other Markdown files can be pulled into the current document with an include placeholder: write `include`, followed by a relative path to another Markdown file, wrapped in the same double curly braces used for `DATE` or `TOC` above. The path is resolved relative to the current file, or, if not found there, relative to the currently used theme's folder (useful for partials shared by a theme, like a common legal notice).
+Other Markdown files can be pulled into the current document with an include placeholder: write `include`, followed by a relative path to another Markdown file, wrapped in the same double curly braces used for `DATE` or `TOC` above. The path is resolved relative to the current file, or, if not found there, relative to the folder of a local theme in `~/.qmdoc/themes/<theme>` (useful for partials shared by a theme, like a common legal notice). The frontmatter of an included file is ignored.
 
 Includes are resolved before any other processing happens, so headings inside an included file are numbered correctly, show up in the [#Table of Content], and placeholders inside the included content (like the current date) are resolved as well. Includes can be nested, and circular includes are detected and reported as an error instead of looping forever.
 
@@ -104,7 +128,7 @@ The following heading and paragraph are pulled in from `partial-example.md`:
 
 {{ include ./includes/partial-example.md }}
 
-### Multi-language includes
+## Multi-language includes
 Documents can be named `<filename>.<language-code>.md` (eg. `report.de.md`). When such a document includes another file, QmDoc first looks for a same-language version of the included file, and only falls back to the plain, non-translated file if no translated version exists. This works for nested includes too - the language of the top-level document is used throughout its entire include tree.
 
 See `multi-language-example.md` and its German counterpart `multi-language-example.de.md` for a working, side-by-side example: both include the exact same `multi-language-partial.md`, but the German document automatically pulls in `multi-language-partial.de.md` instead - without any change to the include statement itself.

@@ -25,5 +25,6 @@ public class UpdateService
         }
 
         await process.WaitForExitAsync();
+        if (process.ExitCode != 0) throw new Exception($"Unable to update QmDoc, \"dotnet tool update\" exited with code {process.ExitCode}.");
     }
 }

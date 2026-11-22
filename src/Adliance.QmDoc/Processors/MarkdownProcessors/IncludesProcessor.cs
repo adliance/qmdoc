@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -51,11 +52,27 @@ public class IncludesProcessor(string sourceFilePath, string theme) : IMarkdownP
                 return "";
             }
 
-            var content = File.ReadAllText(resolvedPath).Replace("\r\n", "\n");
+            var content = WithoutFrontmatter(File.ReadAllText(resolvedPath).Replace("\r\n", "\n"));
             var result = ResolveIncludes(content, resolvedPath, markdownContext, chain);
             chain.Remove(resolvedPath);
             return result;
         });
+    }
+
+    /// <summary>
+    /// Only the frontmatter of the document itself is used, the frontmatter of an included file (eg. a partial that can also be converted on its own) is removed.
+    /// </summary>
+    private static string WithoutFrontmatter(string content)
+    {
+        if (!content.StartsWith("---", StringComparison.Ordinal)) return content;
+        try
+        {
+            return new MarkdownProcessorContext(content).Frontmatter.MarkdownWithoutFrontmatter;
+        }
+        catch
+        {
+            return content;
+        }
     }
 
     private string? ResolvePath(string currentFilePath, string includePath)

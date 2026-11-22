@@ -27,6 +27,8 @@ The preview scrolls along with the editor. QmDoc adds the line in the source fil
 
 Links to chapters scroll the preview, links to other documents open their Markdown file, and links to web pages open in the browser.
 
+Scripts in previewed documents (eg. a `<script>` in a Markdown file of a cloned repository) don't run, only QmDoc's own Mermaid diagrams do.
+
 ## Settings
 
 | Setting | Default | Description |

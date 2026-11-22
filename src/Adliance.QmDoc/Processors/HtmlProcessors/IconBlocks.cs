@@ -9,9 +9,10 @@ public class IconBlocks : IHtmlProcessor
 {
     public HtmlProcessorResult Apply(string html)
     {
-        html = Regex.Replace(html, @"<p( data-line=""\d+"")?>\{?\{\W*\?\W*\}\}? (.*?)</p>", "<div class=\"block block-question\"$1>$2</div>", RegexOptions.IgnoreCase);
-        html = Regex.Replace(html, @"<p( data-line=""\d+"")?>\{?\{\W*!!\W*\}\}? (.*?)</p>", "<div class=\"block block-danger\"$1>$2</div>", RegexOptions.IgnoreCase);
-        html = Regex.Replace(html, @"<p( data-line=""\d+"")?>\{?\{\W*!\W*\}\}? (.*?)</p>", "<div class=\"block block-alert\"$1>$2</div>", RegexOptions.IgnoreCase);
+        // Singleline, because a paragraph can be written over several lines
+        html = Regex.Replace(html, @"<p( data-line=""\d+"")?>\{?\{\W*\?\W*\}\}? (.*?)</p>", "<div class=\"block block-question\"$1>$2</div>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        html = Regex.Replace(html, @"<p( data-line=""\d+"")?>\{?\{\W*!!\W*\}\}? (.*?)</p>", "<div class=\"block block-danger\"$1>$2</div>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        html = Regex.Replace(html, @"<p( data-line=""\d+"")?>\{?\{\W*!\W*\}\}? (.*?)</p>", "<div class=\"block block-alert\"$1>$2</div>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
         return new HtmlProcessorResult(html);
     }
 }

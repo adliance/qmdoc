@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -9,6 +11,28 @@ namespace Adliance.QmDoc.Themes;
 
 public static class ThemeProvider
 {
+    public const string DefaultTheme = "2026";
+
+    private static string LocalThemesDirectory => Path.Combine(OptionsProvider.DataDirectory, "themes");
+
+    /// <summary>
+    /// The themes embedded in QmDoc and the local themes in ~/.qmdoc/themes.
+    /// </summary>
+    public static IReadOnlyList<string> AvailableThemes()
+    {
+        var embedded = typeof(ThemeProvider).Assembly.GetManifestResourceNames()
+            .Where(n => n.StartsWith("Adliance.QmDoc.Themes.", StringComparison.Ordinal))
+            .Select(n => n["Adliance.QmDoc.Themes.".Length..].Split('.')[0])
+            .Where(n => n != "_shared")
+            .Select(n => Regex.IsMatch(n, "^_\\d") ? n[1..] : n);
+        var local = Directory.Exists(LocalThemesDirectory)
+            ? Directory.GetDirectories(LocalThemesDirectory).Select(Path.GetFileName).OfType<string>().Where(n => !n.StartsWith('_'))
+            : [];
+        return embedded.Concat(local).Distinct().Order().ToList();
+    }
+
+    public static bool Exists(string theme) => AvailableThemes().Contains(theme);
+
     public static string GetHeader(string theme) =>
         GetSingleContent(theme, "header.html") ?? "";
 

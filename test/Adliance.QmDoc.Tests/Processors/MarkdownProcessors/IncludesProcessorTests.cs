@@ -182,4 +182,12 @@ public sealed class IncludesProcessorTests : IDisposable
         _dir.Write("other.md", "Other");
         Assert.Equal("`{{ include other.md }}`", Process("doc.md", "{{ include partial.md }}").Markdown);
     }
+
+    [Fact]
+    public void Apply_FrontmatterOfIncludedFile_IsRemoved()
+    {
+        _dir.Write("partial.md", "---\ntitle: Partial\n---\nIncluded");
+        var context = Process("doc.md", "Before\n\n{{ include partial.md }}\n\nAfter");
+        Assert.Equal("Before\n\nIncluded\n\nAfter", context.Markdown);
+    }
 }

@@ -1,8 +1,5 @@
 # Builds the Adliance QmDoc Previewer extension for VS Code (src/Adliance.QmDoc.VsCodeExtension) and publishes the .vsix file as build artifact.
 # Users install it with "Extensions: Install from VSIX..." or "code --install-extension qmdoc-previewer-<version>.vsix".
-#
-# Optionally publishes to the Visual Studio Marketplace: set the variable "PublishToMarketplace" to "true" and add the
-# secret variable "VSCE_PAT" (a personal access token of the "adliance" Marketplace publisher).
 
 name: 1.0.$(Rev:r)
 
@@ -53,10 +50,3 @@ steps:
   inputs:
     PathToPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'vscode-extension'
-
-- script: npx vsce publish --packagePath "$(vsixFile)"
-  displayName: 'Publish to Marketplace'
-  condition: and(succeeded(), eq(variables['PublishToMarketplace'], 'true'))
-  workingDirectory: $(extensionDirectory)
-  env:
-    VSCE_PAT: $(VSCE_PAT)

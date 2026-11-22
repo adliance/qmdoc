@@ -17,7 +17,9 @@ to install QmDoc, or call
 
     dotnet tool update -g Adliance.QmDoc
 
-to upgrade it to the latest version.
+to upgrade it to the latest version (or call `qmdoc update`, which does the same).
+
+QmDoc needs network access: PDFs are rendered by the Adliance PDF service (`https://pdf2.adliance.dev`, the HTML of the document is sent there), and the PDF/HTML files load fonts from Google Fonts and Mermaid diagrams from `cdn.jsdelivr.net`.
 
 ## Usage
 Once QmDoc is installed, you can convert all Markdown (`*.md`) files in a directory by calling `QmDoc` in that directory. You may also specify files or directories by using the `--source` parameter:
@@ -31,6 +33,8 @@ or
 By default, only Markdown files directly inside the source directory are converted. Add `--include-subdirectories` to also look into all of its subdirectories:
 
     qmdoc --source "c:\users\me\project\documentation" --include-subdirectories
+
+The resulting files are written to the current directory, or to the directory given with `--target`. If one of several files can't be converted (eg. because of an invalid frontmatter), the other files are still converted and QmDoc exits with an error at the end.
 
 QmDoc supports the following commands:
 
@@ -64,27 +68,33 @@ To install it, download the `.vsix` file from the latest build of the extension 
 Then open a Markdown file and click the PDF icon in the editor title bar (or run "QmDoc: Open QmDoc Preview to the Side"). See the [extension's README](https://github.com/adliance/qmdoc/blob/master/src/Adliance.QmDoc.VsCodeExtension/README.md) for its settings.
 
 ## Themes
-QmDoc supports multiple themes which can be used to easily create PDF documents that match the different corporate designs of clients or projects.
+Themes define the look of the PDF and HTML files, so documents can match the corporate design of clients or projects. QmDoc comes with these themes:
 
-For example
+- `2026` (default): the Adliance theme.
+- `madx`: the theme for MADx documents.
 
-    qmdoc set-theme --theme Adliance
-    
-to switch to the `Adliance` theme. Themes are automatically downloaded from the [GitHub repository](https://github.com/adliance/qmdoc/tree/master/themes) and cached locally in the `USERPROFILE\.qmdoc\themes` directory. Please note that it may take a few minutes until changes of the theme on GitHub are picked up by your local installation of QmDoc.
+To change the theme for all conversions, call
 
-You can also set the theme for a single conversion by using the `--theme` parameter. For example
+    qmdoc set-theme --theme madx
 
-    qmdoc --theme ScientificDX
+You can also set the theme for a single conversion with the `--theme` parameter (`qmdoc --theme madx`), or for a single document with `theme` in its frontmatter (which wins over `--theme`). An unknown theme is reported, and the default theme is used instead.
 
-will convert all Markdown files in the current directory to PDF by using the "ScientificDX" theme.
+### Custom themes
+A custom theme is a folder in `~/.qmdoc/themes/<name>` (`%USERPROFILE%\.qmdoc\themes\<name>` on Windows), which can then be used like the built-in themes. All files are optional, missing files are taken from the shared base of the built-in themes:
 
-Each theme must consist of 5 different files (`index.html`, `footer.html`, `header.html`, `styles.scss`, `options.json`) that specify the behaviour and look and feel of the resulting PDF files. If no theme is specified, a simple default theme will be used.
+| File | Content |
+|---|---|
+| `*.css` | Styles, added after the shared base styles in alphabetical order of the file names. |
+| `index.html` | The HTML page, with the placeholders `{{ TITLE }}`, `{{ CSS }}` and `{{ BODY }}`. |
+| `header.html`, `footer.html` | Header and footer of each PDF page, they can use `{{ CSS }}`, `{{ TITLE }}`, `{{ GIT_DATE_VERSION }}` and the other placeholders. |
+| `options.json` | PDF settings: `{ "pdf": { "header_height": 100, "footer_height": 80, "scale": 0.85, "timeout_seconds": 300 } }` |
+| `*.md` | Partials that documents can [include](#includes), eg. a common legal notice. |
 
 ## Changelog
 See the [Changelog](https://github.com/adliance/qmdoc/blob/master/CHANGELOG.md) for what's new in each version.
 
 ## Writing documents
-QmDoc uses [Markdig](https://github.com/xoofx/markdig) with all its advanced extensions, so besides standard Markdown you can use tables, footnotes, task lists, ~~strikethrough~~, ==highlights==, ^superscript^, ~subscript~ and more. On top of that, QmDoc adds the features described below. The [Features Showcase](https://github.com/adliance/qmdoc/blob/master/examples/input/all-features.md) is a document that uses all of them.
+QmDoc uses [Markdig](https://github.com/xoofx/markdig) with all its advanced extensions, so besides standard Markdown you can use tables, footnotes, task lists, ~~strikethrough~~, ==highlights==, ^superscript^, ~subscript~ and more. On top of that, QmDoc adds the features described below. The [Features Showcase](https://github.com/adliance/qmdoc/blob/master/examples/input/all-features.md) is a document that uses them (see `examples/output` for the resulting files).
 
 ### Frontmatter
 Settings for a single document go into a YAML frontmatter at the very top of the file:
@@ -100,8 +110,8 @@ Stundensatz: 135 €/h
 
 | Key | Description |
 |---|---|
-| `title` | The document title. Without it, the file name is used (or the `--title` parameter). |
-| `author` | Shown as the author line at the top of the document. |
+| `title` | The document title. Without it, the file name is used. The `--title` parameter overrides it. |
+| `author` | Shown as the author line below the title. |
 | `theme` | The theme for this document, overrides the `--theme` parameter. |
 | `watermark` | Text stamped diagonally over every page of the PDF, eg. "Entwurf". |
 | `culture` | Culture for [calculations](#calculations), eg. `de-AT`. Default is `de-DE`. |
@@ -113,10 +123,16 @@ Stundensatz: 135 €/h
 Every key, including your own ones (like `Stundensatz` above), can also be used as a placeholder (`{{ Stundensatz }}`) or in calculations.
 
 ### Headings
-Write chapters as level 1 headings (`#`), sections as `##` and so on. Headings are numbered automatically (`1.`, `1.1.`, ...), so don't number them yourself. The document title comes from the frontmatter, so there's no need for a title heading either.
+Write chapters as level 1 headings (`#`), sections as `##` and so on. Headings up to level 4 are numbered automatically (`1.`, `1.1.`, ...), so don't number them yourself. The table of contents shows headings up to level 5. The document title comes from the frontmatter, so there's no need for a title heading either.
+
+Instead of the `author` frontmatter value, the first line of the document can be a level 4 heading with name, company and e-mail address, which is shown as author line (with a link to the e-mail address):
+
+```markdown
+#### Hannes Sachsenhofer | Adliance GmbH | name@example.com
+```
 
 ### Placeholders
-Placeholders are written in double curly braces. Upper/lower case and spaces don't matter, so `{{ TOC }}` and `{{toc}}` are the same.
+Placeholders are written in double curly braces. Upper/lower case and spaces don't matter, so `{{ TOC }}` and `{{toc}}` are the same. Placeholders in code (`` `{{ TOC }}` `` or code blocks) are left alone, so their syntax can be shown in a document.
 
 | Placeholder | Replaced with |
 |---|---|
@@ -126,7 +142,7 @@ Placeholders are written in double curly braces. Upper/lower case and spaces don
 | `{{ GIT_VERSION }}` | The short hash of the last Git commit that changed the document. |
 | `{{ GIT_DATE }}` | The date of that commit. |
 | `{{ GIT_DATE_VERSION }}` | Both, eg. "Version 8fa5220, 22. November 2026". |
-| `{{ GIT_VERSIONS }}` | A table with the complete Git history of the document (date, person, version, change). |
+| `{{ GIT_VERSIONS }}` | A table with the complete Git history of the document (date, person, version, change). Outside of a Git repository, a note says that the document is not under version control. |
 | `{{ LINKED_DOCUMENTS }}` | A list of all [other documents](#links-to-other-documents) that this document links to. |
 | `{{ include ./path/file.md }}` | The content of another Markdown file, see [Includes](#includes). |
 | `{{ <frontmatter key> }}` | The value from the frontmatter, eg. `{{ Stundensatz }}`. |
@@ -134,7 +150,7 @@ Placeholders are written in double curly braces. Upper/lower case and spaces don
 
 The `--ignore-git-commits-since`, `--ignore-git-commits` and `--ignore-git-commits-without` parameters hide commits from the Git placeholders (eg. to only show released versions).
 
-Additional placeholders can be defined in a JSON file (`placeholders.json` next to the document, or the file given with `--placeholders`), they are replaced in the final HTML:
+Additional placeholders can be defined in a JSON file (`placeholders.json` next to the document, or the file given with `--placeholders`), they are replaced in the final HTML. Unknown placeholders stay in the document as they are:
 
 ```json
 {
@@ -176,18 +192,18 @@ GitHub style alerts (`> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`, 
 - Links to chapters that don't exist are reported as warnings.
 
 ### Links to other documents
-- `[other-document.md]` links to another Markdown file. QmDoc looks for it next to the document first, then searches for the file name in the folders around the source directory. In the PDF/HTML, the link points to the converted file.
-- `[ABC-123]` links to the document whose file name starts with this document code, eg. `ABC-123 Verfahrensanweisung.md`.
+- `[other-document.md]` links to another Markdown file. QmDoc looks for it next to the document first, then searches for the file name in the folders around the source directory. In the PDF and the HTML, the link points to the PDF of that document. Other files work as well, eg. `[Kalkulation.xlsx]`.
+- `[ABC-123]` links to the document whose file name starts with this document code, eg. `ABC-123 Verfahrensanweisung.md`. A document code is three letters or digits, a dash and three digits.
 
 All linked documents can be listed with `{{ LINKED_DOCUMENTS }}`.
 
 ### Includes
-`{{ include ./includes/legal-notice.md }}` inserts another Markdown file. The path is relative to the current document, or to the theme's folder (for partials shared by a theme). Includes are resolved first, so headings in included files are numbered and appear in the table of contents. Includes can be nested, circular includes are reported as an error.
+`{{ include ./includes/legal-notice.md }}` inserts another Markdown file. The path is relative to the current document, or to the folder of a [custom theme](#custom-themes) (for partials shared by a theme). Includes are resolved first, so headings in included files are numbered and appear in the table of contents, and placeholders in them are replaced. The frontmatter of an included file is ignored. Includes can be nested, circular includes are reported as an error.
 
 Documents named `<name>.<language>.md` (eg. `report.de.md`) automatically include the same language version of a file if it exists (`partial.de.md` instead of `partial.md`).
 
 ### Page breaks
-A line containing only `---` starts a new page in the PDF. (The `---` lines of the frontmatter don't.)
+A line containing only `---` starts a new page in the PDF. (The `---` lines of the frontmatter don't, and `***` or `___` stay horizontal rules.)
 
 ### Images
 Images are centered, wide images are scaled down to fit the page. A caption is added with Markdig's figure syntax, and `{.left}` or `{.right}` places an image next to the text:

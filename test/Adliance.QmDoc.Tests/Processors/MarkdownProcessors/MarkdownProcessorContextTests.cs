@@ -131,4 +131,22 @@ public class MarkdownProcessorContextTests
         Assert.NotEqual(a, new LinkedDocument("other.html", "Doc"));
         Assert.False(a.Equals("doc.html"));
     }
+
+    [Fact]
+    public void ReplacePlaceholder_LeavesCodeAlone()
+    {
+        var context = Md.Context("{{ TITLE }} and `{{ TITLE }}`\n\n```\n{{ TITLE }}\n```");
+        context.ReplacePlaceholder("TITLE", "X");
+        Assert.Equal("X and `{{ TITLE }}`\n\n```\n{{ TITLE }}\n```", context.Markdown);
+    }
+
+    [Fact]
+    public void ReplacePlaceholder_InTemplate_ReplacesIndentedPlaceholders()
+    {
+        var context = Md.Context("");
+        context.Markdown = "<html>\n\n    {{ CSS }}\n</html>";
+        context.IsTemplate = true;
+        context.ReplacePlaceholder("CSS", "X");
+        Assert.Equal("<html>\n\n    X\n</html>", context.Markdown);
+    }
 }

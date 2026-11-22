@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Adliance.QmDoc.Converter;
 using Adliance.QmDoc.Converter.Docx;
@@ -28,7 +30,7 @@ public class Program
                 }
                 catch (Exception ex)
                 {
-                    Exit(-2, ex.Message);
+                    Exit(-2, Describe(ex));
                 }
             })
             .WithParsed<HtmlParameters>(p =>
@@ -42,7 +44,7 @@ public class Program
                 }
                 catch (Exception ex)
                 {
-                    Exit(-2, ex.Message);
+                    Exit(-2, Describe(ex));
                 }
             })
             .WithParsed<PdfAndHtmlParameters>(p =>
@@ -51,13 +53,16 @@ public class Program
                 {
                     if (p.Stdout) throw new InvalidOperationException("--stdout only works for commands that create a single file (pdf, html, docx).");
                     var options = OptionsProvider.LoadOptions();
-                    new HtmlConverter(p, options).Run().GetAwaiter().GetResult();
-                    new PdfConverter(p, options).Run().GetAwaiter().GetResult();
+                    var htmlConverter = new HtmlConverter(p, options);
+                    var pdfConverter = new PdfConverter(p, options);
+                    ShareStandardInput(p, htmlConverter, pdfConverter);
+                    htmlConverter.Run().GetAwaiter().GetResult();
+                    pdfConverter.Run().GetAwaiter().GetResult();
                     Exit(0);
                 }
                 catch (Exception ex)
                 {
-                    Exit(-2, ex.Message);
+                    Exit(-2, Describe(ex));
                 }
             })
             .WithParsed<PdfAndHtmlAndMarkdownParameters>(p =>
@@ -66,13 +71,16 @@ public class Program
                 {
                     if (p.Stdout) throw new InvalidOperationException("--stdout only works for commands that create a single file (pdf, html, docx).");
                     var options = OptionsProvider.LoadOptions();
-                    new HtmlConverter(p, options, saveMarkdown: true).Run().GetAwaiter().GetResult();
-                    new PdfConverter(p, options).Run().GetAwaiter().GetResult();
+                    var htmlConverter = new HtmlConverter(p, options, saveMarkdown: true);
+                    var pdfConverter = new PdfConverter(p, options);
+                    ShareStandardInput(p, htmlConverter, pdfConverter);
+                    htmlConverter.Run().GetAwaiter().GetResult();
+                    pdfConverter.Run().GetAwaiter().GetResult();
                     Exit(0);
                 }
                 catch (Exception ex)
                 {
-                    Exit(-2, ex.Message);
+                    Exit(-2, Describe(ex));
                 }
             })
             .WithParsed<DocxParameters>(p =>
@@ -86,19 +94,19 @@ public class Program
                 }
                 catch (Exception ex)
                 {
-                    Exit(-2, ex.Message);
+                    Exit(-2, Describe(ex));
                 }
             })
             .WithParsed<SetThemeParameters>(p =>
             {
                 try
                 {
-                    SetTheme(p).GetAwaiter().GetResult();
+                    SetTheme(p);
                     Exit(0);
                 }
                 catch (Exception ex)
                 {
-                    Exit(-3, ex.Message);
+                    Exit(-3, Describe(ex));
                 }
             })
             .WithParsed<UpdateParameters>(p =>
@@ -110,7 +118,7 @@ public class Program
                 }
                 catch (Exception ex)
                 {
-                    Exit(-3, ex.Message);
+                    Exit(-3, Describe(ex));
                 }
             })
             .WithNotParsed(errs =>
@@ -133,6 +141,31 @@ public class Program
         if (parameters.Stdout) Console.SetOut(Console.Error);
     }
 
+    /// <summary>
+    /// Standard input can only be read once, but commands that create several files run a converter for each of them.
+    /// </summary>
+    private static void ShareStandardInput(CommonConversionParameters parameters, params Converter.Converter[] converters)
+    {
+        if (!parameters.Stdin) return;
+        string markdown;
+        using (var reader = converters[0].OpenStandardInput()) markdown = reader.ReadToEnd();
+        foreach (var converter in converters) converter.OpenStandardInput = () => new StringReader(markdown);
+    }
+
+    /// <summary>
+    /// Includes the inner exceptions, eg. "Exception during deserialization" alone doesn't say what's wrong with the frontmatter.
+    /// </summary>
+    public static string Describe(Exception ex)
+    {
+        var messages = new List<string>();
+        for (var e = ex; e != null; e = e.InnerException)
+        {
+            if (!messages.Contains(e.Message)) messages.Add(e.Message);
+        }
+
+        return string.Join(" ", messages);
+    }
+
     public static void Exit(int code, string? message = null)
     {
         if (!string.IsNullOrWhiteSpace(message)) WriteLine(message);
@@ -149,24 +182,23 @@ public class Program
         Console.Write(message);
     }
 
-    private static async Task SetTheme(SetThemeParameters parameters)
+    private static void SetTheme(SetThemeParameters parameters)
     {
         var options = OptionsProvider.LoadOptions();
-        await UpdateTheme(options, parameters.Theme);
+        UpdateTheme(options, parameters.Theme);
         Console.WriteLine($"Changed theme to \"{parameters.Theme}\". All conversions will use this theme from now on.");
     }
 
-    private static async Task UpdateTheme(Options.Options options, string theme)
+    private static void UpdateTheme(Options.Options options, string theme)
     {
         if (string.IsNullOrWhiteSpace(theme))
         {
             return;
         }
 
-        if (!options.Theme.Equals(theme, StringComparison.OrdinalIgnoreCase) || options.ThemeRefreshedUtc < DateTime.UtcNow.AddMinutes(-5))
+        if (!ThemeProvider.Exists(theme))
         {
-            await ThemeFetcher.Fetch(theme);
-            options.ThemeRefreshedUtc = DateTime.UtcNow;
+            throw new InvalidOperationException($"Unknown theme \"{theme}\". Available themes: {string.Join(", ", ThemeProvider.AvailableThemes())}.");
         }
 
         options.Theme = theme;

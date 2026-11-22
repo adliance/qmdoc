@@ -200,4 +200,22 @@ public class LinkToChaptersTests
     {
         Assert.Throws<ArgumentException>(() => LinkToChapters.GetChapterId(title));
     }
+
+    [Theory]
+    [InlineData("[#123](https://example.com/issues/123)")]
+    [InlineData("[#Einleitung][ref]")]
+    [InlineData("![#Einleitung](image.png)")]
+    public void Apply_RegularLinks_AreNoChapterLinks(string link)
+    {
+        var markdown = Lines("# Einleitung", "", link);
+        Assert.Equal(markdown, Link(markdown).Markdown);
+    }
+
+    [Fact]
+    public void Apply_HeadingWithInlineCode_IsFound()
+    {
+        var context = Link(Lines("# Using `qmdoc` on the CLI", "", "[#Using qmdoc]"));
+        Assert.Contains("(#using-qmdoc-on-the-cli)", context.Markdown);
+        Assert.Empty(context.Errors);
+    }
 }

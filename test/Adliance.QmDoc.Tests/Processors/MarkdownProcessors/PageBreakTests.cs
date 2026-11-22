@@ -98,4 +98,12 @@ public class PageBreakTests
     {
         Assert.Equal("A - B", new PageBreak().Apply("A - B").Markdown);
     }
+
+    [Fact]
+    public void Apply_TextDirectlyAfterPageBreak_IsNotPartOfTheHtmlBlock()
+    {
+        var context = new PageBreak().Apply(Lines("A", "", "---", "# Two"));
+        Assert.Equal(Lines("A", "", PageBreakHtml, "", "# Two"), context.Markdown);
+        Assert.Contains("<h1", Markdig.Markdown.ToHtml(context.Markdown, context.Pipeline));
+    }
 }

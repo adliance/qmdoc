@@ -115,4 +115,13 @@ public class TableOfContentsPlaceholderTests
     {
         Assert.Equal("# A", new TableOfContentsPlaceholder().Apply("# A").Markdown);
     }
+
+    [Fact]
+    public void Apply_HeadingWithPipeAndCode_StaysOneTableRow()
+    {
+        var context = new TableOfContentsPlaceholder().Apply(Lines("{{ TOC }}", "", "# Using `qmdoc` | CLI"));
+        var html = Markdig.Markdown.ToHtml(context.Markdown, context.Pipeline);
+        Assert.Contains(">Using qmdoc | CLI</a></td>", html);
+        Assert.True(context.ContainsToc);
+    }
 }

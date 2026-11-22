@@ -31,8 +31,22 @@ public class PageBreak : IMarkdownProcessor
             .OrderByDescending(b => b.Span.Start);
 
         var result = new StringBuilder(markdown);
-        foreach (var pageBreak in pageBreaks) result.Remove(pageBreak.Span.Start, pageBreak.Span.Length).Insert(pageBreak.Span.Start, PageBreakHtml);
+        foreach (var pageBreak in pageBreaks)
+        {
+            // an empty line after the <div> ends the HTML block, otherwise a line right after the page break would be part of it (eg. "# Heading" as literal text)
+            var lineEnd = markdown.IndexOf('\n', pageBreak.Span.Start);
+            var textFollows = pageBreak.Parent is MarkdownDocument && lineEnd >= 0 && !IsBlankLine(markdown, lineEnd + 1);
+            result.Remove(pageBreak.Span.Start, pageBreak.Span.Length).Insert(pageBreak.Span.Start, textFollows ? PageBreakHtml + "\n" : PageBreakHtml);
+        }
+
         markdownContext.Markdown = result.ToString();
         return markdownContext;
+    }
+
+    private static bool IsBlankLine(string markdown, int start)
+    {
+        if (start >= markdown.Length) return true;
+        var end = markdown.IndexOf('\n', start);
+        return markdown.AsSpan(start, (end < 0 ? markdown.Length : end) - start).IsWhiteSpace();
     }
 }

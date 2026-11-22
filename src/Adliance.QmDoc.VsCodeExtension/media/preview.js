@@ -65,7 +65,13 @@
         event.preventDefault();
 
         if (href.startsWith('#')) {
-            const target = document.getElementById(decodeURIComponent(href.substring(1)));
+            let id = href.substring(1);
+            try {
+                id = decodeURIComponent(id);
+            } catch {
+                // not encoded, eg. "#50%"
+            }
+            const target = document.getElementById(id);
             if (target) target.scrollIntoView();
             return;
         }

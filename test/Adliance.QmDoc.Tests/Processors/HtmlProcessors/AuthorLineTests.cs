@@ -8,7 +8,7 @@ public class AuthorLineTests
     public void Apply_WithAuthor_PrependsAuthorLine()
     {
         var result = new AuthorLine("Hannes Sachsenhofer").Apply("<h1>A</h1>");
-        Assert.Equal("<div class=\"document-author\"><span class=\"name\">Hannes Sachsenhofer</span>, Adliance GmbH</div><h1>A</h1>", result.ResultingHtml);
+        Assert.Equal("<div class=\"document-author\"><span class=\"name\">Hannes Sachsenhofer</span></div><h1>A</h1>", result.ResultingHtml);
         Assert.Empty(result.Errors);
     }
 

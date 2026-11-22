@@ -35,6 +35,11 @@ public static class GitService
             };
             var commits = repo.Commits.QueryBy(filter).ToList();
 
+            // only compare the file itself instead of the whole tree of each commit (much faster on large repositories);
+            // Git paths are case-sensitive, so the path is taken from the repository
+            var gitPath = repo.Index.FirstOrDefault(e => e.Path.Replace('/', Path.DirectorySeparatorChar).Equals(relativeFilePath, StringComparison.OrdinalIgnoreCase))?.Path;
+            string[]? paths = gitPath == null ? null : [gitPath];
+
             foreach (var commit in commits)
             {
                 if (ignoreCommitsWithout.Any() && !ignoreCommitsWithout.Any(x => commit.Message != null && commit.Message.Contains(x, StringComparison.OrdinalIgnoreCase))) continue;
@@ -45,7 +50,7 @@ public static class GitService
                 var parent = commit.Parents.FirstOrDefault();
                 if (parent == null && repo.Info.IsShallow) continue;
 
-                foreach (var change in repo.Diff.Compare<TreeChanges>(parent?.Tree, commit.Tree))
+                foreach (var change in repo.Diff.Compare<TreeChanges>(parent?.Tree, commit.Tree, paths))
                 {
                     if (change.Path.Replace('/', Path.DirectorySeparatorChar).Equals(relativeFilePath, StringComparison.OrdinalIgnoreCase))
                     {

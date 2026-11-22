@@ -28,7 +28,7 @@ public class LinkToChapters(string filePath) : IMarkdownProcessor
         var headings = GetHeadings(markdownContext);
         var codeSpans = CodeSpans.Find(markdownContext.Markdown, markdownContext.Pipeline);
 
-        markdownContext.Markdown = Regex.Replace(markdownContext.Markdown, @"\[#(.*?)\]", m =>
+        markdownContext.Markdown = Regex.Replace(markdownContext.Markdown, @"(?<![!\]])\[#([^\[\]]*)\](?![(\[])", m =>
         {
             if (codeSpans.Contains(m.Index)) return m.Value;
 
@@ -110,13 +110,19 @@ public class LinkToChapters(string filePath) : IMarkdownProcessor
         return result;
     }
 
-    private static string ExtractText(HeadingBlock heading)
+    /// <summary>
+    /// The plain text of a heading, including inline code (eg. "Using `qmdoc`" is "Using qmdoc").
+    /// </summary>
+    public static string ExtractText(HeadingBlock heading)
     {
         if (heading.Inline == null) return string.Empty;
 
         var sb = new StringBuilder();
-        foreach (var inline in heading.Inline.Descendants<LiteralInline>())
-            sb.Append(inline.Content.ToString());
+        foreach (var inline in heading.Inline.Descendants<Inline>())
+        {
+            if (inline is LiteralInline literal) sb.Append(literal.Content.ToString());
+            else if (inline is CodeInline code) sb.Append(code.Content);
+        }
 
         return sb.ToString().Trim();
     }

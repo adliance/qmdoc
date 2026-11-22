@@ -27,7 +27,6 @@ internal static partial class AuthorLineProcessor
             var para = new Paragraph();
             Format(para);
             para.AppendChild(TextRun(frontmatterAuthor, bold: true));
-            para.AppendChild(TextRun(", Adliance GmbH", bold: false));
             body.PrependChild(para);
             result.Add(para);
             return result;

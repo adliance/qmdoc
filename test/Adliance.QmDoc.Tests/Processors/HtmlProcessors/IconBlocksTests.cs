@@ -36,4 +36,10 @@ public class IconBlocksTests
     {
         Assert.Equal("<div class=\"block block-alert\">Line 1\nLine 2</div>", new IconBlocks().Apply("<p>{{!}} Line 1\nLine 2</p>").ResultingHtml);
     }
+
+    [Fact]
+    public void Apply_CalloutOverSeveralLines()
+    {
+        Assert.Equal("<div class=\"block block-alert\">A callout that\nwraps</div>", new IconBlocks().Apply("<p>{{!}} A callout that\nwraps</p>").ResultingHtml);
+    }
 }

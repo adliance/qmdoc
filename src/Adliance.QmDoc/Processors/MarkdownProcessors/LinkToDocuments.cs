@@ -14,7 +14,8 @@ namespace Adliance.QmDoc.Processors.MarkdownProcessors;
 /// </summary>
 public partial class LinkToDocuments(string baseDirectory, string filePath) : IMarkdownProcessor
 {
-    [GeneratedRegex(@"(?<![!\]])\[([^\[\]]*?\.\w{1,4})\](?![(\[])")]
+    // the extension starts with a letter, so that "[1.2]" or "[see fig. 3.1]" aren't mistaken for file names
+    [GeneratedRegex(@"(?<![!\]])\[([^\[\]]*?\.[A-Za-z]\w{0,3})\](?![(\[])")]
     private static partial Regex FileNameRegex();
 
     [GeneratedRegex(@"(?<![!\]])\[(\w\w\w\-\d\d\d)\](?![(\[])")]
@@ -40,6 +41,14 @@ public partial class LinkToDocuments(string baseDirectory, string filePath) : IM
 
     private string DocumentDirectory => Path.GetDirectoryName(filePath)!;
 
+    /// <summary>
+    /// Folders that can't be read (eg. system folders next to the source directory) are skipped instead of aborting the conversion.
+    /// </summary>
+    private static readonly EnumerationOptions Recursive = new() { RecurseSubdirectories = true, IgnoreInaccessible = true };
+
+    private static List<string> FindFiles(string directory, string pattern) =>
+        Directory.Exists(directory) ? Directory.GetFiles(directory, pattern, Recursive).ToList() : [];
+
     private void ReplaceDocumentsByCode(MarkdownProcessorContext markdownContext)
     {
         var codeSpans = CodeSpans.Find(markdownContext.Markdown, markdownContext.Pipeline);
@@ -55,11 +64,11 @@ public partial class LinkToDocuments(string baseDirectory, string filePath) : IM
             bool StartsWithCode(string x) => Path.GetFileName(x).StartsWith(code, true, CultureInfo.InvariantCulture);
 
             // we prefer *.md files ... but if we can't find a matching one, we just take whatever
-            markdownFiles ??= Directory.GetFiles(baseDirectory, "*.md", SearchOption.AllDirectories).ToList();
+            markdownFiles ??= FindFiles(baseDirectory, "*.md");
             var linkedFilePath = markdownFiles.FirstOrDefault(StartsWithCode);
             if (linkedFilePath == null)
             {
-                allFiles ??= Directory.GetFiles(baseDirectory, "*.*", SearchOption.AllDirectories).ToList();
+                allFiles ??= FindFiles(baseDirectory, "*.*");
                 linkedFilePath = allFiles.FirstOrDefault(StartsWithCode);
             }
 
@@ -78,6 +87,7 @@ public partial class LinkToDocuments(string baseDirectory, string filePath) : IM
         var codeSpans = CodeSpans.Find(markdownContext.Markdown, markdownContext.Pipeline);
 
         var markdown = markdownContext.Markdown;
+        List<string>? filesAround = null;
         markdownContext.Markdown = FileNameRegex().Replace(markdown, m =>
         {
             if (Skip(markdown, m, codeSpans)) return m.Value;
@@ -89,7 +99,9 @@ public partial class LinkToDocuments(string baseDirectory, string filePath) : IM
             if (!matchingFile.Exists)
             {
                 // look for the file in the folders around the source directory
-                var matchingFilePath = Directory.GetFiles(Path.GetDirectoryName(baseDirectory) ?? "", "*.md", SearchOption.AllDirectories)
+                // (only once per document, this can be a large folder)
+                filesAround ??= FindFiles(Path.GetDirectoryName(baseDirectory) ?? baseDirectory, "*.md");
+                var matchingFilePath = filesAround
                     .FirstOrDefault(x => Path.GetFileName(x).Equals(linkedFileName, StringComparison.OrdinalIgnoreCase));
                 if (matchingFilePath != null) matchingFile = new FileInfo(matchingFilePath);
             }

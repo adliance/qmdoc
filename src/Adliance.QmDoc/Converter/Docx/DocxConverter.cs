@@ -58,11 +58,15 @@ public partial class DocxConverter(DocxParameters parameters, Options.Options op
         foreach (var e in context.Errors) Program.WriteLine($"\t\t {e.ErrorMessage}");
 
         var tempPath = Path.GetTempFileName();
-        document.SaveAs(tempPath).Close();
-
-        var bytes = await File.ReadAllBytesAsync(tempPath);
-        File.Delete(tempPath);
-        return bytes;
+        try
+        {
+            document.SaveAs(tempPath).Close();
+            return await File.ReadAllBytesAsync(tempPath);
+        }
+        finally
+        {
+            File.Delete(tempPath);
+        }
     }
 
     protected override void PrepareAdditionalProcessors(ConverterFile file, IList<IMarkdownProcessor> markdownProcessors)

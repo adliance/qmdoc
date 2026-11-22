@@ -172,7 +172,7 @@ public sealed class DocxConverterTests : IDisposable
         using var document = await Convert(Lines("---", "title: Mein Dokument", "author: Max Muster", "---", "Text"));
         var paragraphs = Paragraphs(document);
         Assert.Equal("Mein Dokument", paragraphs[0]);
-        Assert.Equal("Max Muster, Adliance GmbH", paragraphs[1]);
+        Assert.Equal("Max Muster", paragraphs[1]);
     }
 
     [Theory]

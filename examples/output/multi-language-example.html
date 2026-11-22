@@ -192,12 +192,13 @@ ul {
     list-style: none;
 
     li {
-        text-indent: calc(var(--margin-base) * -2);
+        position: relative;
     }
 
     li::before {
         content: "•";
-        padding-right: 10px;
+        position: absolute;
+        left: calc(var(--margin-base) * -1.5);
         color: var(--color-li);
     }
 }
@@ -459,13 +460,13 @@ div.document-author {
 
 
 <script type="module">
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
 
-    mermaid.initialize({
-        startOnLoad: true,
-        theme: "base",
-        themeVariables: {}
-    });
+mermaid.initialize({
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: {}
+});
 </script>
 </body>
 </html>

@@ -61,4 +61,15 @@ public class GitVersionsPlaceholderTests
     {
         Assert.Equal("{{!}} Dieses Dokument befindet sich nicht in Versionskontrolle.", new GitVersionsPlaceholder([]).Apply("{{ GIT_VERSIONS }}").Markdown);
     }
+
+    [Fact]
+    public void Apply_CommitMessageWithPipeAndHtml_StaysInItsCell()
+    {
+        var change = new GitService.Change { Author = "A <b>", Date = new DateTimeOffset(2026, 1, 2, 0, 0, 0, TimeSpan.Zero), Sha = "0123456789", Message = "Use a | b for <x>", MessageShort = "Use a | b for <x>" };
+        var context = new GitVersionsPlaceholder([change]).Apply("{{ GIT_VERSIONS }}");
+        var html = Markdig.Markdown.ToHtml(context.Markdown, context.Pipeline);
+        Assert.Contains("<td>Use a | b for &lt;x&gt;</td>", html);
+        Assert.Contains("&lt;b&gt;</td>", html);
+        Assert.DoesNotContain("<b>", html);
+    }
 }

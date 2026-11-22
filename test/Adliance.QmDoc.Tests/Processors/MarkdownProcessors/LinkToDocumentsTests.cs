@@ -207,4 +207,14 @@ public sealed class LinkToDocumentsTests : IDisposable
     {
         Assert.Empty(Link("[v1.2]").Errors);
     }
+
+    [Theory]
+    [InlineData("[1.2]")]
+    [InlineData("[see fig. 3.1]")]
+    public void Apply_NumbersAreNoFileNames(string text)
+    {
+        var context = Link($"See {text}.");
+        Assert.Equal($"See {text}.", context.Markdown);
+        Assert.Empty(context.Errors);
+    }
 }

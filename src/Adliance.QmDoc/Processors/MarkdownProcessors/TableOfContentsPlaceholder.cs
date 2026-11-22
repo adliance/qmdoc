@@ -15,12 +15,16 @@ public class TableOfContentsPlaceholder : IMarkdownProcessor
 {
     public static bool ContainsTocPlaceholder(MarkdownProcessorContext markdownContext)
     {
-        return markdownContext.ContainsPlaceholderInSource("TOC");
+        return markdownContext.ContainsToc || markdownContext.ContainsPlaceholderInSource("TOC");
     }
 
     public MarkdownProcessorContext Apply(MarkdownProcessorContext markdownContext)
     {
+        if (!markdownContext.ContainsPlaceholder("TOC")) return markdownContext;
+
+        var before = markdownContext.Markdown;
         markdownContext.ReplacePlaceholder("TOC", BuildToc(markdownContext));
+        if (markdownContext.Markdown != before) markdownContext.ContainsToc = true; // not if it's only shown in code
         return markdownContext;
     }
 
@@ -37,7 +41,7 @@ public class TableOfContentsPlaceholder : IMarkdownProcessor
         sb.AppendLine("|-|-:|");
         foreach (var heading in document.Descendants<HeadingBlock>())
         {
-            var text = ExtractText(heading);
+            var text = LinkToChapters.ExtractText(heading);
             if (string.IsNullOrWhiteSpace(text)) continue;
 
             // count all headings (also the ones not shown in the TOC), because all of them are part of the PDF outline
@@ -55,7 +59,9 @@ public class TableOfContentsPlaceholder : IMarkdownProcessor
 
             // use the id Markdig actually assigned, as it differs from the title for duplicate headings (e.g. "open-questions-1")
             var id = heading.GetAttributes().Id ?? LinkToChapters.GetChapterId(text);
-            sb.AppendLine(CultureInfo.InvariantCulture, $"| {indentText}[{text}](#{id}) | {pageText} |");
+            // "|" would end the table cell, "[" and "]" the link
+            var linkText = text.Replace("\\", "\\\\").Replace("|", "\\|").Replace("[", "\\[").Replace("]", "\\]");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"| {indentText}[{linkText}](#{id}) | {pageText} |");
         }
 
         sb.AppendLine("");
@@ -100,14 +106,4 @@ public class TableOfContentsPlaceholder : IMarkdownProcessor
         return title.Trim().Replace(" ", "").Replace("‐", "");
     }
 
-    private static string ExtractText(HeadingBlock heading)
-    {
-        var sb = new StringBuilder();
-        if (heading.Inline == null) return string.Empty;
-
-        foreach (var inline in heading.Inline.Descendants<LiteralInline>())
-            sb.Append(inline.Content.ToString());
-
-        return sb.ToString().Trim();
-    }
 }

@@ -108,7 +108,7 @@ public sealed class HtmlConverterTests : IDisposable
     public async Task Run_FullDocument_AddsAuthorLine()
     {
         var (html, _) = await ConvertFullDocument();
-        Assert.Contains("<div class=\"document-author\"><span class=\"name\">Hannes Sachsenhofer</span>, Adliance GmbH</div>", html);
+        Assert.Contains("<div class=\"document-author\"><span class=\"name\">Hannes Sachsenhofer</span></div>", html);
     }
 
     [Fact]
@@ -427,7 +427,7 @@ public sealed class HtmlConverterTests : IDisposable
         var converter = new CapturingHtmlConverter(new HtmlParameters { Source = _dir.Combine("src"), Target = _dir.Combine("out") }, saveMarkdown: true);
         await converter.Run();
 
-        Assert.Equal(3, converter.Results.Count);
+        Assert.Equal(4, converter.Results.Count);
         foreach (var (file, context) in converter.Results)
         {
             Assert.True(_dir.Exists("out/" + Path.ChangeExtension(file.SourceRelativePath, ".html")));

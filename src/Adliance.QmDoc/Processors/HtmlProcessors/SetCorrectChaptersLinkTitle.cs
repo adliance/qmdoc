@@ -7,25 +7,36 @@ using Markdig.Helpers;
 
 namespace Adliance.QmDoc.Processors.HtmlProcessors;
 
-public class SetCorrectChaptersLinkTitle(string filePath) : IHtmlProcessor
+public partial class SetCorrectChaptersLinkTitle(string filePath) : IHtmlProcessor
 {
+    [GeneratedRegex("<span class=\"link-to-chapter\"><i></i><a href=\"#[^\"]*\">.*?</a>")]
+    private static partial Regex ChapterLinkRegex();
+
+    [GeneratedRegex("<div class=\"toc\">.*?</div>", RegexOptions.Singleline)]
+    private static partial Regex TableOfContentsRegex();
+
     public HtmlProcessorResult Apply(string html)
     {
         html = RewriteLegacyAsciiAnchors(html);
         var resultingHtml = html;
 
-        var hMatches = Regex.Matches(html, "<h\\d id=\"(.*?)\"(?: data-line=\"\\d+\")?>(.*?)</");
+        var hMatches = Regex.Matches(html, "<h\\d id=\"(.*?)\"(?: data-line=\"\\d+\")?>(.*?)</h\\d>");
         foreach (Match? m in hMatches)
         {
             if (m == null) continue;
 
             var id = m.Groups[1].Value;
-            var title = m.Groups[2].Value;
+            // the whole heading including formatting like <code>, but without links (eg. footnotes), which can't be nested
+            var title = Regex.Replace(m.Groups[2].Value, "</?a( [^>]*)?>", "");
 
             // Markdig percent-encodes non-ASCII characters in links, but not in ids
             var href = Uri.EscapeDataString(id);
-            var link = $"<a href=\"#{href}\">{(title ?? "").RemoveMultipleNbsp().Trim()}</a>";
-            resultingHtml = Regex.Replace(resultingHtml, $"<a href=\"#(?:{Regex.Escape(id)}|{Regex.Escape(href)})\">.*?</a>", _ => link);
+            var link = $"<a href=\"#{href}\">{title.RemoveMultipleNbsp().Trim()}</a>";
+            var linkRegex = new Regex($"<a href=\"#(?:{Regex.Escape(id)}|{Regex.Escape(href)})\">.*?</a>");
+
+            // only chapter links ("[#Chapter]") and the table of contents show the title of the chapter, other links to it ("[see above](#chapter)") keep their text
+            resultingHtml = ChapterLinkRegex().Replace(resultingHtml, c => linkRegex.Replace(c.Value, _ => link));
+            resultingHtml = TableOfContentsRegex().Replace(resultingHtml, c => linkRegex.Replace(c.Value, _ => link));
         }
 
         var result = new HtmlProcessorResult(resultingHtml);

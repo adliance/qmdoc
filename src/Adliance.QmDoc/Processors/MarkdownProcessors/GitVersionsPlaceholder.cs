@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 
 namespace Adliance.QmDoc.Processors.MarkdownProcessors;
@@ -21,9 +22,9 @@ public class GitVersionsPlaceholder(IList<GitService.Change> changes): IMarkdown
             {
                 var details = GetDetails(change);
                 replacement += $"\n| {change.Date.ToString("dd. MM. yyyy", new CultureInfo("de-DE")).Replace(" ", "&nbsp;")} |" +
-                               $" {change.Author.Replace(" ", "&nbsp;")} |" +
+                               $" {Cell(change.Author).Replace(" ", "&nbsp;")} |" +
                                $" {change.ShaShort} |" +
-                               $" {change.MessageShort}{(details.Length == 0 ? "" : $" <span class=\"git-version-details\"> {details}</span>")} |";
+                               $" {Cell(change.MessageShort)}{(details.Length == 0 ? "" : $" <span class=\"git-version-details\"> {Cell(details)}</span>")} |";
             }
         }
         else
@@ -34,6 +35,11 @@ public class GitVersionsPlaceholder(IList<GitService.Change> changes): IMarkdown
         markdownContext.ReplacePlaceholder(Placeholder, replacement);
         return markdownContext;
     }
+
+    /// <summary>
+    /// Commit messages are text, "<x>" is shown as it is and "a | b" doesn't end the table cell.
+    /// </summary>
+    private static string Cell(string text) => WebUtility.HtmlEncode(text).Replace("|", "\\|");
 
     /// <summary>
     /// The rest of the commit message after the first line, in a single line (the table cell can't contain line breaks).

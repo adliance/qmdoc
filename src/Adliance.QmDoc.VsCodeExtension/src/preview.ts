@@ -1,3 +1,4 @@
+import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
@@ -26,6 +27,8 @@ export class PreviewManager implements vscode.Disposable {
     private generation = 0;
     private running = false;
     private pending = false;
+    /** Kills the running QmDoc when another document is previewed or the preview is closed. */
+    private abortController?: AbortController;
     private timer?: NodeJS.Timeout;
     private timerIsNewLine = false;
     /** The <head> of the currently shown HTML. As long as it doesn't change, only the <body> is replaced, which keeps the scroll position. */
@@ -58,7 +61,7 @@ export class PreviewManager implements vscode.Disposable {
                 if (this.scrollSync()) void this.panel.webview.postMessage({ type: 'scrollToLine', line: this.editorLine });
             }),
             vscode.workspace.onDidChangeConfiguration(e => {
-                if (e.affectsConfiguration('qmdoc.preview')) this.convertNow();
+                if (e.affectsConfiguration('qmdoc.preview.theme') || e.affectsConfiguration('qmdoc.preview.additionalArguments')) this.convertNow();
             })
         );
     }
@@ -77,7 +80,8 @@ export class PreviewManager implements vscode.Disposable {
      * Restores a preview after VS Code was restarted.
      */
     public restore(panel: vscode.WebviewPanel, state: PreviewState | undefined): void {
-        if (this.panel || !state?.uri) {
+        // unsaved documents are gone after a restart, opening their URI would create a new empty document
+        if (this.panel || !state?.uri || !state.uri.startsWith('file:')) {
             panel.dispose();
             return;
         }
@@ -114,6 +118,7 @@ export class PreviewManager implements vscode.Disposable {
             this.shownHead = undefined;
             this.generation++;
             this.clearTimer();
+            this.abortController?.abort();
             void vscode.commands.executeCommand('setContext', 'qmdoc.previewVisible', false);
         });
         panel.webview.onDidReceiveMessage(message => {
@@ -126,6 +131,7 @@ export class PreviewManager implements vscode.Disposable {
         this.documentUri = uri;
         this.editorLine = vscode.window.visibleTextEditors.find(e => e.document.uri.toString() === uri.toString())?.visibleRanges[0]?.start.line;
         this.generation++;
+        this.abortController?.abort();
         this.shownHead = undefined;
         this.panel.title = `QmDoc Preview: ${path.basename(uri.path)}`;
         this.panel.webview.html = this.messagePage('Converting …');
@@ -188,8 +194,10 @@ export class PreviewManager implements vscode.Disposable {
         }
 
         this.running = true;
-        void this.convert(this.documentUri, this.generation).finally(() => {
+        this.abortController = new AbortController();
+        void this.convert(this.documentUri, this.generation, this.abortController.signal).finally(() => {
             this.running = false;
+            this.abortController = undefined;
             if (this.pending) {
                 this.pending = false;
                 this.convertNow();
@@ -197,19 +205,29 @@ export class PreviewManager implements vscode.Disposable {
         });
     }
 
-    private async convert(uri: vscode.Uri, generation: number): Promise<void> {
-        let document: vscode.TextDocument;
-        try {
-            document = await vscode.workspace.openTextDocument(uri);
-        } catch (error) {
-            this.showError(`Unable to open ${uri.fsPath}: ${error}`);
-            return;
+    private async convert(uri: vscode.Uri, generation: number, signal: AbortSignal): Promise<void> {
+        let document: vscode.TextDocument | undefined;
+        if (uri.scheme === 'file') {
+            try {
+                document = await vscode.workspace.openTextDocument(uri);
+            } catch (error) {
+                this.showError(`Unable to open ${uri.fsPath}: ${error}`);
+                return;
+            }
+        } else {
+            // opening the URI of a closed unsaved document would create a new empty one
+            document = vscode.workspace.textDocuments.find(d => d.uri.toString() === uri.toString());
+            if (!document) {
+                this.showError(`${path.basename(uri.path)} was closed.`);
+                return;
+            }
         }
+        const previewed = document;
 
         const config = vscode.workspace.getConfiguration('qmdoc.preview');
         const sourcePath = this.sourcePath(document);
         const started = Date.now();
-        const convert = () => convertToHtml(document.getText(), sourcePath, config.get<string>('theme', ''), config.get<string[]>('additionalArguments', []));
+        const convert = () => convertToHtml(previewed.getText(), sourcePath, config.get<string>('theme', ''), config.get<string[]>('additionalArguments', []), signal);
         await this.installer.whenReady(); // don't run QmDoc while it's being updated
         let result = await convert();
         if (result.needsInstall && !this.installAttempted && vscode.workspace.getConfiguration('qmdoc').get<boolean>('autoUpdate', true)) {
@@ -218,7 +236,7 @@ export class PreviewManager implements vscode.Disposable {
             if (generation !== this.generation || !this.panel) return;
             result = await convert();
         }
-        if (generation !== this.generation || !this.panel) return;
+        if (generation !== this.generation || !this.panel || result.aborted) return;
 
         if (!result.html) {
             this.output.appendLine(`[${new Date().toLocaleTimeString()}] ${sourcePath} failed: ${result.error}`);
@@ -260,11 +278,19 @@ export class PreviewManager implements vscode.Disposable {
         this.panel.webview.html = this.injectPreviewScript(html, problems, uri);
     }
 
+    /**
+     * Only the preview script and QmDoc's Mermaid snippet may run (they get a nonce), scripts and event handlers in the
+     * previewed document (eg. a cloned repository) are blocked by the content security policy.
+     */
     private injectPreviewScript(html: string, problems: string[], uri: vscode.Uri): string {
+        const nonce = crypto.randomBytes(16).toString('base64');
         const settings = JSON.stringify({ uri: uri.toString(), problems, line: this.syncLine() }).replace(/</g, '\\u003c');
-        const script = `<script>window.qmdocPreview = ${settings};\n${this.previewScript}</script>`;
-        // a function as replacement, so that "$" in the script or in the problems isn't interpreted as a replacement pattern
-        return /<\/body>/i.test(html) ? html.replace(/<\/body>(?![\s\S]*<\/body>)/i, () => `${script}</body>`) : html + script;
+        const script = `<script nonce="${nonce}">window.qmdocPreview = ${settings};\n${this.previewScript}</script>`;
+        // functions as replacement, so that "$" in the script or in the problems isn't interpreted as a replacement pattern
+        let result = html.replace(/<script type="module">(\s*import mermaid from 'https:\/\/cdn\.jsdelivr\.net\/)/g, (_, start: string) => `<script type="module" nonce="${nonce}">${start}`);
+        result = /<\/body>/i.test(result) ? result.replace(/<\/body>(?![\s\S]*<\/body>)/i, () => `${script}</body>`) : result + script;
+        const csp = `<meta http-equiv="Content-Security-Policy" content="${contentSecurityPolicy(nonce)}">`;
+        return /<head[^>]*>/i.test(result) ? result.replace(/<head[^>]*>/i, head => head + csp) : csp + result;
     }
 
     private showError(message: string): void {
@@ -278,15 +304,17 @@ export class PreviewManager implements vscode.Disposable {
 
     private messagePage(message: string, isError = false): string {
         const uri = JSON.stringify({ uri: this.documentUri?.toString(), problems: [] }).replace(/</g, '\\u003c');
+        const nonce = crypto.randomBytes(16).toString('base64');
         return `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="${contentSecurityPolicy(nonce)}">
 <style>
 body { font-family: var(--vscode-font-family); color: ${isError ? 'var(--vscode-errorForeground)' : 'var(--vscode-descriptionForeground)'}; padding: 2em; white-space: pre-wrap; }
 </style>
 </head>
-<body>${escapeHtml(message)}<script>window.qmdocPreview = ${uri};\n${this.previewScript}</script></body>
+<body>${escapeHtml(message)}<script nonce="${nonce}">window.qmdocPreview = ${uri};\n${this.previewScript}</script></body>
 </html>`;
     }
 
@@ -300,7 +328,7 @@ body { font-family: var(--vscode-font-family); color: ${isError ? 'var(--vscode-
         }
         if (!this.documentUri || this.documentUri.scheme !== 'file') return;
 
-        const relativePath = decodeURIComponent(href.split('#')[0].split('?')[0]);
+        const relativePath = decodeUri(href.split('#')[0].split('?')[0]);
         if (!relativePath) return;
         let target = path.resolve(path.dirname(this.documentUri.fsPath), relativePath);
         if (/\.(pdf|html|docx)$/i.test(target)) {
@@ -319,6 +347,29 @@ body { font-family: var(--vscode-font-family); color: ${isError ? 'var(--vscode-
         } else {
             await vscode.commands.executeCommand('vscode.open', targetUri);
         }
+    }
+}
+
+/**
+ * Images are embedded by QmDoc (data URIs) or come from the web, fonts from Google Fonts, Mermaid from jsdelivr.
+ * Inline styles are needed by the themes and Mermaid.
+ */
+function contentSecurityPolicy(nonce: string): string {
+    return [
+        "default-src 'none'",
+        'img-src data: https:',
+        "style-src 'unsafe-inline' https:",
+        'font-src data: https:',
+        `script-src 'nonce-${nonce}' https://cdn.jsdelivr.net`
+    ].join('; ');
+}
+
+/** "50%.md" is not a valid encoded URI, it's used as it is. */
+function decodeUri(text: string): string {
+    try {
+        return decodeURIComponent(text);
+    } catch {
+        return text;
     }
 }
 

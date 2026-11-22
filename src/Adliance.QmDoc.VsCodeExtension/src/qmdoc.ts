@@ -14,6 +14,8 @@ export interface ConversionResult {
     error?: string;
     /** Set when QmDoc is missing or too old, which an installation or update fixes. */
     needsInstall?: boolean;
+    /** Set when the conversion was cancelled (eg. because another document is previewed now). */
+    aborted?: boolean;
 }
 
 const timeoutMs = 120_000;
@@ -39,15 +41,16 @@ export function resetExecutable(): void {
 /**
  * Runs "qmdoc html --stdin --stdout" for the given Markdown.
  * @param sourcePath Path of the Markdown file the text belongs to. QmDoc uses it to resolve includes, images and links, it does not need to exist.
+ * @param signal kills QmDoc when aborted
  */
-export async function convertToHtml(markdown: string, sourcePath: string, theme: string, additionalArguments: string[]): Promise<ConversionResult> {
+export async function convertToHtml(markdown: string, sourcePath: string, theme: string, additionalArguments: string[], signal?: AbortSignal): Promise<ConversionResult> {
     const args = ['html', '--stdin', '--stdout', '--source-lines', '--source', sourcePath];
     if (theme.trim()) args.push('--theme', theme.trim());
     args.push(...additionalArguments);
 
     const executables = resolvedExecutable ? [resolvedExecutable] : candidates();
     for (const executable of executables) {
-        const result = await run(executable, args, markdown, path.dirname(sourcePath));
+        const result = await run(executable, args, markdown, path.dirname(sourcePath), signal);
         if (result === 'not-found') continue;
         resolvedExecutable = executable;
         return result;
@@ -62,8 +65,13 @@ export async function convertToHtml(markdown: string, sourcePath: string, theme:
     };
 }
 
-function run(executable: string, args: string[], stdin: string, cwd: string): Promise<ConversionResult | 'not-found'> {
+function run(executable: string, args: string[], stdin: string, cwd: string, signal?: AbortSignal): Promise<ConversionResult | 'not-found'> {
     return new Promise(resolve => {
+        if (signal?.aborted) {
+            resolve({ problems: [], log: '', aborted: true, error: 'Cancelled.' });
+            return;
+        }
+
         const child = spawn(executable, args, { cwd: existingDirectory(cwd), windowsHide: true });
         const stdout: Buffer[] = [];
         const stderr: Buffer[] = [];
@@ -72,8 +80,14 @@ function run(executable: string, args: string[], stdin: string, cwd: string): Pr
             if (settled) return;
             settled = true;
             clearTimeout(timer);
+            signal?.removeEventListener('abort', abort);
             resolve(result);
         };
+        const abort = () => {
+            child.kill();
+            finish({ problems: [], log: '', aborted: true, error: 'Cancelled.' });
+        };
+        signal?.addEventListener('abort', abort);
 
         const timer = setTimeout(() => {
             child.kill();
@@ -90,7 +104,7 @@ function run(executable: string, args: string[], stdin: string, cwd: string): Pr
             const log = Buffer.concat(stderr).toString('utf8');
             const html = Buffer.concat(stdout).toString('utf8');
             if (/Option '(stdin|stdout|source-lines)' is unknown/i.test(log)) {
-                finish({ problems: [], log, needsInstall: true, error: 'The installed QmDoc is too old for the preview. Please update it with "dotnet tool update -g Adliance.QmDoc".' });
+                finish({ problems: [], log, needsInstall: true, error: 'The installed QmDoc is too old for the preview, which needs the --stdin, --stdout and --source-lines options. Run "QmDoc: Install or Update QmDoc" to update it.' });
                 return;
             }
             if (code !== 0 || !html) {

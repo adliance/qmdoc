@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.RegularExpressions;
 
 namespace Adliance.QmDoc.Processors.HtmlProcessors;
@@ -8,7 +9,7 @@ public class AuthorLine(string? author) : IHtmlProcessor
     {
         if (!string.IsNullOrWhiteSpace(author))
         {
-            var authorSnippet = $"<div class=\"document-author\"><span class=\"name\">{author}</span>, Adliance GmbH</div>";
+            var authorSnippet = $"<div class=\"document-author\"><span class=\"name\">{WebUtility.HtmlEncode(author)}</span></div>";
             html = authorSnippet + html;
             return new HtmlProcessorResult(html);
         }

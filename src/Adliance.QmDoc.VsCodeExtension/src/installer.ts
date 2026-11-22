@@ -1,4 +1,5 @@
 import { spawn } from 'child_process';
+import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
@@ -8,6 +9,10 @@ const packageId = 'Adliance.QmDoc';
 const nugetVersionsUrl = 'https://api.nuget.org/v3-flatcontainer/adliance.qmdoc/index.json';
 const checkIntervalMs = 24 * 60 * 60 * 1000;
 const lastCheckKey = 'qmdoc.lastToolCheck';
+const dotnetTimeoutMs = 5 * 60 * 1000;
+/** All VS Code windows start at the same time after a restart, only one of them installs or updates QmDoc. */
+const lockFile = path.join(os.tmpdir(), 'qmdoc-vscode-tool-check.lock');
+const lockTimeoutMs = 10 * 60 * 1000;
 
 /**
  * Installs QmDoc as .NET global tool if it's missing, and updates it when there's a newer stable version on NuGet.
@@ -43,12 +48,25 @@ export class ToolInstaller {
         const lastCheck = this.globalState.get<number>(lastCheckKey, 0);
         if (!force && Date.now() - lastCheck < checkIntervalMs) return;
 
+        if (!acquireLock()) {
+            this.output.appendLine('QmDoc is checked or updated by another VS Code window.');
+            if (interactive) void vscode.window.showInformationMessage('QmDoc is being checked or updated by another VS Code window.');
+            return;
+        }
+        try {
+            await this.checkAndUpdate(interactive);
+        } finally {
+            fs.rmSync(lockFile, { force: true });
+        }
+    }
+
+    private async checkAndUpdate(interactive: boolean): Promise<void> {
         const list = await dotnet(['tool', 'list', '-g']);
         if (list === 'not-found') {
             this.showDotnetMissing();
             return;
         }
-        const installed = /^adliance\.qmdoc\s+(\S+)/im.exec(list.stdout)?.[1];
+        const installed = installedVersion(list.stdout);
         const latest = await latestVersion();
         this.output.appendLine(`QmDoc installed: ${installed ?? 'no'}, latest: ${latest ?? 'unknown (offline?)'}`);
 
@@ -85,6 +103,30 @@ export class ToolInstaller {
             if (action) void vscode.env.openExternal(vscode.Uri.parse('https://dotnet.microsoft.com/download'));
         });
     }
+}
+
+function installedVersion(toolList: string): string | undefined {
+    return /^adliance\.qmdoc\s+(\S+)/im.exec(toolList)?.[1];
+}
+
+/**
+ * Creates the lock file, or returns false if another window holds it (unless it's so old that the window probably crashed).
+ */
+function acquireLock(): boolean {
+    for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+            fs.writeFileSync(lockFile, String(process.pid), { flag: 'wx' });
+            return true;
+        } catch {
+            try {
+                if (Date.now() - fs.statSync(lockFile).mtimeMs < lockTimeoutMs) return false;
+                fs.rmSync(lockFile, { force: true });
+            } catch {
+                // removed in the meantime, try again
+            }
+        }
+    }
+    return false;
 }
 
 async function latestVersion(): Promise<string | undefined> {
@@ -129,10 +171,21 @@ async function dotnet(args: string[]): Promise<{ code: number | null; stdout: st
             const child = spawn(executable, args, { windowsHide: true, env: { ...process.env, DOTNET_NOLOGO: '1' } });
             let stdout = '';
             let stderr = '';
+            // eg. a credential provider of a private NuGet feed waiting for input, the preview waits for the installation
+            const timer = setTimeout(() => {
+                child.kill();
+                resolve({ code: -1, stdout, stderr: `${stderr}\ndotnet did not finish within ${dotnetTimeoutMs / 60_000} minutes.` });
+            }, dotnetTimeoutMs);
             child.stdout.on('data', chunk => stdout += chunk);
             child.stderr.on('data', chunk => stderr += chunk);
-            child.on('error', (error: NodeJS.ErrnoException) => resolve(error.code === 'ENOENT' ? 'not-found' : { code: -1, stdout, stderr: String(error) }));
-            child.on('close', code => resolve({ code, stdout, stderr }));
+            child.on('error', (error: NodeJS.ErrnoException) => {
+                clearTimeout(timer);
+                resolve(error.code === 'ENOENT' ? 'not-found' : { code: -1, stdout, stderr: String(error) });
+            });
+            child.on('close', code => {
+                clearTimeout(timer);
+                resolve({ code, stdout, stderr });
+            });
         });
         if (result !== 'not-found') return result;
     }

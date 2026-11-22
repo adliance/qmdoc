@@ -44,36 +44,53 @@ public abstract partial class Converter(TargetExtension targetExtension, CommonC
             throw new InvalidOperationException($"--stdout only works for a single file, but {files.Count} files were found in {parameters.Source}. Please specify a single file with --source.");
         }
 
+        // a broken file (eg. an invalid frontmatter) doesn't stop the conversion of the other files
+        var failed = new List<string>();
         foreach (var f in files)
         {
-            Program.WriteLine(f.SourceRelativePath + " ...");
-            var markdownContext = parameters.Stdin ? InitFromStandardInput() : InitFromSourceFile(f);
-            markdownContext = RunMarkdownProcessors(f, markdownContext);
-            Program.WriteLine($"\tMarkdown ({markdownContext.Markdown.Length.Bytes().Humanize(CultureInfo.CurrentCulture)})");
+            try
+            {
+                await ConvertFile(f);
+            }
+            catch (Exception ex) when (files.Count > 1)
+            {
+                Program.WriteLine($"\t\t Unable to convert {f.SourceRelativePath}: {Program.Describe(ex)}");
+                failed.Add(f.SourceRelativePath);
+            }
+        }
 
-            if (!parameters.Stdout) EnsureTargetDirectory(f);
+        if (failed.Count > 0) throw new InvalidOperationException($"{failed.Count} of {files.Count} files could not be converted: {string.Join(", ", failed)}");
+    }
 
-            var resultingBytes = await Convert(f, markdownContext);
-            var destination = parameters.Stdout ? "stdout" : f.TargetAbsolutePath;
-            if (targetExtension == TargetExtension.Pdf)
-            {
-                Program.WriteLine($"\tPDF (Theme: {markdownContext.Theme}, {resultingBytes.Length.Bytes().Humanize(CultureInfo.CurrentCulture)}) -> {destination}");
-            }
-            else
-            {
-                Program.WriteLine($"\t{targetExtension.ToString().ToUpper()} ({resultingBytes.Length.Bytes().Humanize(CultureInfo.CurrentCulture)}) -> {destination}");
-            }
+    private async Task ConvertFile(ConverterFile f)
+    {
+        Program.WriteLine(f.SourceRelativePath + " ...");
+        var markdownContext = parameters.Stdin ? InitFromStandardInput() : InitFromSourceFile(f);
+        markdownContext = RunMarkdownProcessors(f, markdownContext);
+        Program.WriteLine($"\tMarkdown ({markdownContext.Markdown.Length.Bytes().Humanize(CultureInfo.CurrentCulture)})");
 
-            if (parameters.Stdout)
-            {
-                var stdout = OpenStandardOutput();
-                await stdout.WriteAsync(resultingBytes);
-                await stdout.FlushAsync();
-            }
-            else
-            {
-                await File.WriteAllBytesAsync(f.TargetAbsolutePath, resultingBytes);
-            }
+        if (!parameters.Stdout) EnsureTargetDirectory(f);
+
+        var resultingBytes = await Convert(f, markdownContext);
+        var destination = parameters.Stdout ? "stdout" : f.TargetAbsolutePath;
+        if (targetExtension == TargetExtension.Pdf)
+        {
+            Program.WriteLine($"\tPDF (Theme: {markdownContext.Theme}, {resultingBytes.Length.Bytes().Humanize(CultureInfo.CurrentCulture)}) -> {destination}");
+        }
+        else
+        {
+            Program.WriteLine($"\t{targetExtension.ToString().ToUpper()} ({resultingBytes.Length.Bytes().Humanize(CultureInfo.CurrentCulture)}) -> {destination}");
+        }
+
+        if (parameters.Stdout)
+        {
+            var stdout = OpenStandardOutput();
+            await stdout.WriteAsync(resultingBytes);
+            await stdout.FlushAsync();
+        }
+        else
+        {
+            await File.WriteAllBytesAsync(f.TargetAbsolutePath, resultingBytes);
         }
     }
 
@@ -166,17 +183,30 @@ public abstract partial class Converter(TargetExtension targetExtension, CommonC
     [GeneratedRegex(@" href=""(?![a-z][a-z0-9+.\-]*:|//)([^""]*?)\.html""", RegexOptions.IgnoreCase)]
     private static partial Regex LinkToConvertedDocumentRegex();
 
+    /// <summary>
+    /// The Git history of each file, it's needed for the document, the header and the footer (and again for the second pass of the PDF).
+    /// </summary>
+    private readonly Dictionary<string, List<GitService.Change>> _gitChanges = new();
+
     private MarkdownProcessorContext ApplyCommonPlaceholders(ConverterFile file, MarkdownProcessorContext context)
     {
         var gitChanges = new List<GitService.Change>();
 
-        // loading the Git history can be slow on large repositories, only load when really necessary
-        if (context.ContainsPlaceholderInSource(GitDateAndVersionPlaceholder.Placeholder, GitDatePlaceholder.Placeholder, GitVersionPlaceholder.Placeholder, GitVersionsPlaceholder.Placeholder)) {
-            gitChanges = GitService.GetVersions(
-                file.SourceAbsolutePath,
-                parameters.IgnoreGitCommitsSince,
-                parameters.IgnoreGitCommits.SplitCleanOrder(),
-                parameters.IgnoreGitCommitsWithout.SplitCleanOrder()).ToList();
+        // loading the Git history can be slow on large repositories, only load when really necessary;
+        // the current Markdown contains included files, or is a template of the theme (eg. the footer with the Git version)
+        if (context.ContainsPlaceholder(GitDateAndVersionPlaceholder.Placeholder, GitDatePlaceholder.Placeholder, GitVersionPlaceholder.Placeholder, GitVersionsPlaceholder.Placeholder))
+        {
+            if (!_gitChanges.TryGetValue(file.SourceAbsolutePath, out var cached))
+            {
+                cached = GitService.GetVersions(
+                    file.SourceAbsolutePath,
+                    parameters.IgnoreGitCommitsSince,
+                    parameters.IgnoreGitCommits.SplitCleanOrder(),
+                    parameters.IgnoreGitCommitsWithout.SplitCleanOrder()).ToList();
+                _gitChanges[file.SourceAbsolutePath] = cached;
+            }
+
+            gitChanges = cached;
         }
 
         var gitLatestChange = gitChanges.FirstOrDefault();
@@ -205,9 +235,16 @@ public abstract partial class Converter(TargetExtension targetExtension, CommonC
     {
         var previousMarkdown = markdownContext.Markdown;
         markdownContext.Markdown = applyPlaceholdersTo;
-        var result = ApplyCommonPlaceholders(file, markdownContext).Markdown;
-        markdownContext.Markdown = previousMarkdown;
-        return result;
+        markdownContext.IsTemplate = true;
+        try
+        {
+            return ApplyCommonPlaceholders(file, markdownContext).Markdown;
+        }
+        finally
+        {
+            markdownContext.Markdown = previousMarkdown;
+            markdownContext.IsTemplate = false;
+        }
     }
 
     private string GetTitle(ConverterFile file, MarkdownProcessorContext context)
@@ -226,11 +263,11 @@ public abstract partial class Converter(TargetExtension targetExtension, CommonC
         if (!string.IsNullOrWhiteSpace(context.Frontmatter.Theme)) context.Theme = context.Frontmatter.Theme;
         else if (parameters is ThemedConversionParameters themedParameters && !string.IsNullOrWhiteSpace(themedParameters.Theme)) context.Theme = themedParameters.Theme;
 
-        if (string.IsNullOrWhiteSpace(context.Theme)) context.Theme = "2026";
-        if (context.Theme.StartsWith("_"))
+        if (string.IsNullOrWhiteSpace(context.Theme)) context.Theme = ThemeProvider.DefaultTheme;
+        if (!ThemeProvider.Exists(context.Theme))
         {
-            Program.WriteLine($"\tTheme \"{context.Theme}\" is internal and cannot be used directly. Falling back to default theme.");
-            context.Theme = "2026";
+            Program.WriteLine($"\t\t Unknown theme \"{context.Theme}\", using the default theme \"{ThemeProvider.DefaultTheme}\" instead. Available themes: {string.Join(", ", ThemeProvider.AvailableThemes())}.");
+            context.Theme = ThemeProvider.DefaultTheme;
         }
 
         return context.Theme;
