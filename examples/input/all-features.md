@@ -3,10 +3,11 @@ title: QmDoc feature overview
 author: Hannes Sachsenhofer
 clientName: Adliance GmbH
 projectCode: QMD-2026
+hourlyRate: 135 €/h
 ---
 
 This example document is a showcase for all QmDoc features, using the latest 2026 theme. 
-It is built by calling `qmdoc pdf-html-markdown --source "./examples/input" --target "./examples/output"`.
+It is built by calling `qmdoc pdf-and-html-and-markdown --source "./examples/input" --target "./examples/output"`.
 
 
 # General QmDoc features
@@ -123,6 +124,65 @@ The table of contents also links to the chapters. Page numbers are only filled i
 And a full Git changelog of the current document is also available, formatted as a table:
 
 {{ GIT_VERSIONS }}
+
+# Calculations
+QmDoc calculates formulas written as `{{ = ... }}` (every calculation starts with `=`, just like in Excel). Units like hours and euros are kept throughout, minutes are converted to hours, and numbers are parsed and formatted according to the `culture` frontmatter setting (default `de-DE`). Results are written the same way the numbers in the formula are written, eg. `90€`, `90 €`, `€ 90` or `135,-`.
+
+## Calculations in text
+- `{{ = 145h * 2€ }}` = {{ = 145h * 2€ }} (multiplying with an amount of money is read as "at that price")
+- `{{ = 90min + 1h }}` = {{ = 90min + 1h }} (minutes are converted to hours)
+- `{{ = 290€ / 145h }}` = {{ = 290€ / 145h }} (compound units)
+- `{{ = 12h * 90 €/h }}` = {{ = 12h * 90 €/h }} (the hours cancel each other out)
+- `{{ = 1.200€ * 20% }}` = {{ = 1.200€ * 20% }}
+- `{{ = € 135,- * 8 }}` = {{ = € 135,- * 8 }}
+
+Frontmatter values are used by their name, without curly braces: at an hourly rate of {{ hourlyRate }}, the implementation takes {{ = 40h + 90min }} and costs {{ = (40h + 90min) * hourlyRate }}.
+
+## Calculations in tables
+Inside a table, square brackets refer to other cells: `[Costs]` is the "Costs" cell in the same row, `[Costs:Total net]` the one in the row whose first cell is "Total net", and `[Costs:3]` or `[4:3]` use the row and column numbers. `{{ = SUM }}` adds up all values above it, except other `{{ = SUM }}` cells, so subtotals are not counted twice.
+
+```markdown
+| Position          | Hours           | Rate    | Costs                    |
+|-------------------|----------------:|--------:|-------------------------:|
+| Concept           | 12h             | 135 €/h | {{ = [Hours] * [Rate] }} |
+| Implementation    | 40h             | 120 €/h | {{ = [Hours] * [Rate] }} |
+| Meetings          | 90min           | 135 €/h | {{ = [Hours] * [Rate] }} |
+| **Total net**     | **{{ = SUM }}** |         | **{{ = SUM }}**          |
+| VAT 20%           |                 |         | {{ = SUM * 20% }}        |
+| **Total gross**   |                 |         | **{{ = SUM }}**          |
+```
+
+| Position          | Hours           | Rate    | Costs                    |
+|-------------------|----------------:|--------:|-------------------------:|
+| Concept           | 12h             | 135 €/h | {{ = [Hours] * [Rate] }} |
+| Implementation    | 40h             | 120 €/h | {{ = [Hours] * [Rate] }} |
+| Meetings          | 90min           | 135 €/h | {{ = [Hours] * [Rate] }} |
+| **Total net**     | **{{ = SUM }}** |         | **{{ = SUM }}**          |
+| VAT 20%           |                 |         | {{ = SUM * 20% }}        |
+| **Total gross**   |                 |         | **{{ = SUM }}**          |
+
+Rows and columns don't need their complete text, as long as only one of them matches (`[Hours:Impl]` finds "Implementation"):
+
+```markdown
+| Phase              | Hours                                                          |
+|--------------------|---------------------------------------------------------------:|
+| Concept            | 12h                                                            |
+| Implementation     | 40h                                                            |
+| Testing            | {{ = [Hours:Impl] * 25% }}                                     |
+| Project management | {{ = ([Hours:Concept] + [Hours:Impl] + [Hours:Test]) * 10% }} |
+| **Total**          | **{{ = SUM }}**                                                |
+```
+
+| Phase              | Hours                                                          |
+|--------------------|---------------------------------------------------------------:|
+| Concept            | 12h                                                            |
+| Implementation     | 40h                                                            |
+| Testing            | {{ = [Hours:Impl] * 25% }}                                     |
+| Project management | {{ = ([Hours:Concept] + [Hours:Impl] + [Hours:Test]) * 10% }} |
+| **Total**          | **{{ = SUM }}**                                                |
+
+If a formula can't be calculated (eg. `{{ = 12h + 5€ }}`, because hours and euros can't be added), QmDoc writes a warning and leaves the formula in the document, so a missing value is never overlooked.
+
 
 # Images
 Images are automatically centered. Wide images are resized to fit the space, 

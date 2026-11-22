@@ -1,13 +1,18 @@
 <Solution>
   <Folder Name="/Solution Items/">
     <File Path="azure-pipelines.yml" />
-    <File Path="examples\all-features.md" />
     <File Path="examples\input\all-features.md" />
     <File Path="examples\input\multi-language-example.de.md" />
     <File Path="examples\input\multi-language-example.md" />
-    <File Path="examples\multi-language-example.de.md" />
-    <File Path="examples\multi-language-example.md" />
     <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Solution Items/examples/">
+    <File Path="examples\input\all-features.md" />
+    <File Path="examples\input\multi-language-example.de.md" />
+    <File Path="examples\input\multi-language-example.md" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/Adliance.QmDoc.Tests/Adliance.QmDoc.Tests.csproj" />
   </Folder>
   <Project Path="src/Adliance.QmDoc/Adliance.QmDoc.csproj" />
 </Solution>

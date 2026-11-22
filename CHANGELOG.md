@@ -13,6 +13,7 @@ All notable changes to QmDoc. New versions are built and published automatically
 - `culture` frontmatter setting for parsing and formatting numbers in calculations (default `de-DE`).
 - Chapter links also find chapters by a part of their title, eg. `[#Projektmeldung]` links to "Projektmeldung (Forschungsregister)", as long as only one chapter matches.
 - The README documents all QmDoc features and is now included in the NuGet package.
+- Examples for calculations in the feature showcase (`examples/input/all-features.md`).
 - This changelog.
 
 ## Changed
