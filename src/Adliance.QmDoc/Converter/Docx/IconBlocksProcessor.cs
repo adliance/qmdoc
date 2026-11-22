@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using DocumentFormat.OpenXml.Packaging;
@@ -6,23 +6,66 @@ using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Adliance.QmDoc.Converter.Docx;
 
-internal static class IconBlocksProcessor
+internal enum CalloutKind
 {
-    private sealed record IconBlockStyle(string Fill, string BorderColor);
+    Info,
+    Warning,
+    Danger
+}
 
-    private static readonly Dictionary<string, IconBlockStyle> Styles = new()
+/// <summary>
+/// Formats a paragraph like the callouts of the theme: a box with a colored border, filled with a lighter version of the color.
+/// </summary>
+internal static class Callout
+{
+    public static string GetColor(CalloutKind kind, DocxTheme theme) => kind switch
     {
-        ["!!"] = new("FCE4D6", "C55A11"), // danger  – light red,    orange-red border
-        ["!"] = new("D6E4F0", "2E74B5"), // alert   – light blue,   blue border
-        ["?"] = new("FFF2CC", "D6B656"), // question– light yellow,  amber border
+        CalloutKind.Warning => theme.WarningColor,
+        CalloutKind.Danger => theme.DangerColor,
+        _ => theme.InfoColor
     };
 
-    /// <summary>
-    /// "{{!}} Text", like in the HTML/PDF conversion (also "{{ ! }}" and "{!}"), followed by a space or the end of the paragraph.
-    /// </summary>
-    private static readonly Regex PrefixRegex = new(@"^\{\{?\s*(?<type>!!|!|\?)\s*\}\}?(?:\s+|$)", RegexOptions.Compiled);
+    public static void Apply(Paragraph paragraph, CalloutKind kind, DocxTheme theme)
+    {
+        var color = GetColor(kind, theme);
 
-    internal static void Apply(WordprocessingDocument document)
+        // CSS: 1px border, 2 * margin-base padding, background color-mix(in oklch, color 40%, white)
+        var padding = (uint)Math.Min(31, Math.Round(theme.ToPoints(theme.MarginBasePx * 2)));
+        var indentation = (padding * 20 + 10).ToXml(); // padding and border, so that the box is aligned with the text
+
+        var pPr = paragraph.ParagraphProperties ??= new ParagraphProperties();
+        pPr.KeepLines = new KeepLines();
+        pPr.ParagraphBorders = new ParagraphBorders(
+            new TopBorder { Val = BorderValues.Single, Color = color, Size = 4, Space = padding },
+            new LeftBorder { Val = BorderValues.Single, Color = color, Size = 4, Space = padding },
+            new BottomBorder { Val = BorderValues.Single, Color = color, Size = 4, Space = padding },
+            new RightBorder { Val = BorderValues.Single, Color = color, Size = 4, Space = padding });
+        pPr.Shading = new Shading { Val = ShadingPatternValues.Clear, Color = "auto", Fill = DocxTheme.MixWithWhite(color, 40) };
+        pPr.SpacingBetweenLines = new SpacingBetweenLines
+        {
+            Before = (padding * 20).ToXml(),
+            After = (theme.ToTwips(theme.MarginBasePx * 2) + padding * 20).ToXml()
+        };
+        pPr.Indentation = new Indentation { Left = indentation, Right = indentation };
+    }
+
+    /// <summary>
+    /// The kinds of GitHub alerts ("> [!NOTE]"), mapped like in the CSS of the theme.
+    /// </summary>
+    public static CalloutKind FromAlertKind(string kind) => kind.ToUpperInvariant() switch
+    {
+        "WARNING" or "CAUTION" => CalloutKind.Warning,
+        "IMPORTANT" => CalloutKind.Danger,
+        _ => CalloutKind.Info
+    };
+}
+
+/// <summary>
+/// Renders paragraphs starting with "{{!}}", "{{!!}}" or "{{?}}" as callouts, like in the HTML/PDF conversion.
+/// </summary>
+internal static partial class IconBlocksProcessor
+{
+    internal static void Apply(WordprocessingDocument document, DocxTheme theme)
     {
         var body = document.MainDocumentPart!.Document.Body!;
 
@@ -30,25 +73,34 @@ internal static class IconBlocksProcessor
         {
             var fullText = string.Concat(para.Descendants<Text>().Select(t => t.Text));
 
-            var match = PrefixRegex.Match(fullText);
+            var match = PrefixRegex().Match(fullText);
             if (!match.Success) continue;
 
-            var style = Styles[match.Groups["type"].Value];
             StripLeadingText(para, match.Length);
-
-            var pPr = para.ParagraphProperties;
-            if (pPr == null)
+            var kind = match.Groups["type"].Value switch
             {
-                pPr = new ParagraphProperties();
-                para.PrependChild(pPr);
-            }
+                "!!" => CalloutKind.Danger,
+                "?" => CalloutKind.Info,
+                _ => CalloutKind.Warning
+            };
 
-            pPr.Shading = new Shading { Val = ShadingPatternValues.Clear, Color = "auto", Fill = style.Fill };
-            pPr.ParagraphBorders = new ParagraphBorders(
-                new LeftBorder { Val = BorderValues.Single, Color = style.BorderColor, Size = 24, Space = 4 }
-            );
-            pPr.Indentation = new Indentation { Left = "180" };
+            if (para.ParagraphProperties?.NumberingProperties != null) AddListIcon(para, kind, theme);
+            else Callout.Apply(para, kind, theme);
         }
+    }
+
+    /// <summary>
+    /// In lists, the HTML/PDF only shows a small colored icon at the beginning of the list item instead of a box.
+    /// </summary>
+    private static void AddListIcon(Paragraph para, CalloutKind kind, DocxTheme theme)
+    {
+        var icon = new Run(
+            new RunProperties(new Color { Val = Callout.GetColor(kind, theme) }),
+            new Text("● ") { Space = DocumentFormat.OpenXml.SpaceProcessingModeValues.Preserve });
+
+        var firstRun = para.Elements<Run>().FirstOrDefault();
+        if (firstRun != null) para.InsertBefore(icon, firstRun);
+        else para.AppendChild(icon);
     }
 
     private static void StripLeadingText(Paragraph para, int charCount)
@@ -69,4 +121,10 @@ internal static class IconBlocksProcessor
             }
         }
     }
+
+    /// <summary>
+    /// "{{!}} Text", like in the HTML/PDF conversion (also "{{ ! }}" and "{!}"), followed by a space or the end of the paragraph.
+    /// </summary>
+    [GeneratedRegex(@"^\{\{?\s*(?<type>!!|!|\?)\s*\}\}?(?:\s+|$)")]
+    private static partial Regex PrefixRegex();
 }

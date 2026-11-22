@@ -11,6 +11,13 @@ All notable changes to QmDoc. New versions are built and published automatically
 - Units in calculations: hours, minutes (converted to hours), currencies (`€`, `$`, `£`, `EUR`, ...), compound units like `€/h` and any other unit like `Stk`. Results keep the formatting of the input, eg. `90 €`, `€ 90` or `135,-`.
 - Calculations in tables: references to other cells (`[Kosten]`, `[Kosten:3]`, `[Kosten:Summe netto]`, `[4:3]`) and `{{ = SUM }}` to add up all values above.
 - `culture` frontmatter setting for parsing and formatting numbers in calculations (default `de-DE`).
+- DOCX files look much closer to the PDF: colors, fonts and sizes are taken from the theme (`--theme` works for `docx` as well), the page is A4, text is justified and hyphenated, headings stay with the following text, and the title and author are centered like in the PDF.
+- DOCX files only use the built-in styles of Word (Normal, Heading 1-6, Title, Subtitle, Quote, Hyperlink, ...) instead of the "MD ..." styles of the template, so headings work with Word's navigation pane and table of contents.
+- DOCX: images are embedded (centered, resized to fit, `{.left}`/`{.right}` floating), figures with captions (`^^^`) are shown as a box like in the PDF.
+- DOCX: chapter links (`[#Chapter]`) link to the heading and show its title with numbering.
+- DOCX: footnotes are rendered as Word endnotes at the end of the document.
+- DOCX: GitHub style callouts (`> [!NOTE]`, `> [!WARNING]`, ...) are shown like the `{{!}}` callouts.
+- DOCX: tables look like in the PDF (full width, horizontal lines, alternating row colors, column alignment), and links, code and other formatting in table cells are kept. The table of contents has no lines and less padding.
 - Chapter links also find chapters by a part of their title, eg. `[#Projektmeldung]` links to "Projektmeldung (Forschungsregister)", as long as only one chapter matches.
 - The README documents all QmDoc features and is now included in the NuGet package.
 - Examples for calculations in the feature showcase (`examples/input/all-features.md`).
@@ -26,7 +33,9 @@ All notable changes to QmDoc. New versions are built and published automatically
 - An empty chapter link like `[#]` no longer aborts the conversion.
 - Regular links and images whose text looks like a file name (eg. `![chart.png](chart.png)`) are no longer turned into broken document links.
 - `$` in the document or in placeholder values (eg. `$0` or `$$` in a code example) is no longer mangled.
-- Callouts (`{{!}}`, `{{!!}}`, `{{?}}`) work in DOCX files.
+- Callouts (`{{!}}`, `{{!!}}`, `{{?}}`) work in DOCX files, with the same colors as in the PDF.
+- DOCX: text with two ` | ` (eg. a table in a code block) is no longer turned into an author line, only `#### Name | Company | Email` headings are. The `author` frontmatter value is shown, and `enableDocumentTitle: false` is respected.
+- DOCX: inline code is shown in the code font, and the document language is no longer Russian (it's German by default, or the language of the file name like `report.en.md`, or the `culture` frontmatter value).
 - The table of contents links to headings that contain frontmatter placeholders or calculations.
 - `---` in code blocks, under headings and in tables without leading `|` is no longer turned into a page break.
 - Images with spaces or non-ASCII characters in the file name are embedded, images from the web are no longer reported as missing.

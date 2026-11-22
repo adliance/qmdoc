@@ -1,32 +1,23 @@
+using System.Collections.Generic;
+using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Adliance.QmDoc.Converter.Docx;
 
+/// <summary>
+/// Adds the document title at the beginning of the document, like the "document-title" of the HTML/PDF layout.
+/// </summary>
 internal static class TitleBlockProcessor
 {
-    internal static void Apply(WordprocessingDocument document, string title)
+    internal static void Apply(WordprocessingDocument document, string title, ICollection<Paragraph> authorParagraphs)
     {
         var body = document.MainDocumentPart!.Document.Body!;
+        var properties = new ParagraphProperties(new ParagraphStyleId { Val = ThemeStylesProcessor.TitleStyle });
 
-        var para = new Paragraph(
-            new ParagraphProperties(
-                new SpacingBetweenLines { Before = "0", After = "480" },
-                new ParagraphBorders(
-                    new BottomBorder { Val = BorderValues.Single, Color = "134094", Size = 12, Space = 6 }
-                )
-            ),
-            new Run(
-                new RunProperties(
-                    new FontSize { Val = "72" },
-                    new FontSizeComplexScript { Val = "72" },
-                    new Bold(),
-                    new Color { Val = "134094" }
-                ),
-                new Text(title)
-            )
-        );
+        // CSS: no space between the title and the author line directly below it
+        if (body.FirstChild is Paragraph first && authorParagraphs.Contains(first)) properties.SpacingBetweenLines = new SpacingBetweenLines { After = "0" };
 
-        body.PrependChild(para);
+        body.PrependChild(new Paragraph(properties, new Run(new Text(title) { Space = SpaceProcessingModeValues.Preserve })));
     }
 }
