@@ -29,6 +29,24 @@ pre {
     white-space: pre-wrap;
 }
 
+/* colors are set explicitly, otherwise hosts like the VS Code webview apply their own (dark) defaults */
+code {
+    color: var(--color-pre);
+    background-color: var(--color-pre-background);
+    padding: 1px 4px;
+    border-radius: 3px;
+    hyphens: none;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+}
+
+pre code {
+    color: inherit;
+    background: none;
+    padding: 0;
+    border-radius: 0;
+}
+
 b, strong {
     font-weight: bold;
 }

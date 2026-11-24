@@ -235,6 +235,8 @@ internal static class ThemeStylesProcessor
         styles.AppendChild(CharacterStyle(CodeInlineStyle, "HTML Code", rpr =>
         {
             rpr.RunFonts = Fonts(theme.CodeFontFamily);
+            rpr.Color = new Color { Val = theme.PreColor };
+            rpr.Shading = new Shading { Val = ShadingPatternValues.Clear, Color = "auto", Fill = theme.PreBackgroundColor };
             SetFontSize(rpr, codeSize);
         }));
 

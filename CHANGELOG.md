@@ -4,6 +4,11 @@ title: QmDoc Changelog
 
 All notable changes to QmDoc. New versions are built and published automatically from the `master` branch (version `3.2.<build>`), so changes are grouped by date. Breaking changes are marked as such.
 
+# 2026-11-24
+
+## Changed
+- Inline code has the same light background as code blocks (in all themes and in DOCX), and is no longer hyphenated. In the VS Code preview it is no longer shown with the dark VS Code code background.
+
 # 2026-11-22
 
 ## Added
