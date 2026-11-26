@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Net;
+using System.Reflection;
 using System.Threading.Tasks;
 using Adliance.AspNetCore.Buddy.Pdf.V2;
 using Adliance.QmDoc.Parameters;
@@ -78,4 +79,5 @@ public class AdliancePdferSettings : IPdferConfiguration
     public string? ApiKeyPdf => null;
     public string? ApiKeyTemplate => null;
     public required int TimeoutSeconds { get; init; }
+    public string UserAgent => "QmDoc (" + Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion + ")";
 }
